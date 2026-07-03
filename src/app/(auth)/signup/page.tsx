@@ -92,8 +92,8 @@ function SignupPageInner() {
   if (success) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <Card className="w-full max-w-md border-border bg-card">
-          <CardHeader className="items-center text-center">
+        <Card className="w-full max-w-md border-border/50 bg-card/50 backdrop-blur-xl shadow-2xl shadow-primary/5">
+          <CardHeader className="items-center text-center pb-8">
             <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <CheckCircle className="h-6 w-6 text-primary" />
             </div>
@@ -129,22 +129,26 @@ function SignupPageInner() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md border-border bg-card">
-        <CardHeader className="items-center text-center">
-          <div className="mb-2 flex h-16 shrink-0 items-center justify-center overflow-hidden">
+      <Card className="w-full max-w-md border-border/50 bg-card/50 backdrop-blur-xl shadow-2xl shadow-primary/5">
+        <CardHeader className="items-center text-center pb-8">
+          <div className="mb-4 flex h-20 shrink-0 items-center justify-center overflow-hidden">
             {inviteToken ? (
-              <UsersRound className="h-6 w-6 text-primary" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+                <UsersRound className="h-8 w-8 text-primary" />
+              </div>
             ) : (
-              <img src="/logo.png" alt="NGTech Logo" className="h-full w-auto object-contain" />
+              <Link href="/" className="h-full w-auto block">
+                <img src="/logo.svg" alt="NGTech Logo" className="h-full w-auto object-contain drop-shadow-sm hover:scale-105 transition-transform duration-500 cursor-pointer" />
+              </Link>
             )}
           </div>
-          <CardTitle className="text-xl text-foreground">
+          <CardTitle className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
             {inviteToken ? "Create account & join" : "Create account"}
           </CardTitle>
-          <CardDescription className="text-muted-foreground">
+          <CardDescription className="text-base text-muted-foreground mt-2">
             {inviteToken
               ? "Verify your email, then accept the invitation to join your team."
-              : "Get started with NGTech WCRM"}
+              : "Get started with NGTech WCRM today"}
           </CardDescription>
         </CardHeader>
         <CardContent>

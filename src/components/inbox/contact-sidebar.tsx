@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { maskPhone } from "@/lib/masking";
 import type { Contact, Deal, ContactNote, Tag, Conversation } from "@/types";
 import {
   Phone,
@@ -57,7 +58,7 @@ export function ContactSidebar({
   conversation,
   onClose,
 }: ContactSidebarProps) {
-  const { accountId, profile } = useAuth();
+  const { account, accountId, profile, isAgent } = useAuth();
   const agentName = profile?.full_name || "Your Agent";
   const [copied, setCopied] = useState(false);
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -337,7 +338,8 @@ export function ContactSidebar({
     );
   }
 
-  const displayName = contact.name || contact.phone;
+  const maskedPhone = maskPhone(contact.phone, isAgent, account?.mask_agent_phones ?? false);
+  const displayName = contact.name || maskedPhone;
   const initials = displayName.charAt(0).toUpperCase();
 
   return (
@@ -384,7 +386,7 @@ export function ContactSidebar({
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted"
             >
               <Phone className="h-4 w-4 text-muted-foreground" />
-              <span className="flex-1 text-left">{contact.phone}</span>
+              <span className="flex-1 text-left">{maskedPhone}</span>
               {copied ? (
                 <Check className="h-3 w-3 text-primary" />
               ) : (

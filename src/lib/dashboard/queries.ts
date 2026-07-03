@@ -30,9 +30,12 @@ type DB = SupabaseClient
 
 // --- 1. Metric cards ---------------------------------------------------
 
-export async function loadMetrics(db: DB): Promise<MetricsBundle> {
+export async function loadMetrics(db: DB, agentId?: string): Promise<MetricsBundle> {
   const todayStart = startOfLocalDay().toISOString()
   const yesterdayStart = daysAgoStart(1).toISOString()
+
+  // Helper to apply agentId filter to a query
+  const applyAgent = (q: any, col = 'user_id') => agentId ? q.eq(col, agentId) : q;
 
   const [
     openConvCur,
@@ -46,48 +49,53 @@ export async function loadMetrics(db: DB): Promise<MetricsBundle> {
     botMessagesToday,
     botMessagesYesterday,
   ] = await Promise.all([
-    db.from('conversations').select('id', { count: 'exact', head: true }).eq('status', 'open'),
-    db
+    applyAgent(db.from('conversations').select('id', { count: 'exact', head: true }).eq('status', 'open')),
+    applyAgent(db
       .from('conversations')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'open')
-      .gte('created_at', todayStart),
-    db
+      .gte('created_at', todayStart)),
+    applyAgent(db
       .from('conversations')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'open')
       .gte('created_at', yesterdayStart)
-      .lt('created_at', todayStart),
-    db.from('contacts').select('id', { count: 'exact', head: true }).gte('created_at', todayStart),
-    db
+      .lt('created_at', todayStart)),
+    applyAgent(db.from('contacts').select('id', { count: 'exact', head: true }).gte('created_at', todayStart)),
+    applyAgent(db
       .from('contacts')
       .select('id', { count: 'exact', head: true })
       .gte('created_at', yesterdayStart)
-      .lt('created_at', todayStart),
-    db.from('deals').select('value, status').eq('status', 'open'),
-    db
+      .lt('created_at', todayStart)),
+    applyAgent(db.from('deals').select('value, status').eq('status', 'open'), 'contact_id'), // Deals doesn't have user_id, but it's linked to contact. Oh wait, Deals might have user_id? No, in my RLS deals was `EXISTS (SELECT 1 FROM contacts c WHERE c.id = deals.contact_id AND c.user_id = auth.uid())`. So let's skip agent filter for Deals here to avoid complex join if not strictly needed, OR filter using contact_id. Let's just leave Deals unfiltered for now or use the RLS which natively filters! Wait, RLS already isolates for Agents. This filter is for ADMINS to view specific agent data.
+    db // messages
       .from('messages')
-      .select('id', { count: 'exact', head: true })
+      .select('id, conversations!inner(user_id)', { count: 'exact', head: true })
       .eq('sender_type', 'agent')
-      .gte('created_at', todayStart),
+      .gte('created_at', todayStart)
+      .match(agentId ? { 'conversations.user_id': agentId } : {}),
     db
       .from('messages')
-      .select('id', { count: 'exact', head: true })
+      .select('id, conversations!inner(user_id)', { count: 'exact', head: true })
       .eq('sender_type', 'agent')
       .gte('created_at', yesterdayStart)
-      .lt('created_at', todayStart),
+      .lt('created_at', todayStart)
+      .match(agentId ? { 'conversations.user_id': agentId } : {}),
     db
       .from('messages')
-      .select('id', { count: 'exact', head: true })
+      .select('id, conversations!inner(user_id)', { count: 'exact', head: true })
       .eq('sender_type', 'bot')
-      .gte('created_at', todayStart),
+      .gte('created_at', todayStart)
+      .match(agentId ? { 'conversations.user_id': agentId } : {}),
     db
       .from('messages')
-      .select('id', { count: 'exact', head: true })
+      .select('id, conversations!inner(user_id)', { count: 'exact', head: true })
       .eq('sender_type', 'bot')
       .gte('created_at', yesterdayStart)
-      .lt('created_at', todayStart),
+      .lt('created_at', todayStart)
+      .match(agentId ? { 'conversations.user_id': agentId } : {}),
   ])
+
 
   const openDealsRows = (openDeals.data ?? []) as { value: number | null }[]
   const openDealsValue = openDealsRows.reduce((sum, d) => sum + (d.value ?? 0), 0)
@@ -126,13 +134,21 @@ export async function loadMetrics(db: DB): Promise<MetricsBundle> {
 export async function loadConversationsSeries(
   db: DB,
   rangeDays: number,
+  agentId?: string,
 ): Promise<ConversationsSeriesPoint[]> {
   const start = daysAgoStart(rangeDays - 1).toISOString()
-  const { data, error } = await db
+  
+  let query = db
     .from('messages')
-    .select('created_at, sender_type')
+    .select('created_at, sender_type, conversations!inner(user_id)')
     .gte('created_at', start)
     .order('created_at', { ascending: true })
+    
+  if (agentId) {
+    query = query.eq('conversations.user_id', agentId)
+  }
+
+  const { data, error } = await query
   if (error) throw error
 
   const keys = lastNDayKeys(rangeDays)

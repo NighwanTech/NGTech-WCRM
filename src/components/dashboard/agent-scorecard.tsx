@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
-import { Trophy, Search, Star, MessageSquare, Timer, CheckCircle, Shield } from 'lucide-react'
+import { Trophy, Search, Star, MessageSquare, Timer, CheckCircle, Shield, Calendar, Users, Briefcase, CalendarDays, Bot, Sparkles } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
+const formatTime = (totalMinutes: number) => {
+  const roundedMin = Math.round(totalMinutes);
+  if (roundedMin < 60) return `${roundedMin}m`;
+  const h = Math.floor(roundedMin / 60);
+  const m = roundedMin % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+};
 
 interface AgentPerformance {
   userId: string
@@ -15,18 +24,30 @@ interface AgentPerformance {
   resolutionRate: number
   slaComplianceRate?: number
   messagesSent: number
+  botMessagesSent: number
+  dealsWon: number
+  meetingsCreated: number
+  meetingsAttended: number
+  uniqueLeads: number
+  aiSummary: string
   score: number
 }
 
 interface AgentScorecardProps {
   data: AgentPerformance[] | null
   loading: boolean
+  startDate?: string
+  endDate?: string
+  onDateChange?: (start: string, end: string) => void
 }
 
-export function AgentScorecard({ data, loading }: AgentScorecardProps) {
+type SortOption = 'score' | 'csat' | 'time' | 'resolution' | 'sla' | 'leads' | 'deals' | 'meetings' | 'bot'
+
+export function AgentScorecard({ data, loading, startDate, endDate, onDateChange }: AgentScorecardProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortedData, setSortedData] = useState<AgentPerformance[]>([])
-  const [sortBy, setSortBy] = useState<'score' | 'csat' | 'time' | 'resolution' | 'sla'>('score')
+  const [sortBy, setSortBy] = useState<SortOption>('score')
+  const [sortDesc, setSortDesc] = useState(true)
 
   useEffect(() => {
     if (!data) return
@@ -37,16 +58,45 @@ export function AgentScorecard({ data, loading }: AgentScorecardProps) {
     )
 
     filtered.sort((a, b) => {
-      if (sortBy === 'score') return b.score - a.score
-      if (sortBy === 'csat') return (b.avgCsat || 0) - (a.avgCsat || 0)
-      if (sortBy === 'time') return (a.avgResponseTimeMin || 9999) - (b.avgResponseTimeMin || 9999)
-      if (sortBy === 'resolution') return b.resolutionRate - a.resolutionRate
-      if (sortBy === 'sla') return (b.slaComplianceRate ?? 100) - (a.slaComplianceRate ?? 100)
-      return 0
+      let comparison = 0
+      if (sortBy === 'score') comparison = a.score - b.score
+      if (sortBy === 'csat') comparison = (a.avgCsat || 0) - (b.avgCsat || 0)
+      if (sortBy === 'time') comparison = (b.avgResponseTimeMin || 9999) - (a.avgResponseTimeMin || 9999) // Inverted for time (lower is better)
+      if (sortBy === 'resolution') comparison = a.resolutionRate - b.resolutionRate
+      if (sortBy === 'sla') comparison = (a.slaComplianceRate ?? 100) - (b.slaComplianceRate ?? 100)
+      if (sortBy === 'leads') comparison = a.uniqueLeads - b.uniqueLeads
+      if (sortBy === 'deals') comparison = a.dealsWon - b.dealsWon
+      if (sortBy === 'meetings') comparison = a.meetingsAttended - b.meetingsAttended
+      if (sortBy === 'bot') comparison = a.botMessagesSent - b.botMessagesSent
+
+      return sortDesc ? -comparison : comparison
     })
 
     setSortedData(filtered)
-  }, [data, searchQuery, sortBy])
+  }, [data, searchQuery, sortBy, sortDesc])
+
+  const toggleSort = (field: SortOption) => {
+    if (sortBy === field) {
+      setSortDesc(!sortDesc)
+    } else {
+      setSortBy(field)
+      setSortDesc(true)
+    }
+  }
+
+  const SortHeader = ({ field, label, minW }: { field: SortOption, label: string, minW?: string }) => (
+    <th 
+      className={`py-3 px-2 cursor-pointer hover:bg-muted/50 transition-colors ${minW ? minW : ''}`}
+      onClick={() => toggleSort(field)}
+    >
+      <div className="flex items-center gap-1 text-muted-foreground font-medium">
+        {label}
+        {sortBy === field && (
+          <span className="text-xs text-primary">{sortDesc ? '↓' : '↑'}</span>
+        )}
+      </div>
+    </th>
+  )
 
   const getCsatColor = (score: number | null) => {
     if (score === null) return 'text-muted-foreground'
@@ -64,14 +114,33 @@ export function AgentScorecard({ data, loading }: AgentScorecardProps) {
   return (
     <Card className="w-full border-border bg-card">
       <CardHeader className="space-y-4 pb-4">
-        <div>
-          <CardTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
-            <Trophy className="h-5 w-5 text-amber-500" />
-            Agent Performance Scorecard
-          </CardTitle>
-          <CardDescription>
-            Evaluate response times, resolution rates, and client satisfaction metrics.
-          </CardDescription>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+              <Trophy className="h-5 w-5 text-amber-500" />
+              Agent Performance Scorecard
+            </CardTitle>
+            <CardDescription>
+              A complete evaluation across conversations, deals, meetings, and AI insights.
+            </CardDescription>
+          </div>
+          {onDateChange && (
+            <div className="shrink-0 flex items-center gap-2">
+              <input
+                type="date"
+                value={startDate || ''}
+                onChange={(e) => onDateChange(e.target.value, endDate || '')}
+                className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+              <span className="text-muted-foreground text-sm">to</span>
+              <input
+                type="date"
+                value={endDate || ''}
+                onChange={(e) => onDateChange(startDate || '', e.target.value)}
+                className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </div>
+          )}
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-1">
           <div className="relative w-full sm:max-w-xs">
@@ -84,40 +153,6 @@ export function AgentScorecard({ data, loading }: AgentScorecardProps) {
               className="h-9 w-full rounded-md border border-border bg-background pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
-          <div className="flex items-center gap-1 rounded-md border border-border bg-background p-0.5 self-start sm:self-auto">
-            <button
-              onClick={() => setSortBy('score')}
-              className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                sortBy === 'score' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Top Score
-            </button>
-            <button
-              onClick={() => setSortBy('csat')}
-              className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                sortBy === 'csat' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              CSAT
-            </button>
-            <button
-              onClick={() => setSortBy('time')}
-              className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                sortBy === 'time' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Response Time
-            </button>
-            <button
-              onClick={() => setSortBy('sla')}
-              className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                sortBy === 'sla' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              SLA
-            </button>
-          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -129,27 +164,29 @@ export function AgentScorecard({ data, loading }: AgentScorecardProps) {
           </div>
         ) : sortedData.length === 0 ? (
           <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-            No agent data available
+            No agent data available for this period.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[850px] border-collapse text-left text-sm">
+          <div className="overflow-x-auto pb-4">
+            <table className="w-full min-w-[1400px] border-collapse text-left text-sm">
               <thead>
-                <tr className="border-b border-border text-muted-foreground font-medium">
-                  <th className="py-3 pl-2 min-w-[220px]">Agent</th>
-                  <th className="py-3 min-w-[100px]">Conversations</th>
-                  <th className="py-3 min-w-[120px]">Avg Response</th>
-                  <th className="py-3 min-w-[80px]">CSAT</th>
-                  <th className="py-3 min-w-[150px]">Resolution Rate</th>
-                  <th className="py-3 min-w-[140px]">SLA Compliance</th>
-                  <th className="py-3 min-w-[100px]">Messages</th>
-                  <th className="py-3 pr-2 text-right min-w-[150px]">Performance Score</th>
+                <tr className="border-b border-border">
+                  <th className="py-3 pl-2 min-w-[220px] text-muted-foreground font-medium sticky left-0 bg-card z-10 shadow-[1px_0_0_0_var(--border)]">Agent</th>
+                  <SortHeader field="leads" label="Leads" minW="min-w-[90px]" />
+                  <SortHeader field="deals" label="Deals Won" minW="min-w-[110px]" />
+                  <SortHeader field="meetings" label="Meetings" minW="min-w-[110px]" />
+                  <SortHeader field="bot" label="Bot Msgs" minW="min-w-[110px]" />
+                  <SortHeader field="time" label="Avg Response" minW="min-w-[130px]" />
+                  <SortHeader field="csat" label="CSAT" minW="min-w-[80px]" />
+                  <SortHeader field="resolution" label="Resolution Rate" minW="min-w-[150px]" />
+                  <th className="py-3 px-2 min-w-[280px] text-muted-foreground font-medium">AI Performance Summary</th>
+                  <SortHeader field="score" label="Overall Score" minW="min-w-[140px]" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {sortedData.map((agent, index) => (
-                  <tr key={agent.userId} className="group hover:bg-muted/30 transition-colors">
-                    <td className="py-3 pl-2">
+                  <tr key={agent.userId} className="group hover:bg-muted/50 transition-colors">
+                    <td className="py-3 pl-2 sticky left-0 bg-card z-10 group-hover:bg-muted transition-colors shadow-[1px_0_0_0_var(--border)]">
                       <div className="flex items-center gap-3">
                         <div className="relative">
                           <Avatar className="h-9 w-9 border border-border">
@@ -158,7 +195,7 @@ export function AgentScorecard({ data, loading }: AgentScorecardProps) {
                               {agent.fullName.slice(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          {index === 0 && searchQuery === '' && (
+                          {index === 0 && searchQuery === '' && sortBy === 'score' && (
                             <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-amber-950">
                               1
                             </span>
@@ -177,20 +214,41 @@ export function AgentScorecard({ data, loading }: AgentScorecardProps) {
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 font-medium text-foreground tabular-nums">
-                      {agent.conversationsHandled}
+                    <td className="py-3 px-2 font-medium text-foreground tabular-nums">
+                      <div className="flex items-center gap-1.5">
+                        <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                        {agent.uniqueLeads}
+                      </div>
                     </td>
-                    <td className="py-3 text-foreground tabular-nums">
+                    <td className="py-3 px-2 font-medium text-foreground tabular-nums">
+                      <div className="flex items-center gap-1.5">
+                        <Briefcase className="h-3.5 w-3.5 text-muted-foreground" />
+                        {agent.dealsWon}
+                      </div>
+                    </td>
+                    <td className="py-3 px-2 text-foreground tabular-nums">
+                      <div className="flex items-center gap-1.5">
+                        <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+                        {agent.meetingsAttended} / {agent.meetingsCreated}
+                      </div>
+                    </td>
+                    <td className="py-3 px-2 text-foreground tabular-nums">
+                      <div className="flex items-center gap-1.5">
+                        <Bot className="h-3.5 w-3.5 text-muted-foreground" />
+                        {agent.botMessagesSent}
+                      </div>
+                    </td>
+                    <td className="py-3 px-2 text-foreground tabular-nums">
                       {agent.avgResponseTimeMin !== null ? (
                         <span className="flex items-center gap-1">
                           <Timer className="h-3.5 w-3.5 text-muted-foreground" />
-                          {agent.avgResponseTimeMin}m
+                          {formatTime(agent.avgResponseTimeMin)}
                         </span>
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
                     </td>
-                    <td className="py-3">
+                    <td className="py-3 px-2">
                       {agent.avgCsat !== null ? (
                         <span className="flex items-center gap-1 font-semibold text-foreground">
                           <Star className={`h-4 w-4 ${getCsatColor(agent.avgCsat)}`} />
@@ -200,7 +258,7 @@ export function AgentScorecard({ data, loading }: AgentScorecardProps) {
                         <span className="text-muted-foreground">-</span>
                       )}
                     </td>
-                    <td className="py-3">
+                    <td className="py-3 px-2">
                       <div className="flex items-center gap-2">
                         <span className="text-foreground font-medium">{agent.resolutionRate}%</span>
                         <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
@@ -211,31 +269,16 @@ export function AgentScorecard({ data, loading }: AgentScorecardProps) {
                         </div>
                       </div>
                     </td>
-                    <td className="py-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-foreground font-medium">{agent.slaComplianceRate ?? 100}%</span>
-                        <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
-                          <div
-                            className={`h-full ${
-                              (agent.slaComplianceRate ?? 100) >= 90
-                                ? 'bg-green-500'
-                                : (agent.slaComplianceRate ?? 100) >= 75
-                                ? 'bg-amber-500'
-                                : 'bg-red-500'
-                            }`}
-                            style={{ width: `${agent.slaComplianceRate ?? 100}%` }}
-                          />
-                        </div>
+                    <td className="py-3 px-2 pr-4">
+                      <div className="flex items-start gap-2 max-w-sm">
+                        <Sparkles className="h-4 w-4 text-purple-500 shrink-0 mt-0.5" />
+                        <span className="text-xs text-muted-foreground leading-snug line-clamp-3">
+                          {agent.aiSummary || "No insights available for this period."}
+                        </span>
                       </div>
                     </td>
-                    <td className="py-3 text-muted-foreground tabular-nums">
-                      <div className="flex items-center gap-1">
-                        <MessageSquare className="h-3.5 w-3.5" />
-                        {agent.messagesSent}
-                      </div>
-                    </td>
-                    <td className="py-3 pr-2 text-right">
-                      <div className="inline-flex flex-col items-end gap-1.5">
+                    <td className="py-3 px-2">
+                      <div className="inline-flex flex-col items-start gap-1.5">
                         <span className="font-bold text-foreground tabular-nums">{agent.score}/100</span>
                         <div className="h-1.5 w-24 rounded-full bg-muted overflow-hidden">
                           <div

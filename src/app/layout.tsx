@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getLocale } from 'next-intl/server';
+import Script from 'next/script';
 import { ThemedToaster } from "@/components/themed-toaster";
 import {
   DEFAULT_MODE,
@@ -22,13 +22,13 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "NGTech WCRM",
+    default: "NGTech WCRM | India's Leading WhatsApp CRM Platform",
     template: "%s — NGTech WCRM",
   },
-  description: "Next-Generation CRM for WhatsApp by NG Technology Pvt. Ltd.",
+  description: "Next-Generation CRM for WhatsApp by NG Technology Pvt. Ltd. Connect, Automate, and Grow your business with our Shared Inbox and No-Code Automations.",
   robots: {
-    index: false,
-    follow: false,
+    index: true,
+    follow: true,
   },
   icons: {
     icon: [{ url: "/icon" }],
@@ -38,6 +38,19 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
+  openGraph: {
+    title: "NGTech WCRM | India's Leading WhatsApp CRM Platform",
+    description: "Connect, Automate, and Grow your business with our Shared Inbox and No-Code Automations.",
+    url: "https://ngtech-wcrm.com",
+    siteName: "NGTech WCRM",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NGTech WCRM | WhatsApp CRM",
+    description: "Connect, Automate, and Grow your business.",
+  }
 };
 
 export const viewport: Viewport = {

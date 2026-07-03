@@ -1,14 +1,15 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { PLANS, type Plan } from '@/lib/plan-limits'
 
 const PLAN_KEYS = Object.keys(PLANS) as Plan[]
 
-export default function CreateClientPage() {
+function CreateClientForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [fullName, setFullName] = useState('')
   const [plan, setPlan] = useState<Plan>('free')
@@ -16,6 +17,13 @@ export default function CreateClientPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  useEffect(() => {
+    const queryEmail = searchParams.get('email')
+    const queryName = searchParams.get('name')
+    if (queryEmail) setEmail(queryEmail)
+    if (queryName) setFullName(queryName)
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -187,5 +195,13 @@ export default function CreateClientPage() {
         </div>
       </form>
     </div>
+  )
+}
+
+export default function CreateClientPage() {
+  return (
+    <Suspense fallback={<div className="p-8">Loading form...</div>}>
+      <CreateClientForm />
+    </Suspense>
   )
 }

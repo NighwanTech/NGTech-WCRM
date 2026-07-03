@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { maskPhone } from "@/lib/masking";
 import type { Conversation, ConversationStatus } from "@/types";
 import { Search, ChevronDown, Flame, Smile, Frown, Meh } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -53,6 +55,7 @@ export function ConversationList({
   onConversationsLoaded,
   resyncToken = 0,
 }: ConversationListProps) {
+  const { account, isAgent } = useAuth();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<InboxFilter>("all");
   const [loading, setLoading] = useState(true);
@@ -244,6 +247,8 @@ export function ConversationList({
                 isActive={conv.id === activeConversationId}
                 onSelect={handleSelect}
                 slaConfig={slaConfig}
+                isAgent={isAgent}
+                maskingEnabled={account?.mask_agent_phones ?? false}
               />
             ))}
           </div>
@@ -262,6 +267,8 @@ interface ConversationItemProps {
     sla_first_reply_min: number;
     sla_subsequent_reply_min: number;
   } | null;
+  isAgent: boolean;
+  maskingEnabled: boolean;
 }
 
 function ConversationItem({
@@ -269,9 +276,12 @@ function ConversationItem({
   isActive,
   onSelect,
   slaConfig,
+  isAgent,
+  maskingEnabled,
 }: ConversationItemProps) {
   const contact = conversation.contact;
-  const displayName = contact?.name || contact?.phone || "Unknown";
+  const maskedPhone = maskPhone(contact?.phone, isAgent, maskingEnabled);
+  const displayName = contact?.name || maskedPhone || "Unknown";
   const initials = displayName.charAt(0).toUpperCase();
 
   const handleClick = useCallback(() => {

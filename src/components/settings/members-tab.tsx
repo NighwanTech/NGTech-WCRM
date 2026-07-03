@@ -31,6 +31,8 @@ import {
   Plus,
   Trash2,
   UsersRound,
+  Ban,
+  Play,
 } from 'lucide-react';
 
 import {
@@ -82,6 +84,7 @@ interface Member {
   avatar_url: string | null;
   role: AccountRole;
   joined_at: string;
+  is_suspended?: boolean;
 }
 
 interface Invitation {
@@ -220,6 +223,48 @@ export function MembersTab() {
         ),
       );
       console.error('[MembersTab] role change error:', err);
+      toast.error('Could not reach the server');
+    } finally {
+      setPendingMemberAction(null);
+    }
+  }
+
+  async function handleSuspendToggle(member: Member) {
+    const nextSuspended = !member.is_suspended;
+    const previousSuspended = member.is_suspended;
+    
+    setPendingMemberAction(member.user_id);
+    setMembers((prev) =>
+      prev.map((m) =>
+        m.user_id === member.user_id ? { ...m, is_suspended: nextSuspended } : m,
+      ),
+    );
+    
+    try {
+      const res = await fetch(`/api/account/members/${member.user_id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_suspended: nextSuspended }),
+      });
+      
+      if (!res.ok) {
+        setMembers((prev) =>
+          prev.map((m) =>
+            m.user_id === member.user_id ? { ...m, is_suspended: previousSuspended } : m,
+          ),
+        );
+        const payload = await res.json().catch(() => ({}));
+        toast.error(payload.error || 'Failed to update suspension status');
+        return;
+      }
+      toast.success(`${member.full_name || 'member'} has been ${nextSuspended ? 'suspended' : 'activated'}`);
+    } catch (err) {
+      setMembers((prev) =>
+        prev.map((m) =>
+          m.user_id === member.user_id ? { ...m, is_suspended: previousSuspended } : m,
+        ),
+      );
+      console.error('[MembersTab] suspend error:', err);
       toast.error('Could not reach the server');
     } finally {
       setPendingMemberAction(null);
@@ -380,12 +425,17 @@ export function MembersTab() {
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="truncate text-sm font-medium text-foreground">
+                        <span className={`truncate text-sm font-medium ${member.is_suspended ? 'text-muted-foreground line-through opacity-70' : 'text-foreground'}`}>
                           {member.full_name || 'Unnamed'}
                         </span>
                         {isSelf && (
                           <Badge className="bg-muted text-muted-foreground border-border text-[10px] uppercase tracking-wide">
                             You
+                          </Badge>
+                        )}
+                        {member.is_suspended && (
+                          <Badge variant="destructive" className="text-[10px] uppercase tracking-wide opacity-80">
+                            Suspended
                           </Badge>
                         )}
                       </div>
@@ -443,6 +493,19 @@ export function MembersTab() {
                         <RoleIcon className="size-3.5" />
                         {roleMeta.label}
                       </span>
+                    )}
+
+                    {canManageMembers && !isOwnerRow && !isSelf && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSuspendToggle(member)}
+                        disabled={isBusy}
+                        className={member.is_suspended ? 'border-amber-500/40 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20' : 'text-muted-foreground'}
+                        title={member.is_suspended ? "Activate account" : "Suspend account (on leave)"}
+                      >
+                        {member.is_suspended ? <Play className="size-4" /> : <Ban className="size-4" />}
+                      </Button>
                     )}
 
                     {/* Remove. Admin+ only; never on the owner row;

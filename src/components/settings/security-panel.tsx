@@ -2,6 +2,7 @@
 
 import { PasswordForm } from './password-form';
 import { SessionsCard } from './sessions-card';
+import { PrivacySettingsCard } from './privacy-settings-card';
 import { SettingsPanelHead } from './settings-panel-head';
 
 /**
@@ -16,6 +17,7 @@ export function SecurityPanel() {
         description="Change your password and sign out of your devices. These keep your account safe."
       />
       <div className="space-y-4">
+        <PrivacySettingsCard />
         <PasswordForm />
         <SessionsCard />
       </div>

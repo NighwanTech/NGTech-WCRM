@@ -58,35 +58,49 @@ export async function PATCH(
     const { userId } = await params;
 
     const body = (await request.json().catch(() => null)) as
-      | { role?: unknown }
+      | { role?: unknown; is_suspended?: unknown }
       | null;
     const role = body?.role;
+    const isSuspended = body?.is_suspended;
 
-    if (!isAccountRole(role)) {
-      return NextResponse.json(
-        { error: "'role' must be one of owner, admin, agent, viewer" },
-        { status: 400 },
-      );
+    if (role !== undefined) {
+      if (!isAccountRole(role)) {
+        return NextResponse.json(
+          { error: "'role' must be one of owner, admin, agent, viewer" },
+          { status: 400 },
+        );
+      }
+
+      if (role === "owner") {
+        return NextResponse.json(
+          {
+            error:
+              "Use POST /api/account/transfer-ownership to promote a member to owner",
+          },
+          { status: 400 },
+        );
+      }
+
+      const { error } = await ctx.supabase.rpc("set_member_role", {
+        p_user_id: userId,
+        p_new_role: role,
+      });
+
+      if (error) return rpcErrorToResponse(error);
     }
 
-    // The RPC blocks promotion to / demotion from owner, but
-    // surface the friendlier 400 before crossing the wire too.
-    if (role === "owner") {
-      return NextResponse.json(
-        {
-          error:
-            "Use POST /api/account/transfer-ownership to promote a member to owner",
-        },
-        { status: 400 },
-      );
+    if (isSuspended !== undefined) {
+      if (typeof isSuspended !== 'boolean') {
+        return NextResponse.json({ error: "'is_suspended' must be a boolean" }, { status: 400 });
+      }
+
+      const { error } = await ctx.supabase.rpc("suspend_account_member", {
+        p_user_id: userId,
+        p_is_suspended: isSuspended,
+      });
+
+      if (error) return rpcErrorToResponse(error);
     }
-
-    const { error } = await ctx.supabase.rpc("set_member_role", {
-      p_user_id: userId,
-      p_new_role: role,
-    });
-
-    if (error) return rpcErrorToResponse(error);
 
     return NextResponse.json({ ok: true });
   } catch (err) {

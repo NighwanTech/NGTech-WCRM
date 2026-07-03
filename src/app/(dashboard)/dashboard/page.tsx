@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { formatCurrency } from '@/lib/currency'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   MessageSquare,
   UserPlus,
@@ -94,18 +95,22 @@ export default function DashboardPage() {
   const [intelligence, setIntelligence] = useState<any | null>(null)
   const [intelligenceLoading, setIntelligenceLoading] = useState(true)
 
+  const [selectedAgent, setSelectedAgent] = useState<string | 'all'>('all')
+  const [agents, setAgents] = useState<{user_id: string, full_name: string}[]>([])
+
   const loadAll = useCallback(() => {
     const db = createClient()
+    const agentId = selectedAgent === 'all' ? undefined : selectedAgent;
 
     // Kick everything off in parallel. Each block has its own
     // setState + finally so a slow query doesn't hold up faster
     // sections — each widget shows its own skeleton independently.
-    void loadMetrics(db)
+    void loadMetrics(db, agentId)
       .then((m) => setMetrics(m))
       .catch((err) => console.error('[dashboard] metrics failed:', err))
       .finally(() => setMetricsLoading(false))
 
-    void loadConversationsSeries(db, 30)
+    void loadConversationsSeries(db, 30, agentId)
       .then((s) => setSeries((prev) => ({ ...prev, 30: s })))
       .catch((err) => console.error('[dashboard] series failed:', err))
       .finally(() => setSeriesLoading(false))
@@ -174,7 +179,20 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadAll()
-  }, [loadAll])
+  }, [loadAll, selectedAgent])
+
+  useEffect(() => {
+    if (!account?.id) return
+    const db = createClient()
+    db.from('account_members').select('user_id').eq('account_id', account.id).then(({data: members}) => {
+      if (members) {
+        const ids = members.map((m: any) => m.user_id);
+        db.from('profiles').select('user_id, full_name').in('user_id', ids).then(({data: profiles}) => {
+          if (profiles) setAgents(profiles as any);
+        });
+      }
+    });
+  }, [account?.id])
 
   useEffect(() => {
     if (!account?.id) return
@@ -191,10 +209,11 @@ export default function DashboardPage() {
   const handleRangeChange = useCallback(
     (r: RangeDays) => {
       setRange(r)
-      if (series[r] !== null) return
+      // cache removed for agent switching
       setSeriesLoading(true)
       const db = createClient()
-      loadConversationsSeries(db, r)
+      const agentId = selectedAgent === 'all' ? undefined : selectedAgent;
+      loadConversationsSeries(db, r, agentId)
         .then((s) => setSeries((prev) => ({ ...prev, [r]: s })))
         .catch((err) => console.error('[dashboard] series failed:', err))
         .finally(() => setSeriesLoading(false))
@@ -205,11 +224,26 @@ export default function DashboardPage() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{t('Title')}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t('Subtitle')}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{t('Title')}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t('Subtitle')}
+          </p>
+        </div>
+        {(account?.role === 'admin' || account?.role === 'owner') && (
+          <Select value={selectedAgent} onValueChange={(v) => { setSelectedAgent(v); setSeries({7: null, 30: null, 90: null}) }}>
+            <SelectTrigger className="w-[200px] bg-muted border-border">
+              <SelectValue placeholder="Filter by Agent" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Agents</SelectItem>
+              {agents.map(a => (
+                <SelectItem key={a.user_id} value={a.user_id}>{a.full_name || 'Unnamed Agent'}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {planUsage && planUsage.unpaidInvoicesCount > 0 && (

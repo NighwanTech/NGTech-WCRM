@@ -65,6 +65,7 @@ export interface AccountMember {
   avatar_url: string | null;
   role: AccountRole;
   joined_at: string;
+  is_suspended?: boolean;
 }
 
 /**

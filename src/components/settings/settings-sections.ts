@@ -9,6 +9,7 @@ import {
   Tags,
   User,
   UsersRound,
+  Clock,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -33,6 +34,7 @@ export const SETTINGS_SECTIONS = [
   'api',
   'plan',
   'invoices',
+  'business',
 ] as const;
 
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
@@ -58,6 +60,7 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
   deals: { id: 'deals', label: 'Deals & currency', icon: Coins, group: 'workspace' },
   members: { id: 'members', label: 'Team members', icon: UsersRound, group: 'workspace' },
   api: { id: 'api', label: 'API keys', icon: KeyRound, group: 'workspace' },
+  business: { id: 'business', label: 'Business hours', icon: Clock, group: 'workspace' },
   plan: { id: 'plan', label: 'Plan & Usage', icon: LayoutGrid, group: 'workspace' },
   invoices: { id: 'invoices', label: 'Billing Invoices', icon: FileText, group: 'workspace' },
 };
