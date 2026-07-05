@@ -7,6 +7,9 @@ import { findExistingContact, isUniqueViolation } from '@/lib/contacts/dedupe'
 import { verifyMetaWebhookSignature } from '@/lib/whatsapp/webhook-signature'
 import { runAutomationsForTrigger } from '@/lib/automations/engine'
 import { dispatchInboundToFlows } from '@/lib/flows/engine'
+import { AIProviderService } from '@/lib/services/ai/provider.service'
+import { AIPromptService } from '@/lib/services/ai/prompt.service'
+import { AIAnalyticsService } from '@/lib/services/ai/analytics.service'
 import {
   handleTemplateWebhookChange,
   isTemplateWebhookField,
@@ -266,6 +269,12 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
 
       const config = configRows[0]
 
+      const { data: aiConfig } = await supabaseAdmin()
+        .from('ai_assistant_settings')
+        .select('*')
+        .eq('account_id', config.account_id)
+        .maybeSingle()
+
       const decryptedAccessToken = decrypt(config.access_token)
 
       for (let i = 0; i < value.messages.length; i++) {
@@ -283,10 +292,11 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
           // the admin who saved the WhatsApp config.
           config.user_id,
           decryptedAccessToken,
-          config.ai_auto_reply_enabled ?? false,
-          config.ai_auto_reply_prompt ?? 'You are a helpful customer support assistant for this business.',
-          config.ai_knowledge_base ?? '',
-          config.auto_assign_enabled ?? false
+          aiConfig?.enabled ?? false,
+          aiConfig?.system_prompt ?? 'You are a helpful customer support assistant for this business.',
+          aiConfig?.knowledge_base ?? '',
+          config.auto_assign_enabled ?? false,
+          aiConfig
         )
       }
     }
@@ -524,7 +534,8 @@ async function processMessage(
   aiAutoReplyEnabled: boolean = false,
   aiAutoReplyPrompt: string = '',
   aiKnowledgeBase: string = '',
-  autoAssignEnabled: boolean = false
+  autoAssignEnabled: boolean = false,
+  aiConfig: any = null
 ) {
   const senderPhone = normalizePhone(message.from)
   const contactName = contact.profile.name
@@ -893,18 +904,27 @@ Message: "${inboundText}"`,
                 `${m.sender_type === 'customer' ? 'Customer' : 'Assistant'}: ${m.content_text || ''}`
               ).join('\n');
               
-            let finalPrompt = `System: ${aiAutoReplyPrompt}\n\nIMPORTANT INSTRUCTIONS:\n1. Detect the language of the customer's message and ALWAYS reply in that exact same language. For example, if the customer writes in Hindi, reply in Hindi. If they write in English, reply in English. Never switch languages unless the customer does first.\n2. Answer the user's question concisely using ONLY the Knowledge Base below.\n3. If the user explicitly asks to speak to a human, expresses extreme frustration, or asks a complex question entirely unrelated to the Knowledge Base, call the requestHumanHandoff tool.\n4. Do not offer a human specialist unless they ask for one or you absolutely cannot help them with the Knowledge Base.`;
-            if (aiKnowledgeBase.trim()) {
-              finalPrompt += `\n\nKnowledge Base:\n${aiKnowledgeBase}`;
-            }
-            finalPrompt += `\n\nRecent Conversation History:\n${history}\n\nAssistant:`;
+            const fullSystemPrompt = AIPromptService.buildSystemPrompt(aiConfig || {}, history);
             
+            const provider = aiConfig?.provider || 'groq';
+            const modelName = aiConfig?.model || (provider === 'gemini' ? 'gemini-1.5-pro' : 'llama-3.3-70b-versatile');
+            const model = AIProviderService.getModel(provider, modelName);
+            
+            const startTime = performance.now();
+            let isHandoff = false;
+            let errorMessage = '';
+
             const result = await generateText({
-              model: groq('llama-3.3-70b-versatile'),
-              prompt: finalPrompt,
+              model,
+              prompt: fullSystemPrompt,
+              maxTokens: aiConfig?.advanced_settings?.max_tokens || undefined,
+              temperature: aiConfig?.advanced_settings?.temperature || undefined,
+              topP: aiConfig?.advanced_settings?.top_p || undefined,
+              frequencyPenalty: aiConfig?.advanced_settings?.frequency_penalty || undefined,
+              presencePenalty: aiConfig?.advanced_settings?.presence_penalty || undefined,
               tools: {
                 requestHumanHandoff: tool({
-                  description: 'Call this tool when the customer is frustrated, explicitly asks for a human, or asks a question that you cannot answer.',
+                  description: 'Call this tool when the customer is frustrated, explicitly asks for a human, matches escalation rules, or asks a question that you cannot answer.',
                   parameters: z.object({
                     reason: z.string().describe('The reason for handing off to a human.'),
                   }),
@@ -915,6 +935,7 @@ Message: "${inboundText}"`,
             const handoffCall = result.toolCalls.find(t => t.toolName === 'requestHumanHandoff');
             
             if (handoffCall) {
+              isHandoff = true;
               const reason = (handoffCall.args as any).reason || 'Unknown';
               console.log(`[ai-handoff] Triggered for conversation ${conversation.id}. Reason: ${reason}`);
               
@@ -927,7 +948,7 @@ Message: "${inboundText}"`,
                 })
                 .eq('id', conversation.id);
                 
-              const transitionMessage = "I am transferring you to a human agent now, they will be right with you.";
+              const transitionMessage = aiConfig?.handoff_rules?.fallback_message || "I am transferring you to a human agent now, they will be right with you.";
               
               await engineSendText({
                 accountId,
@@ -945,8 +966,46 @@ Message: "${inboundText}"`,
                 text: result.text.trim(),
               });
             }
-          } catch (err) {
+
+            const endTime = performance.now();
+            
+            // Log Analytics
+            if (aiConfig) {
+               const promptTokens = result.usage?.promptTokens || 0;
+               const completionTokens = result.usage?.completionTokens || 0;
+               await AIAnalyticsService.logEvent({
+                 account_id: accountId,
+                 conversation_id: conversation.id,
+                 provider,
+                 model: modelName,
+                 response_time_ms: Math.round(endTime - startTime),
+                 prompt_tokens: promptTokens,
+                 completion_tokens: completionTokens,
+                 total_tokens: result.usage?.totalTokens || (promptTokens + completionTokens),
+                 estimated_cost: AIAnalyticsService.estimateCost(provider, modelName, promptTokens, completionTokens),
+                 is_handoff: isHandoff,
+                 is_error: false
+               });
+            }
+
+          } catch (err: any) {
             console.error('[ai-auto-reply] failed:', err);
+            if (aiConfig) {
+               await AIAnalyticsService.logEvent({
+                 account_id: accountId,
+                 conversation_id: conversation.id,
+                 provider: aiConfig?.provider || 'gemini',
+                 model: aiConfig?.model || 'gemini-1.5-pro',
+                 response_time_ms: 0,
+                 prompt_tokens: 0,
+                 completion_tokens: 0,
+                 total_tokens: 0,
+                 estimated_cost: 0,
+                 is_handoff: false,
+                 is_error: true,
+                 error_message: err.message
+               });
+            }
           }
         })();
       }

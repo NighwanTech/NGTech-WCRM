@@ -26,7 +26,8 @@ import {
   X,
   Zap,
   LayoutGrid,
-  FileText
+  FileText,
+  Bot
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
 
@@ -99,6 +100,7 @@ const navItems: NavItem[] = [
   { href: "/pipelines", label: "Pipelines", icon: GitBranch },
   { href: "/broadcasts", label: "Broadcasts", icon: Radio },
   { href: "/automations", label: "Automations", icon: Zap },
+  { href: "/ai-assistant", label: "AI Assistant", icon: Bot },
   { href: "/flows", label: "Flows", icon: Workflow },
 ];
 

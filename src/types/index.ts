@@ -554,3 +554,89 @@ export interface AutomationLog {
   created_at: string;
   contact?: Contact;
 }
+
+export interface AIAssistantSettings {
+  id: string;
+  account_id: string;
+  enabled: boolean;
+  provider: string;
+  model: string;
+  system_prompt: string;
+  knowledge_base: string;
+  personality?: string;
+  allowed_topics?: string;
+  restricted_topics?: string;
+  human_handoff_rules?: string;
+  respect_business_hours: boolean;
+  created_at: string;
+  updated_at: string;
+  advanced_settings?: {
+    max_tokens?: number;
+    temperature?: number;
+    top_p?: number;
+    frequency_penalty?: number;
+    presence_penalty?: number;
+    streaming?: boolean;
+    response_language?: string;
+  };
+  knowledge_base_structured?: {
+    manual_text?: string;
+    faqs?: { question: string; answer: string }[];
+    products?: { name: string; description: string; pricing?: string; features?: string; category?: string }[];
+    company_info?: {
+      vision?: string;
+      mission?: string;
+      services?: string;
+      office_locations?: string;
+      working_hours?: string;
+      phone?: string;
+      email?: string;
+      website?: string;
+    };
+  };
+  ai_rules?: {
+    allowed_topics?: string;
+    restricted_topics?: string;
+    max_length?: number;
+    never_answer?: string;
+    always_mention?: string;
+    preferred_tone?: string;
+    response_style?: string;
+    emoji_usage?: string;
+    reply_format?: string;
+  };
+  handoff_rules?: {
+    confidence_threshold?: number;
+    escalate_when?: string[];
+    assign_to?: string;
+    fallback_message?: string;
+  };
+}
+
+export interface AIAnalyticsEvent {
+  id: string;
+  account_id: string;
+  conversation_id?: string;
+  provider?: string;
+  model?: string;
+  response_time_ms?: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  estimated_cost: number;
+  is_handoff: boolean;
+  is_error: boolean;
+  error_message?: string;
+  created_at: string;
+}
+
+export interface AIKnowledgeDocument {
+  id: string;
+  account_id: string;
+  file_name: string;
+  file_path: string;
+  file_size: number;
+  file_type?: string;
+  created_at: string;
+  updated_at: string;
+}
