@@ -392,6 +392,17 @@ export async function generateMetadata({ params }: { params: Promise<{ industry:
   }
 }
 
+const gradientText = (text: string) => {
+  const words = text.split(' ');
+  if (words.length <= 1) return text;
+  const lastWord = words.pop();
+  return (
+    <>
+      {words.join(' ')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500">{lastWord}</span>
+    </>
+  );
+}
+
 export default async function IndustrySolutionPage({ params }: { params: Promise<{ industry: string }> }) {
   const resolvedParams = await params
   const data = industriesData[resolvedParams.industry]
@@ -410,7 +421,7 @@ export default async function IndustrySolutionPage({ params }: { params: Promise
             NGTech WCRM for {data.name}
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground mb-6 max-w-4xl mx-auto">
-            {data.heroTitle}
+            {gradientText(data.heroTitle)}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
             {data.heroDescription}

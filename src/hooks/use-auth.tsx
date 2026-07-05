@@ -43,6 +43,9 @@ interface AccountSummary {
    *  DB (migration 021); narrowed to DEFAULT_CURRENCY when absent. */
   default_currency: string;
   mask_agent_phones: boolean;
+  plan: string;
+  status: string;
+  trial_ends_at: string | null;
 }
 
 interface AuthContextValue {
@@ -164,7 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .from("accounts")
             // default_currency added in migration 021; narrowed to the
             // USD fallback below for older schemas where it reads null.
-            .select("id, name, default_currency, mask_agent_phones")
+            .select("id, name, default_currency, mask_agent_phones, plan, status, trial_ends_at")
             .eq("id", data.account_id)
             .maybeSingle();
           if (accountErr) {
@@ -180,6 +183,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               name: account.name,
               default_currency: account.default_currency ?? DEFAULT_CURRENCY,
               mask_agent_phones: account.mask_agent_phones ?? false,
+              plan: account.plan ?? 'free',
+              status: account.status ?? 'active',
+              trial_ends_at: account.trial_ends_at ?? null,
             };
           }
         }

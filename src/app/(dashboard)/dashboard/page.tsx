@@ -352,7 +352,7 @@ export default function DashboardPage() {
                 ),
               }}
             />
-            {scorecardSummary && (
+            {scorecardSummary && scorecardSummary.slaComplianceRate !== undefined && (
               <MetricCard
                 title={t('SLAComplianceRate')}
                 value={`${scorecardSummary.slaComplianceRate}%`}

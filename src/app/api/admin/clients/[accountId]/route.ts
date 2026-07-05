@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getAdminClient } from '@/lib/admin-supabase'
-import { PLANS, type Plan, type AccountStatus } from '@/lib/plan-limits'
+import { type AccountStatus } from '@/lib/plan-limits'
 
 async function requirePlatformAdmin() {
   const supabase = await createClient()
@@ -137,17 +137,25 @@ export async function PATCH(
     }
 
     // When changing plan, auto-update limits to plan defaults (unless overridden)
+    const admin = getAdminClient()
     if (update.plan && typeof update.plan === 'string') {
-      const plan = update.plan as Plan
-      if (!Object.keys(PLANS).includes(plan)) {
+      const plan = update.plan as string
+      
+      const { data: planMeta } = await (admin as any)
+        .from('saas_pricing_plans')
+        .select('max_contacts, max_messages_pm')
+        .eq('slug', plan)
+        .single()
+        
+      if (!planMeta) {
         return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
       }
-      const planMeta = PLANS[plan]
+      
       if (!('max_contacts' in body)) {
-        update.max_contacts = planMeta.maxContacts === -1 ? 9_999_999 : planMeta.maxContacts
+        update.max_contacts = planMeta.max_contacts === -1 ? 9_999_999 : planMeta.max_contacts
       }
       if (!('max_messages_pm' in body)) {
-        update.max_messages_pm = planMeta.maxMessagesPm === -1 ? 9_999_999 : planMeta.maxMessagesPm
+        update.max_messages_pm = planMeta.max_messages_pm === -1 ? 9_999_999 : planMeta.max_messages_pm
       }
     }
 
@@ -162,7 +170,6 @@ export async function PATCH(
       return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
     }
 
-    const admin = getAdminClient()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error: updateErr } = await (admin as any)
       .from('accounts')

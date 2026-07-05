@@ -21,20 +21,25 @@ import { PlanPanel } from '@/components/settings/plan-panel';
 import { InvoicesPanel } from '@/components/settings/invoices-panel';
 import {
   resolveSection,
+  SECTION_META,
   type SettingsSection,
 } from '@/components/settings/settings-sections';
 
 export default function SettingsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { defaultCurrency } = useAuth();
+  const { defaultCurrency, canEditSettings } = useAuth();
   const { mode } = useTheme();
 
   // The URL (`?tab=`) is the single source of truth for the active
   // section — deep-linkable, and it keeps the existing links in the
   // app sidebar/header working. Legacy tab values (tags, custom-fields)
   // resolve onto their new home; unknown/empty → the Overview landing.
-  const section = resolveSection(searchParams.get('tab'));
+  let section = resolveSection(searchParams.get('tab'));
+  
+  if (SECTION_META[section].adminOnly && !canEditSettings) {
+    section = 'overview';
+  }
 
   const go = (next: SettingsSection) => {
     const params = new URLSearchParams(searchParams.toString());

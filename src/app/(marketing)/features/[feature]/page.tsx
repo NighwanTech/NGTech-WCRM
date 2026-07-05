@@ -1,9 +1,43 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Metadata } from 'next'
-import { ArrowRight, CheckCircle2, Zap, MessageSquare, ShieldCheck, Target, Bot, Users } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Zap, MessageSquare, ShieldCheck, Target, Bot, Users, LayoutDashboard, KanbanSquare, Network } from 'lucide-react'
+import { FeatureImage } from '@/components/ui/feature-image'
 
 const featuresData: Record<string, any> = {
+  'dashboard': {
+    name: 'Centralized Overview Dashboard',
+    seoTitle: 'WhatsApp CRM Dashboard | NGTech WCRM',
+    seoDescription: 'Get a bird\'s-eye view of your entire WhatsApp operation with a unified command center.',
+    heroTitle: 'Your Entire Operation at a Glance',
+    heroDescription: 'Monitor active conversations, track agent performance, and view real-time revenue metrics from a single, unified command center.',
+    icon: LayoutDashboard,
+    image: 'dashboard-mockup',
+    benefits: [
+      {
+        title: 'Real-Time Metrics',
+        description: 'See live stats on open chats, resolution times, and team performance instantly.',
+      },
+      {
+        title: 'Revenue Tracking',
+        description: 'Connect your sales data to see exactly how much revenue WhatsApp is driving.',
+      },
+      {
+        title: 'Agent Productivity',
+        description: 'Monitor individual agent workloads and reassign chats to balance the queue.',
+      }
+    ],
+    featuresList: [
+      'Customizable Widgets',
+      'Real-time Data Refresh',
+      'Exportable Reports',
+      'Goal Tracking',
+      'Agent Leaderboards',
+      'Revenue Attribution',
+      'Conversation Heatmaps',
+      'SLA Breach Alerts'
+    ]
+  },
   'shared-team-inbox': {
     name: 'Shared Team Inbox',
     seoTitle: 'WhatsApp Shared Team Inbox | NGTech WCRM',
@@ -11,6 +45,7 @@ const featuresData: Record<string, any> = {
     heroTitle: 'Manage WhatsApp Together',
     heroDescription: 'Stop fighting over a single WhatsApp phone. Equip your sales and support teams with a unified, multiplayer shared inbox built for scale.',
     icon: MessageSquare,
+    image: 'inbox-mockup',
     benefits: [
       {
         title: 'Multi-Agent Collaboration',
@@ -29,7 +64,11 @@ const featuresData: Record<string, any> = {
       'Private Internal Notes',
       'Agent Analytics & Load Balancing',
       'Custom SLA Rules & Alerts',
-      'Chat Tagging & Categorization'
+      'Chat Tagging & Categorization',
+      'Collision Detection',
+      'Saved Quick Replies (Canned Responses)',
+      'Auto-Assignment Routing Rules',
+      'Multi-Device Support'
     ]
   },
   'chatbot-builder': {
@@ -39,6 +78,7 @@ const featuresData: Record<string, any> = {
     heroTitle: 'Automate 80% of Customer Queries',
     heroDescription: 'Deploy intelligent chatbots that work 24/7. Answer common questions, qualify leads, and route complex issues to human agents automatically.',
     icon: Bot,
+    image: 'ai-mockup',
     benefits: [
       {
         title: 'Drag & Drop Builder',
@@ -57,7 +97,11 @@ const featuresData: Record<string, any> = {
       'Visual Flow Builder',
       'Multi-Language Support',
       'Data Collection Forms',
-      'Webhook Integrations'
+      'Webhook Integrations',
+      'AI Intent Recognition',
+      'Fallback to Human Agent',
+      'Pre-built Industry Templates',
+      'Rich Media Responses (Cards, PDFs)'
     ]
   },
   'workflow-automation': {
@@ -67,6 +111,7 @@ const featuresData: Record<string, any> = {
     heroTitle: 'Put Your WhatsApp Growth on Autopilot',
     heroDescription: 'Build automated Drip Campaigns, abandoned cart reminders, and meeting follow-ups that run while you sleep.',
     icon: Zap,
+    image: 'automation-mockup',
     benefits: [
       {
         title: 'Drip Campaigns',
@@ -85,7 +130,11 @@ const featuresData: Record<string, any> = {
       'Abandoned Cart Recovery',
       'Automated Meeting Reminders',
       'Integration with Zapier',
-      'A/B Testing for Workflows'
+      'A/B Testing for Workflows',
+      'Time-based Delays',
+      'Condition-based Branching',
+      'CRM Event Triggers',
+      'Dynamic Variable Injection'
     ]
   },
   'lead-management': {
@@ -95,6 +144,7 @@ const featuresData: Record<string, any> = {
     heroTitle: 'A CRM Built for WhatsApp First',
     heroDescription: 'Turn every WhatsApp conversation into a structured lead. Track sales pipelines, manage contacts, and boost your conversion rates.',
     icon: Users,
+    image: 'crm-mockup',
     benefits: [
       {
         title: 'Automatic Lead Capture',
@@ -113,7 +163,11 @@ const featuresData: Record<string, any> = {
       'Custom Contact Fields',
       'Bulk Import/Export',
       'Lead Scoring System',
-      'Activity Timelines'
+      'Activity Timelines',
+      'Duplicate Detection',
+      'Contact Tagging',
+      'Notes & Reminders',
+      'One-Click Filtering'
     ]
   },
   'broadcast-campaigns': {
@@ -123,6 +177,7 @@ const featuresData: Record<string, any> = {
     heroTitle: 'Marketing Campaigns People Actually Read',
     heroDescription: 'Ditch email marketing. Send highly targeted, personalized WhatsApp broadcasts with rich media and interactive buttons.',
     icon: Target,
+    image: 'broadcast-mockup',
     benefits: [
       {
         title: 'High Deliverability',
@@ -141,7 +196,77 @@ const featuresData: Record<string, any> = {
       'Pre-approved WhatsApp Templates',
       'Audience Segmentation',
       'Campaign Scheduling',
-      'Rich Media (Images/Videos/PDFs)'
+      'Rich Media (Images/Videos/PDFs)',
+      'Interactive Buttons (URL & Quick Reply)',
+      'Opt-out Management',
+      'Delivery & Read Receipts',
+      'A/B Testing Content'
+    ]
+  },
+  'sales-pipelines': {
+    name: 'Visual Sales Pipelines',
+    seoTitle: 'Visual Sales Pipelines | NGTech WCRM',
+    seoDescription: 'Manage your entire sales process directly within WhatsApp. Drag and drop deals across customizable stages.',
+    heroTitle: 'Visualize Your Sales Flow',
+    heroDescription: 'Manage your entire sales process directly within WhatsApp. Drag and drop deals across customizable pipeline stages, track deal values, and forecast revenue effortlessly.',
+    icon: KanbanSquare,
+    image: 'pipeline-mockup',
+    benefits: [
+      {
+        title: 'Drag & Drop Management',
+        description: 'Easily move leads from one stage to the next with an intuitive Kanban board interface.',
+      },
+      {
+        title: 'Revenue Forecasting',
+        description: 'See the total value of deals in every stage to accurately forecast your monthly revenue.',
+      },
+      {
+        title: 'Automated Stage Triggers',
+        description: 'Automatically trigger messages or assign tasks when a deal is moved to a new stage.',
+      }
+    ],
+    featuresList: [
+      'Multiple Custom Pipelines',
+      'Deal Value Tracking',
+      'Win/Loss Reason Analysis',
+      'Stage Automation Rules',
+      'Drag & Drop Kanban Board',
+      'Revenue Forecasting',
+      'Deal Rotting Alerts',
+      'Required Fields by Stage'
+    ]
+  },
+  'visual-flow-builder': {
+    name: 'Visual Flow Builder',
+    seoTitle: 'Visual Flow Builder | NGTech WCRM',
+    seoDescription: 'Design complex conversation paths using our intuitive drag-and-drop canvas.',
+    heroTitle: 'Design Complex Flows Visually',
+    heroDescription: 'Guide customers through multi-step onboarding, collect inputs, and route them to the right agent based on their choices using our drag-and-drop canvas.',
+    icon: Network,
+    image: 'flow-mockup',
+    benefits: [
+      {
+        title: 'Intuitive Canvas',
+        description: 'Map out the entire customer journey visually, ensuring a flawless customer experience.',
+      },
+      {
+        title: 'Smart Routing',
+        description: 'Route users to specific human agents based on the options they select during the flow.',
+      },
+      {
+        title: 'Multi-Step Onboarding',
+        description: 'Collect documents, qualify criteria, and onboard users step-by-step automatically.',
+      }
+    ],
+    featuresList: [
+      'Drag-and-Drop Canvas',
+      'Conditional Logic Branches',
+      'Variable Storage',
+      'Rich Media Nodes',
+      'API Request Blocks',
+      'Date & Time Routing',
+      'Jump-to-Node Actions',
+      'Flow Version History'
     ]
   },
   'security-compliance': {
@@ -151,6 +276,7 @@ const featuresData: Record<string, any> = {
     heroTitle: 'Bank-Grade Security for Your Data',
     heroDescription: 'Protect your customer data with enterprise-grade security infrastructure. We comply with GDPR, SOC2, and data localization laws.',
     icon: ShieldCheck,
+    image: 'security-mockup',
     benefits: [
       {
         title: 'End-to-End Encryption',
@@ -169,7 +295,11 @@ const featuresData: Record<string, any> = {
       'GDPR & CCPA Compliant',
       'Data Masking for PII',
       'SSO & 2FA Authentication',
-      'Regular Penetration Testing'
+      'Regular Penetration Testing',
+      'End-to-End Encryption',
+      'Role-Based Access Control (RBAC)',
+      'Comprehensive Audit Logs',
+      'Data Localization Options'
     ]
   }
 }
@@ -191,6 +321,17 @@ export async function generateMetadata({ params }: { params: Promise<{ feature: 
   }
 }
 
+const gradientText = (text: string) => {
+  const words = text.split(' ');
+  if (words.length <= 1) return text;
+  const lastWord = words.pop();
+  return (
+    <>
+      {words.join(' ')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500">{lastWord}</span>
+    </>
+  );
+}
+
 export default async function FeaturePage({ params }: { params: Promise<{ feature: string }> }) {
   const resolvedParams = await params
   const data = featuresData[resolvedParams.feature]
@@ -200,6 +341,15 @@ export default async function FeaturePage({ params }: { params: Promise<{ featur
   }
 
   const Icon = data.icon
+
+  // Select 3 other features deterministically based on the current feature
+  const featureKeys = Object.keys(featuresData)
+  const currentIndex = featureKeys.indexOf(resolvedParams.feature)
+  const otherFeatures = [
+    featureKeys[(currentIndex + 1) % featureKeys.length],
+    featureKeys[(currentIndex + 2) % featureKeys.length],
+    featureKeys[(currentIndex + 3) % featureKeys.length],
+  ].map(key => ({ slug: key, ...featuresData[key] }))
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -213,7 +363,7 @@ export default async function FeaturePage({ params }: { params: Promise<{ featur
                 <Icon className="h-4 w-4" /> Feature: {data.name}
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground mb-6">
-                {data.heroTitle}
+                {gradientText(data.heroTitle)}
               </h1>
               <p className="text-xl text-muted-foreground mb-10">
                 {data.heroDescription}
@@ -225,10 +375,11 @@ export default async function FeaturePage({ params }: { params: Promise<{ featur
               </div>
             </div>
             
-            <div className="relative aspect-square md:aspect-video lg:aspect-square rounded-2xl bg-gradient-to-tr from-card to-background border border-border shadow-2xl overflow-hidden flex items-center justify-center">
-              <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-              <div className="text-muted-foreground/30 font-medium text-lg border-2 border-dashed border-muted-foreground/20 rounded-xl p-12">
-                {resolvedParams.feature}-demo.mp4
+            <div className="relative aspect-video lg:aspect-[1500/850] w-full rounded-2xl bg-gradient-to-tr from-muted to-card border border-border shadow-2xl overflow-hidden flex items-center justify-center group">
+              <FeatureImage src={`/${data.image}.png`} alt={data.name} />
+              <div className="absolute inset-0 bg-primary/5 transition-opacity group-hover:bg-primary/10 -z-10" />
+              <div className="text-muted-foreground/40 font-medium text-lg border-2 border-dashed border-muted-foreground/20 rounded-2xl p-12 backdrop-blur-sm -z-10">
+                {data.image}.png
               </div>
             </div>
           </div>
@@ -276,6 +427,36 @@ export default async function FeaturePage({ params }: { params: Promise<{ featur
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Other Features */}
+      <section className="py-24 bg-card border-t border-border/50">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-foreground mb-4">Explore More Features</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Discover other powerful tools in the NGTech WCRM suite to grow your business.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {otherFeatures.map((feat, index) => {
+              const FeatIcon = feat.icon
+              return (
+                <Link href={`/features/${feat.slug}`} key={index} className="group flex flex-col rounded-2xl border border-border bg-background p-8 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <FeatIcon className="h-7 w-7 text-primary group-hover:text-primary-foreground transition-colors" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-3">{feat.name}</h3>
+                  <p className="text-muted-foreground flex-1 mb-8">{feat.heroDescription.substring(0, 110)}...</p>
+                  <div className="flex items-center text-primary font-semibold group-hover:underline mt-auto">
+                    Learn more <ArrowRight className="ml-2 h-4 w-4" />
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         </div>
       </section>

@@ -43,8 +43,9 @@ function LoginPageInner() {
   const router = useRouter();
   const supabase = createClient();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault();
+    console.log("handleLogin clicked! Email:", email);
     setError(null);
     setLoading(true);
 
@@ -54,10 +55,13 @@ function LoginPageInner() {
     });
 
     if (error) {
+      console.log("Login error from Supabase:", error.message);
       setError(error.message);
       setLoading(false);
       return;
     }
+
+    console.log("Login successful! Redirecting...");
 
     if (inviteToken) {
       router.push(`/join/${encodeURIComponent(inviteToken)}`);
@@ -91,7 +95,7 @@ function LoginPageInner() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+          <form className="flex flex-col gap-4">
             {error && (
               <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
                 {error}
@@ -137,7 +141,8 @@ function LoginPageInner() {
             </div>
 
             <Button
-              type="submit"
+              type="button"
+              onClick={handleLogin}
               disabled={loading}
               className="mt-2 h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >

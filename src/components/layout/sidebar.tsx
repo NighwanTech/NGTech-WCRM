@@ -140,6 +140,16 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
+  // Hide premium features if the trial has expired
+  const isTrialExpired = account?.plan === 'free' && account.trial_ends_at && new Date(account.trial_ends_at).getTime() < new Date().getTime();
+  
+  const activeNavItems = navItems.filter(item => {
+    if (isTrialExpired && (item.href === '/automations' || item.href === '/flows')) {
+      return false;
+    }
+    return true;
+  });
+
   // Lock body scroll and allow Escape to close while the drawer is open on
   // mobile. No-ops on desktop because the sidebar isn't positioned there.
   useEffect(() => {
@@ -218,7 +228,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
         {/* Main navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <ul className="flex flex-col gap-1">
-            {navItems.map((item) => {
+            {activeNavItems.map((item) => {
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/dashboard" && pathname.startsWith(item.href));

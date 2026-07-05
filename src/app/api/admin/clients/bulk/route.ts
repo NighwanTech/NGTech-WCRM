@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getAdminClient } from '@/lib/admin-supabase'
-import { PLANS, type Plan } from '@/lib/plan-limits'
+
 
 export async function PATCH(request: Request) {
   try {
@@ -45,18 +45,27 @@ export async function PATCH(request: Request) {
         .update({ status: 'active' })
         .in('id', account_ids)
     } else if (action === 'change_plan') {
-      if (!plan || !Object.keys(PLANS).includes(plan)) {
+      if (!plan) {
+        return NextResponse.json({ error: 'Missing plan' }, { status: 400 })
+      }
+      
+      const { data: planMeta } = await (admin as any)
+        .from('saas_pricing_plans')
+        .select('max_contacts, max_messages_pm')
+        .eq('slug', plan)
+        .single()
+        
+      if (!planMeta) {
         return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
       }
-      const planMeta = PLANS[plan as Plan]
       
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (admin as any)
         .from('accounts')
         .update({
           plan,
-          max_contacts: planMeta.maxContacts === -1 ? 9_999_999 : planMeta.maxContacts,
-          max_messages_pm: planMeta.maxMessagesPm === -1 ? 9_999_999 : planMeta.maxMessagesPm,
+          max_contacts: planMeta.max_contacts === -1 ? 9_999_999 : planMeta.max_contacts,
+          max_messages_pm: planMeta.max_messages_pm === -1 ? 9_999_999 : planMeta.max_messages_pm,
         })
         .in('id', account_ids)
     } else {

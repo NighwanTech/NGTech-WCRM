@@ -1,0 +1,30 @@
+[2026-07-03T21:11:08.648Z] GROQ GENERATE ERROR: AI_APICallError: The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.
+    at /Users/sandeepkumar/Downloads/wacrm-main/.next/dev/server/chunks/node_modules_0tjn3vx._.js:3637:24
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async postToApi (/Users/sandeepkumar/Downloads/wacrm-main/.next/dev/server/chunks/node_modules_0tjn3vx._.js:3551:36)
+    at async GroqChatLanguageModel.doGenerate (/Users/sandeepkumar/Downloads/wacrm-main/.next/dev/server/chunks/node_modules_0tjn3vx._.js:7824:54)
+    at async fn (/Users/sandeepkumar/Downloads/wacrm-main/.next/dev/server/chunks/node_modules_ai_dist_index_mjs_0u9-7~~._.js:4320:44)
+    at async /Users/sandeepkumar/Downloads/wacrm-main/.next/dev/server/chunks/node_modules_ai_dist_index_mjs_0u9-7~~._.js:519:28
+    at async _retryWithExponentialBackoff (/Users/sandeepkumar/Downloads/wacrm-main/.next/dev/server/chunks/node_modules_ai_dist_index_mjs_0u9-7~~._.js:344:16)
+    at async fn (/Users/sandeepkumar/Downloads/wacrm-main/.next/dev/server/chunks/node_modules_ai_dist_index_mjs_0u9-7~~._.js:4275:40)
+    at async /Users/sandeepkumar/Downloads/wacrm-main/.next/dev/server/chunks/node_modules_ai_dist_index_mjs_0u9-7~~._.js:519:28
+    at async POST (file:///Users/sandeepkumar/Downloads/wacrm-main/.next/dev/server/chunks/%5Broot-of-the-server%5D__04nvm-h._.js?id=%5Bproject%5D%2Fsrc%2Fapp%2Fapi%2Fchat%2Froute.ts+%5Bapp-route%5D+%28ecmascript%29:47:22)
+    at async AppRouteRouteModule.do (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:40115)
+    at async AppRouteRouteModule.handle (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:47395)
+    at async responseGenerator (/Users/sandeepkumar/Downloads/wacrm-main/.next/dev/server/chunks/node_modules_next_dist_0-e6f8g._.js:10453:38)
+    at async AppRouteRouteModule.handleResponse (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:1:228552)
+    at async handleResponse (/Users/sandeepkumar/Downloads/wacrm-main/.next/dev/server/chunks/node_modules_next_dist_0-e6f8g._.js:10516:32)
+    at async Module.handler (/Users/sandeepkumar/Downloads/wacrm-main/.next/dev/server/chunks/node_modules_next_dist_0-e6f8g._.js:10570:13)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/server/base-server.js:1462:9)
+    at async DevServer.renderPageComponent (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/server/base-server.js:1514:24)
+    at async DevServer.renderToResponseImpl (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/server/base-server.js:1564:32)
+    at async DevServer.pipeImpl (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/server/base-server.js:1044:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/server/next-server.js:338:17)
+    at async DevServer.handleRequestImpl (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/server/base-server.js:935:17)
+    at async /Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/server/dev/next-dev-server.js:394:20
+    at async Span.traceAsyncFn (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/trace/trace.js:164:20)
+    at async DevServer.handleRequest (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/server/dev/next-dev-server.js:390:24)
+    at async invokeRender (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/server/lib/router-server.js:266:21)
+    at async handleRequest (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/server/lib/router-server.js:465:24)
+    at async requestHandlerImpl (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/server/lib/router-server.js:514:13)
+    at async Server.requestListener (/Users/sandeepkumar/Downloads/wacrm-main/node_modules/next/dist/server/lib/start-server.js:225:13)

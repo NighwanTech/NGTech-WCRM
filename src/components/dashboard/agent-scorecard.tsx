@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { Trophy, Search, Star, MessageSquare, Timer, CheckCircle, Shield, Calendar, Users, Briefcase, CalendarDays, Bot, Sparkles } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useRouter } from 'next/navigation'
 
 const formatTime = (totalMinutes: number) => {
   const roundedMin = Math.round(totalMinutes);
@@ -44,6 +45,7 @@ interface AgentScorecardProps {
 type SortOption = 'score' | 'csat' | 'time' | 'resolution' | 'sla' | 'leads' | 'deals' | 'meetings' | 'bot'
 
 export function AgentScorecard({ data, loading, startDate, endDate, onDateChange }: AgentScorecardProps) {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [sortedData, setSortedData] = useState<AgentPerformance[]>([])
   const [sortBy, setSortBy] = useState<SortOption>('score')
@@ -185,7 +187,11 @@ export function AgentScorecard({ data, loading, startDate, endDate, onDateChange
               </thead>
               <tbody className="divide-y divide-border">
                 {sortedData.map((agent, index) => (
-                  <tr key={agent.userId} className="group hover:bg-muted/50 transition-colors">
+                  <tr 
+                    key={agent.userId} 
+                    className="group hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => router.push(`/team-performance/${agent.userId}`)}
+                  >
                     <td className="py-3 pl-2 sticky left-0 bg-card z-10 group-hover:bg-muted transition-colors shadow-[1px_0_0_0_var(--border)]">
                       <div className="flex items-center gap-3">
                         <div className="relative">

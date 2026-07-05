@@ -169,7 +169,7 @@ export function MessageThread({
   contactPanelOpen,
   onToggleContactPanel,
 }: MessageThreadProps) {
-  const { user } = useAuth();
+  const { user, accountId } = useAuth();
   const { getPresence, getRow, now } = usePresence();
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -290,14 +290,17 @@ export function MessageThread({
   }, [conversation]);
 
   // Profiles are bounded by RLS to rows the current user is allowed to
-  // see — today that's just the current user, but the dropdown keeps the
-  // shape ready for shared-team workspaces without a refactor.
+  // see. For standard users this is implicitly their account, but for 
+  // platform admins RLS returns the entire DB! We must explicitly filter
+  // by account_id so the dropdown only shows the active workspace's team.
   useEffect(() => {
+    if (!accountId) return;
     let cancelled = false;
     const supabase = createClient();
     supabase
       .from("profiles")
       .select("*")
+      .eq("account_id", accountId)
       .order("full_name")
       .then(({ data, error }) => {
         if (cancelled) return;
@@ -310,7 +313,7 @@ export function MessageThread({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [accountId]);
 
   // 24-hour session timer
   const sessionInfo = useMemo(() => {
@@ -552,7 +555,7 @@ export function MessageThread({
   }, [messages]);
 
   const handleSend = useCallback(
-    async (text: string, replyToId?: string) => {
+    async (text: string, replyToId?: string, isInternal?: boolean) => {
       if (!conversation) return;
 
       const tempId = `temp-${Date.now()}`;
@@ -567,6 +570,7 @@ export function MessageThread({
         status: "sending",
         created_at: new Date().toISOString(),
         reply_to_message_id: replyToId,
+        is_internal: isInternal,
       };
       onNewMessage(optimisticMsg);
       setReplyTo(null);
@@ -580,6 +584,7 @@ export function MessageThread({
             message_type: "text",
             content_text: text,
             reply_to_message_id: replyToId,
+            is_internal: isInternal,
           }),
         });
 
@@ -631,6 +636,7 @@ export function MessageThread({
         status: "sending",
         created_at: new Date().toISOString(),
         reply_to_message_id: payload.replyToId,
+        is_internal: payload.isInternal,
       };
       onNewMessage(optimisticMsg);
       setReplyTo(null);
@@ -646,6 +652,7 @@ export function MessageThread({
             content_text: contentText,
             filename: payload.filename,
             reply_to_message_id: payload.replyToId,
+            is_internal: payload.isInternal,
           }),
         });
 

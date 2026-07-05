@@ -252,7 +252,7 @@ Stats: Score ${Math.round(compositeScore)}/100, Leads Talked To: ${numLeads}, De
 Provide a very short, professional 1-2 sentence evaluation summarizing their performance, strengths, or areas for improvement. Do not use filler text. Speak directly about the agent in the third person.`
         
         const { text } = await generateText({
-          model: groq('llama-3.1-70b-versatile'),
+          model: groq('llama-3.3-70b-versatile'),
           prompt,
           maxTokens: 60,
         })
@@ -286,9 +286,22 @@ Provide a very short, professional 1-2 sentence evaluation summarizing their per
     const leaderboard = await Promise.all(leaderboardPromises)
     leaderboard.sort((a, b) => b.score - a.score)
 
+    // Calculate global SLA compliance rate for the summary
+    let totalResponseTimeCount = 0
+    let totalSlaCompliantCount = 0
+    for (const stats of agentMetricsMap.values()) {
+      totalResponseTimeCount += stats.responseTimeCount
+      totalSlaCompliantCount += stats.slaCompliantCount
+    }
+    const globalSlaCompliance = totalResponseTimeCount > 0
+      ? Math.round((totalSlaCompliantCount / totalResponseTimeCount) * 100)
+      : 100
+
     return NextResponse.json({
       leaderboard,
-      summary: {} // Left empty to satisfy any old usage, metrics are agent-specific now
+      summary: {
+        slaComplianceRate: globalSlaCompliance
+      }
     })
   } catch (err: any) {
     console.error('[scorecard-api] failed:', err)

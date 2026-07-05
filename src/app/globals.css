@@ -149,17 +149,17 @@ html[data-mode="light"] {
 
 :root,
 html[data-theme="ngtech"] {
-  --primary: oklch(0.65 0.22 45); /* Brand Orange */
+  --primary: oklch(0.55 0.16 250); /* Brand Blue */
   --primary-foreground: oklch(0.985 0 0);
-  --primary-hover: oklch(0.60 0.20 45);
-  --primary-soft: oklch(0.65 0.22 45 / 0.12);
-  --primary-soft-2: oklch(0.65 0.22 45 / 0.22);
-  --ring: oklch(0.65 0.22 45);
-  --chart-1: oklch(0.65 0.22 45);
-  --chart-2: oklch(0.40 0.12 150); /* Deep Green */
-  --sidebar-primary: oklch(0.65 0.22 45);
+  --primary-hover: oklch(0.50 0.15 250);
+  --primary-soft: oklch(0.55 0.16 250 / 0.12);
+  --primary-soft-2: oklch(0.55 0.16 250 / 0.22);
+  --ring: oklch(0.55 0.16 250);
+  --chart-1: oklch(0.55 0.16 250);
+  --chart-2: oklch(0.65 0.15 190); /* Teal */
+  --sidebar-primary: oklch(0.55 0.16 250);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-ring: oklch(0.65 0.22 45);
+  --sidebar-ring: oklch(0.55 0.16 250);
 }
 
 html[data-theme="violet"] {
@@ -241,4 +241,159 @@ html[data-theme="rose"] {
   html {
     @apply font-sans;
   }
+}
+
+@layer utilities {
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+  }
+  .animate-pulse-slow {
+    animation: pulse-slow 8s ease-in-out infinite;
+  }
+  .bg-glass {
+    @apply bg-background/50 backdrop-blur-lg border border-border/40;
+  }
+  .bg-glass-hover {
+    @apply hover:bg-background/80 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    transform: scale(1) translate(0px, 0px);
+    opacity: 0.5;
+  }
+  33% {
+    transform: scale(1.1) translate(30px, -50px);
+    opacity: 0.8;
+  }
+  66% {
+    transform: scale(0.9) translate(-20px, 20px);
+    opacity: 0.6;
+  }
+}
+
+/* ─── CUSTOM PROSE STYLING (For blog posts since @tailwindcss/typography is missing) ─── */
+.prose {
+  line-height: 1.8;
+  font-size: 1.05rem;
+  color: var(--foreground);
+  opacity: 0.85;
+}
+
+.prose h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  color: var(--foreground);
+}
+
+.prose h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-top: 2.75rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  color: var(--foreground);
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+  color: var(--foreground);
+}
+
+.prose p {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.prose ul {
+  list-style-type: disc;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-left: 1.75rem;
+}
+
+.prose ol {
+  list-style-type: decimal;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-left: 1.75rem;
+}
+
+.prose li {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-left: 0.25rem;
+}
+
+.prose blockquote {
+  font-style: italic;
+  border-left: 4px solid var(--primary);
+  padding-left: 1.5rem;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  color: var(--muted-foreground);
+  background-color: var(--muted)/20;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.prose th {
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--border);
+  color: var(--foreground);
+}
+
+.prose td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground);
+}
+
+.prose strong {
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background-color: var(--muted);
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  color: var(--primary);
 }

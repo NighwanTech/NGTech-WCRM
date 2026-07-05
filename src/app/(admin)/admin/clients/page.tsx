@@ -213,7 +213,6 @@ export default function ClientsListPage() {
                     <td className="px-5 py-3.5">
                       <div>
                         <p className="font-medium text-foreground">{acc.name}</p>
-                        <p className="text-xs text-muted-foreground">{acc.owner.email}</p>
                       </div>
                     </td>
                     <td className="px-5 py-3.5">

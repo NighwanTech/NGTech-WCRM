@@ -3,20 +3,39 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { PLANS, type Plan } from '@/lib/plan-limits'
-
-const PLAN_KEYS = Object.keys(PLANS) as Plan[]
+import { createClient } from '@/lib/supabase/client'
 
 function CreateClientForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [fullName, setFullName] = useState('')
-  const [plan, setPlan] = useState<Plan>('free')
+  const [plan, setPlan] = useState<string>('free')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  
+  const [plans, setPlans] = useState<any[]>([])
+  const [loadingPlans, setLoadingPlans] = useState(true)
+
+  useEffect(() => {
+    async function fetchPlans() {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('saas_pricing_plans')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+      
+      if (data) {
+        setPlans(data)
+        if (data.length > 0) setPlan(data[0].slug)
+      }
+      setLoadingPlans(false)
+    }
+    fetchPlans()
+  }, [])
 
   useEffect(() => {
     const queryEmail = searchParams.get('email')
@@ -119,24 +138,25 @@ function CreateClientForm() {
         <div className="space-y-2">
           <p className="text-xs font-medium text-muted-foreground">Plan</p>
           <div className="grid gap-3 sm:grid-cols-2">
-            {PLAN_KEYS.map((p) => {
-              const meta = PLANS[p]
+            {loadingPlans ? (
+              <div className="col-span-2 text-sm text-muted-foreground py-4">Loading plans...</div>
+            ) : plans.map((p) => {
               return (
                 <button
-                  key={p}
+                  key={p.slug}
                   type="button"
-                  onClick={() => setPlan(p)}
+                  onClick={() => setPlan(p.slug)}
                   className={`flex flex-col items-start rounded-xl border p-4 text-left transition-all ${
-                    plan === p
+                    plan === p.slug
                       ? 'border-primary bg-primary/10'
                       : 'border-border bg-card-2 hover:border-primary/40 hover:bg-muted'
                   }`}
                 >
                   <div className="flex w-full items-center justify-between">
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${meta.badge}`}>
-                      {meta.label}
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold bg-primary/10 text-primary`}>
+                      {p.name}
                     </span>
-                    {plan === p && (
+                    {plan === p.slug && (
                       <div className="flex h-4 w-4 items-center justify-center rounded-full bg-primary">
                         <svg className="h-2.5 w-2.5 text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -144,10 +164,10 @@ function CreateClientForm() {
                       </div>
                     )}
                   </div>
-                  <p className="mt-2 text-xs text-muted-foreground">{meta.description}</p>
+                  <p className="mt-2 text-xs text-muted-foreground">{p.description}</p>
                   <div className="mt-2 space-y-0.5 text-[11px] text-muted-foreground">
-                    <p>👥 {meta.maxContacts === -1 ? 'Unlimited' : meta.maxContacts.toLocaleString()} contacts</p>
-                    <p>💬 {meta.maxMessagesPm === -1 ? 'Unlimited' : meta.maxMessagesPm.toLocaleString()} msgs/month</p>
+                    <p>👥 {p.max_contacts === -1 ? 'Unlimited' : p.max_contacts.toLocaleString()} contacts</p>
+                    <p>💬 {p.max_messages_pm === -1 ? 'Unlimited' : p.max_messages_pm.toLocaleString()} msgs/month</p>
                   </div>
                 </button>
               )

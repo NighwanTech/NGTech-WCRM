@@ -99,6 +99,17 @@ const advancedFeatures = [
   }
 ]
 
+const gradientText = (text: string) => {
+  const words = text.split(' ');
+  if (words.length <= 1) return text;
+  const lastWord = words.pop();
+  return (
+    <>
+      {words.join(' ')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500">{lastWord}</span>
+    </>
+  );
+}
+
 export default function FeaturesPage() {
   return (
     <div className="min-h-screen bg-background pt-24 pb-16 lg:pt-32">
@@ -108,7 +119,7 @@ export default function FeaturesPage() {
           Everything You Need to Scale
         </div>
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground mb-6">
-          The Ultimate WhatsApp CRM <br className="hidden md:block"/> built for growing teams
+          The Ultimate WhatsApp CRM <br className="hidden md:block"/> built for <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500">growing teams</span>
         </h1>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
           NGTech WCRM replaces your scattered tools with one powerful, unified platform. Discover all the features that will help you convert more leads and support customers faster.
@@ -124,7 +135,7 @@ export default function FeaturesPage() {
                 <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 shadow-inner">
                   {feature.icon}
                 </div>
-                <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6 leading-tight">{feature.title}</h2>
+                <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6 leading-tight">{gradientText(feature.title)}</h2>
                 <p className="text-lg text-muted-foreground mb-8 leading-relaxed">{feature.description}</p>
                 <Link href={`/features/${feature.slug}`} className="group inline-flex items-center text-primary font-semibold hover:text-primary-hover transition-colors">
                   Learn more about {feature.title} 

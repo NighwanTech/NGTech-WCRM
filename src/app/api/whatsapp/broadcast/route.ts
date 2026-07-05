@@ -15,6 +15,9 @@ import {
   rateLimitResponse,
   RATE_LIMITS,
 } from '@/lib/rate-limit'
+import { getAdminClient } from '@/lib/admin-supabase'
+import { getMessageUsageThisMonth } from '@/lib/usage-tracking'
+import { checkMessageLimit } from '@/lib/plan-limits'
 
 interface BroadcastResult {
   phone: string
@@ -96,6 +99,26 @@ export async function POST(request: Request) {
       )
     }
 
+    let maxMessagesPm = 1000
+    try {
+      const adminClient = getAdminClient()
+      const { data: acct } = await (adminClient as any)
+        .from('accounts')
+        .select('status, max_messages_pm')
+        .eq('id', accountId)
+        .maybeSingle()
+      
+      if (acct?.status && acct.status !== 'active') {
+        return NextResponse.json(
+          { error: 'Your account has been suspended. Please contact support.' },
+          { status: 403 },
+        )
+      }
+      maxMessagesPm = acct?.max_messages_pm ?? 1000
+    } catch {
+      // Ignore errors if columns aren't migrated
+    }
+
     const body = await request.json()
     const {
       recipients: newRecipients,
@@ -125,6 +148,12 @@ export async function POST(request: Request) {
         },
         { status: 400 }
       )
+    }
+
+    const sentThisMonth = await getMessageUsageThisMonth(accountId)
+    const limitCheck = checkMessageLimit(sentThisMonth + recipients.length, maxMessagesPm)
+    if (!limitCheck.ok) {
+      return NextResponse.json({ error: `Cannot send broadcast: ${limitCheck.message}` }, { status: 402 })
     }
 
     if (!template_name) {

@@ -50,7 +50,7 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
       <section className="pt-24 pb-16 bg-card border-b border-border">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground mb-6">
-            The NGTech WCRM Blog
+            The <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500">NGTech WCRM Blog</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
             Actionable strategies, expert insights, and product updates to help you win on WhatsApp.

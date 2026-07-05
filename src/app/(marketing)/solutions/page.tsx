@@ -105,6 +105,17 @@ const industries = [
   }
 ]
 
+const gradientText = (text: string) => {
+  const words = text.split(' ');
+  if (words.length <= 1) return text;
+  const lastWord = words.pop();
+  return (
+    <>
+      {words.join(' ')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500">{lastWord}</span>
+    </>
+  );
+}
+
 export default function SolutionsIndexPage() {
   return (
     <div className="flex flex-col min-h-screen">
@@ -131,7 +142,7 @@ export default function SolutionsIndexPage() {
                 <div className={`mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl ${industry.bg} ${industry.color} transition-transform group-hover:scale-110`}>
                   {industry.icon}
                 </div>
-                <h3 className="text-2xl font-bold text-foreground mb-3">{industry.name}</h3>
+                <h3 className="text-2xl font-bold text-foreground mb-3">{gradientText(industry.name)}</h3>
                 <p className="text-muted-foreground mb-8 flex-1">{industry.description}</p>
                 <Link href={`/solutions/${industry.id}`} className={`inline-flex items-center font-semibold ${industry.color} hover:underline mt-auto`}>
                   View {industry.name} Solution <ArrowRight className="ml-2 h-4 w-4" />

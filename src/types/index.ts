@@ -195,6 +195,7 @@ export interface Message {
    * cue (renders with a "↩ button reply" affordance).
    */
   interactive_reply_id?: string;
+  is_internal?: boolean;
 }
 
 export type ReactionActor = 'customer' | 'agent';
@@ -234,6 +235,7 @@ export interface WhatsAppConfig {
   sla_enabled?: boolean;
   sla_first_reply_min?: number;
   sla_subsequent_reply_min?: number;
+  auto_assign_enabled?: boolean;
 }
 
 // Raw Meta status enum. We persist this verbatim from Meta (sync + webhook)

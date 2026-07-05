@@ -21,8 +21,9 @@ import {
 } from '@/lib/rate-limit'
 import type { MessageTemplate } from '@/types'
 import { isMessageTemplate } from '@/lib/whatsapp/template-row-guard'
-import { incrementMessageUsage } from '@/lib/usage-tracking'
+import { incrementMessageUsage, getMessageUsageThisMonth } from '@/lib/usage-tracking'
 import { getAdminClient } from '@/lib/admin-supabase'
+import { checkMessageLimit } from '@/lib/plan-limits'
 
 export async function POST(request: Request) {
   try {
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
       const adminClient = getAdminClient()
       const { data: acct } = await (adminClient as any)
         .from('accounts')
-        .select('status')
+        .select('status, max_messages_pm')
         .eq('id', accountId)
         .maybeSingle()
       if (acct?.status && acct.status !== 'active') {
@@ -79,6 +80,13 @@ export async function POST(request: Request) {
           { error: 'Your account has been suspended. Please contact support.' },
           { status: 403 },
         )
+      }
+      
+      const maxMessagesPm: number = acct?.max_messages_pm ?? 1000
+      const sentThisMonth = await getMessageUsageThisMonth(accountId)
+      const limitCheck = checkMessageLimit(sentThisMonth, maxMessagesPm)
+      if (!limitCheck.ok) {
+        return NextResponse.json({ error: limitCheck.message }, { status: 402 })
       }
     } catch {
       // If the check fails (e.g. column not yet migrated) we allow the
@@ -97,6 +105,7 @@ export async function POST(request: Request) {
       template_params,
       template_message_params,
       reply_to_message_id,
+      is_internal,
     } = body
 
     if (!conversation_id || !message_type) {
@@ -253,6 +262,44 @@ export async function POST(request: Request) {
       } else {
         contextMessageId = parent.message_id
       }
+    }
+    // ── Internal Note Intercept ─────────────────────────────────
+    // If this is an internal note, we DO NOT send it to Meta. We
+    // simply save it to the database with a synthetic message_id
+    // and return early.
+    if (is_internal) {
+      const syntheticMessageId = `internal_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+      
+      const { data: noteRecord, error: noteError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id,
+          sender_type: 'agent',
+          content_type: message_type,
+          content_text: content_text || null,
+          media_url: media_url || null,
+          message_id: syntheticMessageId,
+          status: 'sent',
+          reply_to_message_id: reply_to_message_id || null,
+          is_internal: true,
+        })
+        .select()
+        .single()
+
+      if (noteError) {
+        console.error('Error inserting internal note:', noteError)
+        return NextResponse.json(
+          { error: `Failed to save internal note: ${noteError.message}` },
+          { status: 500 }
+        )
+      }
+
+      // We do not bump last_message_at or unread_count for internal notes.
+      return NextResponse.json({
+        success: true,
+        message_id: noteRecord.id,
+        whatsapp_message_id: syntheticMessageId,
+      })
     }
 
     // Send via Meta API — retry with phone-number variants if Meta rejects

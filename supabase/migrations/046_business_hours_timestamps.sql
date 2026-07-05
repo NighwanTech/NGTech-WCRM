@@ -8,18 +8,19 @@ ADD COLUMN IF NOT EXISTS first_agent_reply_at TIMESTAMPTZ;
 CREATE OR REPLACE FUNCTION update_conversation_metrics_on_message()
 RETURNS TRIGGER AS $$
 DECLARE
+  v_account_id UUID;
   v_assigned_agent_id UUID;
   v_first_response_time_ms BIGINT;
   v_last_customer_msg_at TIMESTAMPTZ;
   v_existing_reply_at TIMESTAMPTZ;
 BEGIN
-  -- Get assigned agent
-  SELECT assigned_agent_id INTO v_assigned_agent_id
+  -- Get assigned agent and account_id
+  SELECT account_id, assigned_agent_id INTO v_account_id, v_assigned_agent_id
   FROM conversations WHERE id = NEW.conversation_id;
 
   -- Ensure row exists
   INSERT INTO conversation_metrics (account_id, conversation_id, assigned_agent_id)
-  VALUES (NEW.account_id, NEW.conversation_id, v_assigned_agent_id)
+  VALUES (v_account_id, NEW.conversation_id, v_assigned_agent_id)
   ON CONFLICT (conversation_id) DO NOTHING;
 
   -- Update message counts and timestamps

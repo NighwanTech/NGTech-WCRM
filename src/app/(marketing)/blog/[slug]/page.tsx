@@ -111,9 +111,8 @@ export default async function BlogPostPage({ params }: PageProps) {
       {/* Content */}
       <div className={`container mx-auto max-w-3xl px-4 sm:px-6 ${post.cover_image_url ? 'pt-16' : 'pt-12'}`}>
         <div className="prose prose-lg dark:prose-invert max-w-none">
-          {/* Note: In a real production app, we would use a markdown parser like react-markdown here. 
-              For now, if they type HTML it will render via dangerouslySetInnerHTML */}
-          <div dangerouslySetInnerHTML={{ __html: post.content }} />
+          {/* Automatically parses Markdown to HTML, or leaves existing HTML intact */}
+          <div dangerouslySetInnerHTML={{ __html: parseMarkdownToHtml(post.content) }} />
         </div>
         
         <hr className="my-12 border-border" />
@@ -173,4 +172,114 @@ export default async function BlogPostPage({ params }: PageProps) {
       )}
     </article>
   )
+}
+
+// ─── Markdown-to-HTML parser solution for CMS and dynamic posts ───
+function parseMarkdownToHtml(content: string): string {
+  if (!content) return ''
+
+  // If content contains standard HTML tags, treat it as HTML and skip parsing
+  if (/<[a-z][\s\S]*>/i.test(content)) {
+    return content
+  }
+
+  // Pre-process line breaks and double returns into paragraphs
+  let html = content
+
+  // Convert Bold markdown (**text**)
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+
+  // Convert Italic markdown (*text* or _text_)
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>')
+  html = html.replace(/_(.*?)_/g, '<em>$1</em>')
+
+  // Convert inline code (`code`)
+  html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>')
+
+  // Convert markdown links [text](url)
+  html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+
+  // Split lines to handle structural blocks (headings, lists, blockquotes, paragraphs)
+  const lines = html.split('\n')
+  const processedLines: string[] = []
+  let inList = false
+  let inOList = false
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
+
+    // 1. Horizontal Rule (---)
+    if (/^---$/.test(line)) {
+      if (inList) { processedLines.push('</ul>'); inList = false }
+      if (inOList) { processedLines.push('</ol>'); inOList = false }
+      processedLines.push('<hr />')
+      continue
+    }
+
+    // 2. Headings (# h1, ## h2, ### h3)
+    if (/^#\s+(.*)$/.test(line)) {
+      if (inList) { processedLines.push('</ul>'); inList = false }
+      if (inOList) { processedLines.push('</ol>'); inOList = false }
+      processedLines.push(`<h1>${line.replace(/^#\s+/, '')}</h1>`)
+      continue
+    }
+    if (/^##\s+(.*)$/.test(line)) {
+      if (inList) { processedLines.push('</ul>'); inList = false }
+      if (inOList) { processedLines.push('</ol>'); inOList = false }
+      processedLines.push(`<h2>${line.replace(/^##\s+/, '')}</h2>`)
+      continue
+    }
+    if (/^###\s+(.*)$/.test(line)) {
+      if (inList) { processedLines.push('</ul>'); inList = false }
+      if (inOList) { processedLines.push('</ol>'); inOList = false }
+      processedLines.push(`<h3>${line.replace(/^###\s+/, '')}</h3>`)
+      continue
+    }
+
+    // 3. Blockquotes (> citation)
+    if (/^>\s+(.*)$/.test(line)) {
+      if (inList) { processedLines.push('</ul>'); inList = false }
+      if (inOList) { processedLines.push('</ol>'); inOList = false }
+      processedLines.push(`<blockquote>${line.replace(/^>\s+/, '')}</blockquote>`)
+      continue
+    }
+
+    // 4. Unordered Lists (- item or * item)
+    if (/^[-*]\s+(.*)$/.test(line)) {
+      if (inOList) { processedLines.push('</ol>'); inOList = false }
+      if (!inList) {
+        processedLines.push('<ul>')
+        inList = true
+      }
+      processedLines.push(`<li>${line.replace(/^[-*]\s+/, '')}</li>`)
+      continue
+    }
+
+    // 5. Ordered Lists (1. item)
+    if (/^\d+\.\s+(.*)$/.test(line)) {
+      if (inList) { processedLines.push('</ul>'); inList = false }
+      if (!inOList) {
+        processedLines.push('<ol>')
+        inOList = true
+      }
+      processedLines.push(`<li>${line.replace(/^\d+\.\s+/, '')}</li>`)
+      continue
+    }
+
+    // 6. Paragraphs and blank lines
+    if (line === '') {
+      if (inList) { processedLines.push('</ul>'); inList = false }
+      if (inOList) { processedLines.push('</ol>'); inOList = false }
+    } else {
+      if (inList) { processedLines.push('</ul>'); inList = false }
+      if (inOList) { processedLines.push('</ol>'); inOList = false }
+      processedLines.push(`<p>${line}</p>`)
+    }
+  }
+
+  // Close lists if they remain open at EOF
+  if (inList) processedLines.push('</ul>')
+  if (inOList) processedLines.push('</ol>')
+
+  return processedLines.join('\n')
 }

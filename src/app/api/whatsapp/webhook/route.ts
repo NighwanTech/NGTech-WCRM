@@ -186,10 +186,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  // Process asynchronously so we can ack Meta within their timeout.
-  processWebhook(body).catch((error) => {
+  // Await processing before returning the 200 OK so that serverless
+  // environments (like Vercel) don't kill the function before it finishes.
+  try {
+    await processWebhook(body)
+  } catch (error) {
     console.error('Error processing webhook:', error)
-  })
+  }
 
   return NextResponse.json({ status: 'received' }, { status: 200 })
 }
@@ -282,7 +285,8 @@ async function processWebhook(body: { entry?: WhatsAppWebhookEntry[] }) {
           decryptedAccessToken,
           config.ai_auto_reply_enabled ?? false,
           config.ai_auto_reply_prompt ?? 'You are a helpful customer support assistant for this business.',
-          config.ai_knowledge_base ?? ''
+          config.ai_knowledge_base ?? '',
+          config.auto_assign_enabled ?? false
         )
       }
     }
@@ -519,7 +523,8 @@ async function processMessage(
   accessToken: string,
   aiAutoReplyEnabled: boolean = false,
   aiAutoReplyPrompt: string = '',
-  aiKnowledgeBase: string = ''
+  aiKnowledgeBase: string = '',
+  autoAssignEnabled: boolean = false
 ) {
   const senderPhone = normalizePhone(message.from)
   const contactName = contact.profile.name
@@ -541,6 +546,41 @@ async function processMessage(
     contactRecord.id
   )
   if (!conversation) return
+
+  // ============================================================
+  // Smart Auto-Assignment & OOO Routing
+  // ============================================================
+  if (autoAssignEnabled) {
+    let shouldAutoAssign = false
+    
+    if (!conversation.assigned_agent_id) {
+      shouldAutoAssign = true
+    } else {
+      // Out of Office Routing: check if the currently assigned agent is suspended
+      const { data: assigneeProfile } = await supabaseAdmin()
+        .from('profiles')
+        .select('is_suspended')
+        .eq('user_id', conversation.assigned_agent_id)
+        .maybeSingle()
+        
+      if (assigneeProfile?.is_suspended) {
+        shouldAutoAssign = true
+        console.log(`[webhook] Conversation ${conversation.id} assignee is suspended; re-routing...`)
+      }
+    }
+    
+    if (shouldAutoAssign) {
+      const { data: assignedAgentId, error: assignErr } = await supabaseAdmin()
+        .rpc('auto_assign_conversation', { p_conversation_id: conversation.id })
+      
+      if (assignErr) {
+        console.error('[webhook] Auto-assignment failed:', assignErr)
+      } else if (assignedAgentId) {
+        conversation.assigned_agent_id = assignedAgentId
+        console.log(`[webhook] Conversation ${conversation.id} auto-assigned to ${assignedAgentId}`)
+      }
+    }
+  }
 
   // Reactions short-circuit here — they aren't messages. We never insert
   // into `messages`, never bump unread_count, never update last_message_text.
@@ -706,7 +746,7 @@ async function processMessage(
 
     if (process.env.GROQ_API_KEY) {
       // 1. Background Sentiment, Lead Score, Topic, & Auto-Tag Analysis
-      void (async () => {
+      await (async () => {
         try {
           const { object } = await generateObject({
             model: groq('llama-3.3-70b-versatile'),
@@ -838,7 +878,7 @@ Message: "${inboundText}"`,
 
       // 2. AI Auto-Responder & Human Handoff
       if (aiAutoReplyEnabled && !conversation.is_bot_paused) {
-        void (async () => {
+        await (async () => {
           try {
             const { data: historyMsgs } = await supabaseAdmin()
               .from('messages')
@@ -921,15 +961,19 @@ Message: "${inboundText}"`,
   if (contactOutcome.wasCreated) automationTriggers.unshift('new_contact_created')
   if (isFirstInboundMessage) automationTriggers.unshift('first_inbound_message')
   for (const triggerType of automationTriggers) {
-    runAutomationsForTrigger({
-      accountId,
-      triggerType,
-      contactId: contactRecord.id,
-      context: {
-        message_text: inboundText,
-        conversation_id: conversation.id,
-      },
-    }).catch((err) => console.error('[automations] dispatch failed:', err))
+    try {
+      await runAutomationsForTrigger({
+        accountId,
+        triggerType,
+        contactId: contactRecord.id,
+        context: {
+          message_text: inboundText,
+          conversation_id: conversation.id,
+        },
+      })
+    } catch (err) {
+      console.error('[automations] dispatch failed:', err)
+    }
   }
 }
 

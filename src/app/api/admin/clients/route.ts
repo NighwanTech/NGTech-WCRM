@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getAdminClient } from '@/lib/admin-supabase'
-import { PLANS, type Plan } from '@/lib/plan-limits'
 
 // ---------------------------------------------------------------
 // Guard — confirm the caller is authenticated AND is_platform_admin
@@ -46,13 +45,25 @@ export async function GET() {
 
     if (accErr) throw accErr
 
+    // Fetch dynamic plans for MRR calculation
+    const { data: pricingPlans } = await (admin as any)
+      .from('saas_pricing_plans')
+      .select('slug, monthly_price, discount_percent')
+      
+    const planPrices: Record<string, number> = {}
+    for (const p of (pricingPlans ?? [])) {
+      const discount = p.discount_percent ?? 0
+      const price = p.monthly_price ?? 0
+      planPrices[p.slug] = price * (1 - discount / 100)
+    }
+
     // Fetch owner profiles separately: profiles.user_id = accounts.owner_user_id
     const ownerUserIds: string[] = (accounts ?? []).map((a: any) => a.owner_user_id).filter(Boolean)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: ownerProfiles } = ownerUserIds.length > 0
       ? await (admin as any)
           .from('profiles')
-          .select('user_id, full_name, email, avatar_url, is_platform_admin')
+          .select('user_id, full_name, email, avatar_url, is_platform_admin, account_id')
           .in('user_id', ownerUserIds)
       : { data: [] }
 
@@ -100,8 +111,25 @@ export async function GET() {
       }
     }
 
+    let totalMrr = 0
+    let totalMessagesPlatform = 0
+
     const result = (accounts ?? []).map((acc: any) => {
       const owner = ownerMap[acc.owner_user_id]
+      
+      // Filter out "orphaned" personal accounts of users who have joined another team
+      if (owner && owner.account_id && owner.account_id !== acc.id) {
+        return null
+      }
+
+      const messagesThisMonth = usageMap[acc.id] ?? 0
+      totalMessagesPlatform += messagesThisMonth
+      
+      // Only active paid plans count towards MRR
+      if (acc.status === 'active' && acc.plan && acc.plan !== 'free') {
+        totalMrr += (planPrices[acc.plan] ?? 0)
+      }
+
       return {
         id: acc.id,
         name: acc.name,
@@ -121,13 +149,19 @@ export async function GET() {
         },
         usage: {
           contacts: contactCountMap[acc.id] ?? 0,
-          messages_this_month: usageMap[acc.id] ?? 0,
+          messages_this_month: messagesThisMonth,
           members: memberMap[acc.id] ?? 0,
         },
       }
-    })
+    }).filter((acc: any) => acc !== null)
 
-    return NextResponse.json({ accounts: result })
+    return NextResponse.json({ 
+      accounts: result,
+      stats: {
+        mrr: Math.round(totalMrr),
+        total_messages_this_month: totalMessagesPlatform
+      }
+    })
   } catch (err: any) {
     console.error('[admin/clients GET]', err)
     return NextResponse.json({ error: err.message ?? 'Internal error' }, { status: 500 })
@@ -154,12 +188,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'email and full_name are required' }, { status: 400 })
     }
 
-    if (!Object.keys(PLANS).includes(plan)) {
+    const admin = getAdminClient()
+
+    // Fetch plan details from DB
+    const { data: planMeta } = await (admin as any)
+      .from('saas_pricing_plans')
+      .select('max_contacts, max_messages_pm')
+      .eq('slug', plan)
+      .single()
+
+    if (!planMeta) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
-
-    const admin = getAdminClient()
-    const planMeta = PLANS[plan as Plan]
 
     // Invite user via Supabase Auth (sends a magic-link / invite email)
     const { data: inviteData, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(email, {
@@ -203,8 +243,8 @@ export async function POST(request: Request) {
       .from('accounts')
       .update({
         plan,
-        max_contacts: planMeta.maxContacts === -1 ? 9_999_999 : planMeta.maxContacts,
-        max_messages_pm: planMeta.maxMessagesPm === -1 ? 9_999_999 : planMeta.maxMessagesPm,
+        max_contacts: planMeta.max_contacts === -1 ? 9_999_999 : planMeta.max_contacts,
+        max_messages_pm: planMeta.max_messages_pm === -1 ? 9_999_999 : planMeta.max_messages_pm,
         notes,
       })
       .eq('id', accountId)

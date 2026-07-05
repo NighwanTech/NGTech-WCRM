@@ -2,7 +2,10 @@
 
 This document tracks the major features, enhancements, and fixes implemented in this project over time.
 
-## July 3, 2026 - Agent Data Isolation & Admin Privacy Controls
+## July 3, 2026 - Smart Routing & Internal Notes
+- **Smart Auto-Assignment (Round Robin)**: Added an automated routing system that instantly assigns new inbound WhatsApp conversations to the active agent who currently has the fewest open chats, ensuring fair workload distribution.
+- **Out-of-Office Routing**: The auto-assignment system natively handles agent suspension. If a customer replies to a chat owned by a suspended agent, the chat is instantly re-routed to an active teammate.
+- **Internal Team Notes**: Implemented a "Note Mode" in the WhatsApp composer. Agents can now leave private, yellow-highlighted internal notes on a thread that the customer cannot see, allowing for seamless behind-the-scenes team collaboration.
 - **Strict Data Isolation**: Replaced legacy RLS policies to ensure Agents can only query and modify data where they are the owner. Admins maintain full workspace visibility.
 - **Privacy Phone Masking**: Added a `mask_agent_phones` configuration toggle in the Admin Settings panel (Login & Security). When enabled, contact phone numbers are obfuscated (e.g., `+91 98*****210`) in the Contacts, Inbox, and Sidebar UI for agents, protecting client privacy.
 - **Admin Dashboard Agent Filter**: Added a dropdown filter in the Dashboard UI specifically for Admins to view isolated performance metrics and conversation charts for individual agents.

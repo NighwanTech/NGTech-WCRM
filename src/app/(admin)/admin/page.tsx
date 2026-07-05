@@ -21,6 +21,8 @@ interface Stats {
   active: number
   suspended: number
   thisMonth: number
+  mrr: number
+  totalMessagesPlatform: number
 }
 
 export default function AdminDashboardPage() {
@@ -28,12 +30,15 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const [globalStats, setGlobalStats] = useState({ mrr: 0, total_messages_this_month: 0 })
+
   useEffect(() => {
     fetch('/api/admin/clients')
       .then((r) => r.json())
       .then((d) => {
         if (d.error) { setError(d.error); return }
         setAccounts(d.accounts ?? [])
+        if (d.stats) setGlobalStats(d.stats)
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
@@ -48,6 +53,8 @@ export default function AdminDashboardPage() {
       const now = new Date()
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
     }).length,
+    mrr: globalStats.mrr,
+    totalMessagesPlatform: globalStats.total_messages_this_month,
   }
 
   const planDistribution = Object.keys(PLANS).map((plan) => ({
@@ -81,11 +88,13 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
         <StatCard label="Total Clients" value={stats.total} icon="👥" color="bg-primary/10 text-primary" />
         <StatCard label="Active" value={stats.active} icon="✅" color="bg-emerald-500/10 text-emerald-400" />
         <StatCard label="Suspended" value={stats.suspended} icon="🚫" color="bg-orange-500/10 text-orange-400" />
         <StatCard label="New This Month" value={stats.thisMonth} icon="🆕" color="bg-blue-500/10 text-blue-400" />
+        <StatCard label="MRR" value={`₹${stats.mrr.toLocaleString()}`} icon="💸" color="bg-purple-500/10 text-purple-400" />
+        <StatCard label="Messages (Month)" value={stats.totalMessagesPlatform} icon="💬" color="bg-pink-500/10 text-pink-400" />
       </div>
 
       {/* Plan distribution */}
@@ -204,13 +213,13 @@ export default function AdminDashboardPage() {
   )
 }
 
-function StatCard({ label, value, icon, color }: { label: string; value: number; icon: string; color: string }) {
+function StatCard({ label, value, icon, color }: { label: string; value: number | string; icon: string; color: string }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs text-muted-foreground">{label}</p>
-          <p className="mt-1.5 text-3xl font-bold text-foreground tabular-nums">{value}</p>
+          <p className="mt-1.5 text-2xl font-bold text-foreground tabular-nums">{value}</p>
         </div>
         <div className={`rounded-xl p-2.5 text-xl ${color}`}>{icon}</div>
       </div>

@@ -28,8 +28,10 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from '@/components/ui/accordion';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { EmbeddedSignupButton } from './embedded-signup-button';
 import type { WhatsAppConfig as WhatsAppConfigType } from '@/types';
 
 const MASKED_TOKEN = '••••••••••••••••';
@@ -65,6 +67,7 @@ export function WhatsAppConfig() {
   const [slaEnabled, setSlaEnabled] = useState(true);
   const [slaFirstReplyMin, setSlaFirstReplyMin] = useState(5);
   const [slaSubsequentReplyMin, setSlaSubsequentReplyMin] = useState(15);
+  const [autoAssignEnabled, setAutoAssignEnabled] = useState(false);
   const [savingSla, setSavingSla] = useState(false);
 
   // True once /register has succeeded on Meta's side (timestamp set
@@ -87,7 +90,9 @@ export function WhatsAppConfig() {
     useState<RegistrationProbe | null>(null);
 
   const webhookUrl =
-    typeof window !== 'undefined'
+    process.env.NEXT_PUBLIC_SITE_URL
+      ? `${process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')}/api/whatsapp/webhook`
+      : typeof window !== 'undefined'
       ? `${window.location.origin}/api/whatsapp/webhook`
       : '';
 
@@ -121,6 +126,7 @@ export function WhatsAppConfig() {
         setSlaEnabled(data.sla_enabled ?? true);
         setSlaFirstReplyMin(data.sla_first_reply_min ?? 5);
         setSlaSubsequentReplyMin(data.sla_subsequent_reply_min ?? 15);
+        setAutoAssignEnabled(data.auto_assign_enabled ?? false);
       } else {
         setConfig(null);
         setPhoneNumberId('');
@@ -132,6 +138,7 @@ export function WhatsAppConfig() {
         setSlaEnabled(true);
         setSlaFirstReplyMin(5);
         setSlaSubsequentReplyMin(15);
+        setAutoAssignEnabled(false);
       }
       // Clear any stale probe result when reloading the row.
       setRegistrationProbe(null);
@@ -207,6 +214,7 @@ export function WhatsAppConfig() {
         sla_enabled: slaEnabled,
         sla_first_reply_min: slaFirstReplyMin,
         sla_subsequent_reply_min: slaSubsequentReplyMin,
+        auto_assign_enabled: autoAssignEnabled,
       };
 
       if (tokenEdited && accessToken !== MASKED_TOKEN && accessToken.trim()) {
@@ -287,6 +295,7 @@ export function WhatsAppConfig() {
           sla_enabled: slaEnabled,
           sla_first_reply_min: slaFirstReplyMin,
           sla_subsequent_reply_min: slaSubsequentReplyMin,
+          auto_assign_enabled: autoAssignEnabled,
         }),
       });
 
@@ -297,11 +306,11 @@ export function WhatsAppConfig() {
         return;
       }
 
-      toast.success('SLA settings saved successfully');
+      toast.success('Routing & SLA settings saved successfully');
       if (accountId) await fetchConfig(accountId);
     } catch (err) {
       console.error('Save SLA error:', err);
-      toast.error('Failed to save SLA settings');
+      toast.error('Failed to save settings');
     } finally {
       setSavingSla(false);
     }
@@ -594,11 +603,35 @@ export function WhatsAppConfig() {
           <CardHeader>
             <CardTitle className="text-foreground">API Credentials</CardTitle>
             <CardDescription className="text-muted-foreground">
-              Enter your Meta WhatsApp Business API credentials.
+              Connect your Meta WhatsApp Business API account.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
+          <CardContent>
+            <Tabs defaultValue="quick" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="quick">Quick Connect</TabsTrigger>
+                <TabsTrigger value="manual">Manual Setup</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="quick" className="space-y-4">
+                <div className="bg-muted/50 p-6 rounded-lg text-center border border-border">
+                  <div className="mx-auto w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
+                    <Zap className="w-6 h-6 text-blue-500" />
+                  </div>
+                  <h3 className="text-lg font-medium text-foreground mb-2">Connect in seconds</h3>
+                  <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
+                    The easiest way to link your WhatsApp Business account. Just log in with Facebook and we will handle the rest.
+                  </p>
+                  <div className="max-w-[240px] mx-auto">
+                    <EmbeddedSignupButton onSuccess={() => {
+                      if (accountId) fetchConfig(accountId);
+                    }} />
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="manual" className="space-y-4 pt-2">
+                <div className="space-y-2">
               <Label className="text-muted-foreground">Phone Number ID</Label>
               <Input
                 placeholder="e.g. 100234567890123"
@@ -698,25 +731,50 @@ export function WhatsAppConfig() {
                 untouched.
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
 
         {/* SLA & Response Time Alerts */}
         {config && (
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div>
-                <CardTitle className="text-foreground">SLA & Response Time Alerts</CardTitle>
-                <CardDescription className="text-muted-foreground mt-1">
-                  Define response time thresholds for agent replies to avoid customer churn.
-                </CardDescription>
-              </div>
-              <Switch
-                checked={slaEnabled}
-                onCheckedChange={setSlaEnabled}
-              />
+            <CardHeader className="pb-2">
+              <CardTitle className="text-foreground">Routing & SLA Settings</CardTitle>
+              <CardDescription className="text-muted-foreground mt-1">
+                Configure team routing and define response time thresholds.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 pt-4">
+            <CardContent className="space-y-6 pt-2">
+              {/* Auto Assignment Toggle */}
+              <div className="flex flex-row items-center justify-between rounded-lg border border-border p-4">
+                <div className="space-y-0.5">
+                  <Label className="text-base">Smart Auto-Assignment</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Automatically route new conversations to the active agent with the fewest open chats. Also re-routes chats if the assigned agent goes on leave.
+                  </p>
+                </div>
+                <Switch
+                  checked={autoAssignEnabled}
+                  onCheckedChange={setAutoAssignEnabled}
+                />
+              </div>
+
+              {/* SLA Toggle */}
+              <div className="space-y-4">
+                <div className="flex flex-row items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-base">SLA Alerts</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Warn agents when they are taking too long to reply.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={slaEnabled}
+                    onCheckedChange={setSlaEnabled}
+                  />
+                </div>
+              </div>
               {slaEnabled && (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
@@ -748,14 +806,14 @@ export function WhatsAppConfig() {
                   </div>
                 </div>
               )}
-              <div className="flex justify-end pt-2">
+              <div className="flex justify-end pt-4 border-t border-border mt-2">
                 <Button
                   onClick={handleSaveSla}
                   disabled={savingSla}
                   size="sm"
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
-                  {savingSla ? 'Saving Settings...' : 'Save SLA Settings'}
+                  {savingSla ? 'Saving Settings...' : 'Save Routing & SLA Settings'}
                 </Button>
               </div>
             </CardContent>

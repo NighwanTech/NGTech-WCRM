@@ -47,6 +47,7 @@ export interface SectionMeta {
   label: string;
   icon: LucideIcon;
   group: 'top' | 'account' | 'workspace';
+  adminOnly?: boolean;
 }
 
 export const SECTION_META: Record<SettingsSection, SectionMeta> = {
@@ -54,15 +55,15 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
   profile: { id: 'profile', label: 'Your profile', icon: User, group: 'account' },
   security: { id: 'security', label: 'Login & security', icon: Shield, group: 'account' },
   appearance: { id: 'appearance', label: 'Appearance', icon: Palette, group: 'account' },
-  whatsapp: { id: 'whatsapp', label: 'WhatsApp', icon: PlugZap, group: 'workspace' },
-  templates: { id: 'templates', label: 'Templates', icon: FileText, group: 'workspace' },
-  fields: { id: 'fields', label: 'Fields & tags', icon: Tags, group: 'workspace' },
-  deals: { id: 'deals', label: 'Deals & currency', icon: Coins, group: 'workspace' },
-  members: { id: 'members', label: 'Team members', icon: UsersRound, group: 'workspace' },
-  api: { id: 'api', label: 'API keys', icon: KeyRound, group: 'workspace' },
-  business: { id: 'business', label: 'Business hours', icon: Clock, group: 'workspace' },
-  plan: { id: 'plan', label: 'Plan & Usage', icon: LayoutGrid, group: 'workspace' },
-  invoices: { id: 'invoices', label: 'Billing Invoices', icon: FileText, group: 'workspace' },
+  whatsapp: { id: 'whatsapp', label: 'WhatsApp', icon: PlugZap, group: 'workspace', adminOnly: true },
+  templates: { id: 'templates', label: 'Templates', icon: FileText, group: 'workspace', adminOnly: true },
+  fields: { id: 'fields', label: 'Fields & tags', icon: Tags, group: 'workspace', adminOnly: true },
+  deals: { id: 'deals', label: 'Deals & currency', icon: Coins, group: 'workspace', adminOnly: true },
+  members: { id: 'members', label: 'Team members', icon: UsersRound, group: 'workspace', adminOnly: true },
+  api: { id: 'api', label: 'API keys', icon: KeyRound, group: 'workspace', adminOnly: true },
+  business: { id: 'business', label: 'Business hours', icon: Clock, group: 'workspace', adminOnly: true },
+  plan: { id: 'plan', label: 'Plan & Usage', icon: LayoutGrid, group: 'workspace', adminOnly: true },
+  invoices: { id: 'invoices', label: 'Billing Invoices', icon: FileText, group: 'workspace', adminOnly: true },
 };
 
 export const RAIL_GROUPS: { label: string | null; group: SectionMeta['group'] }[] = [

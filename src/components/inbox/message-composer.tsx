@@ -22,6 +22,7 @@ import {
   Calendar,
   Receipt,
   Plus,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GatedButton } from "@/components/ui/gated-button";
@@ -67,6 +68,7 @@ export interface SendMediaPayload {
   /** Original file name — surfaced to the recipient for documents. */
   filename?: string;
   replyToId?: string;
+  isInternal?: boolean;
 }
 
 interface ReplyDraft {
@@ -99,7 +101,7 @@ interface MediaDraft {
 interface MessageComposerProps {
   conversationId: string;
   sessionExpired: boolean;
-  onSend: (text: string, replyToId?: string) => void;
+  onSend: (text: string, replyToId?: string, isInternal?: boolean) => void;
   onSendMedia: (payload: SendMediaPayload) => void;
   onOpenTemplates: () => void;
   replyTo?: ReplyDraft | null;
@@ -141,6 +143,7 @@ export function MessageComposer({
   const [isDrafting, setIsDrafting] = useState(false);
   const [quoteModalOpen, setQuoteModalOpen] = useState(false);
   const [meetingModalOpen, setMeetingModalOpen] = useState(false);
+  const [isInternalMode, setIsInternalMode] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -223,8 +226,9 @@ export function MessageComposer({
     setSending(true);
     try {
       if (onTyping) onTyping(false);
-      onSend(trimmed, replyTo?.id);
+      onSend(trimmed, replyTo?.id, isInternalMode);
       setText("");
+      setIsInternalMode(false);
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
       }
@@ -406,9 +410,11 @@ export function MessageComposer({
         draft.kind === "audio" ? undefined : draft.caption.trim() || undefined,
       filename: draft.kind === "document" ? draft.filename : undefined,
       replyToId: replyTo?.id,
+      isInternal: isInternalMode,
     });
     // The object is now owned by the sent message — clear without GC.
     setDraft(null);
+    setIsInternalMode(false);
     onClearReply?.();
   }, [draft, busy, onSendMedia, replyTo?.id, onClearReply]);
 
@@ -581,6 +587,21 @@ export function MessageComposer({
           </DropdownMenu>
 
           <div className="h-6 w-px bg-border mx-1" />
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsInternalMode(!isInternalMode)}
+            title={isInternalMode ? "Disable internal note" : "Send as internal note"}
+            className={cn(
+              "h-9 w-9 shrink-0 p-0 transition-colors",
+              isInternalMode 
+                ? "bg-amber-100 text-amber-700 hover:bg-amber-200 hover:text-amber-800 dark:bg-amber-900/50 dark:text-amber-400" 
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <Lock className="h-4 w-4" />
+          </Button>
 
           {onGenerateDraft && (
             <GatedButton
@@ -639,7 +660,10 @@ export function MessageComposer({
             // The placeholder text also surfaces the read-only state.
             title={readOnly ? "Read-only — your role can't send messages" : undefined}
             className={cn(
-              "flex-1 resize-none rounded-xl border border-border bg-muted px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-primary/50",
+              "flex-1 resize-none rounded-xl border px-4 py-2.5 text-sm outline-none transition-colors",
+              isInternalMode 
+                ? "border-amber-500/50 bg-amber-50/50 text-amber-900 placeholder-amber-700/50 focus:border-amber-500 dark:bg-amber-950/20 dark:text-amber-100 dark:placeholder-amber-400/50"
+                : "border-border bg-muted text-foreground placeholder-muted-foreground focus:border-primary/50",
               (sessionExpired || readOnly) && "cursor-not-allowed opacity-50"
             )}
           />
@@ -650,7 +674,12 @@ export function MessageComposer({
             gateReason="send messages"
             disabled={!text.trim() || sessionExpired || sending}
             onClick={handleSend}
-            className="h-9 w-9 shrink-0 bg-primary p-0 hover:bg-primary/90 disabled:opacity-40"
+            className={cn(
+              "h-9 w-9 shrink-0 p-0 disabled:opacity-40",
+              isInternalMode
+                ? "bg-amber-500 text-white hover:bg-amber-600"
+                : "bg-primary hover:bg-primary/90"
+            )}
           >
             <Send className="h-4 w-4" />
           </GatedButton>

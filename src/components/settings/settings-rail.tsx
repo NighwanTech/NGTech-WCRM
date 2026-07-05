@@ -9,6 +9,7 @@ import {
   SETTINGS_SECTIONS,
   type SettingsSection,
 } from './settings-sections';
+import { useAuth } from '@/hooks/use-auth';
 
 // Width at/above which the rail is a vertical column (already in view, so
 // no auto-scroll needed). Mirrors the Tailwind `lg:` breakpoint that
@@ -31,6 +32,7 @@ export function SettingsRail({
   hints?: Partial<Record<SettingsSection, ReactNode>>;
 }) {
   const activeRef = useRef<HTMLButtonElement>(null);
+  const { canEditSettings } = useAuth();
 
   // When horizontal (mobile), keep the active chip in view. On desktop
   // the rail is a static column, so skip.
@@ -54,9 +56,15 @@ export function SettingsRail({
       )}
     >
       {RAIL_GROUPS.map(({ label, group }) => {
-        const items = SETTINGS_SECTIONS.filter(
-          (s) => SECTION_META[s].group === group,
-        );
+        const items = SETTINGS_SECTIONS.filter((s) => {
+          const meta = SECTION_META[s];
+          if (meta.group !== group) return false;
+          if (meta.adminOnly && !canEditSettings) return false;
+          return true;
+        });
+        
+        if (items.length === 0) return null;
+
         return (
           <div
             key={group}
