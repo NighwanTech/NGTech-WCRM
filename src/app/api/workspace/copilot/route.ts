@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getAiProvider } from '@/lib/services/ai/provider.service';
+import { AIProviderService } from '@/lib/services/ai/provider.service';
 import { generateText, generateObject } from 'ai';
 import { z } from 'zod';
 
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     // Some accounts might not have api keys set up properly yet, so handle fallback gracefully.
     let aiModel;
     try {
-       aiModel = getAiProvider(providerName, modelName);
+       aiModel = AIProviderService.getModel(providerName, modelName);
     } catch (err) {
        console.error("AI Provider Init Error:", err);
        return NextResponse.json({ error: 'AI Provider is not properly configured.' }, { status: 500 });
