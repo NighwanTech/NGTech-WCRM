@@ -10,6 +10,8 @@ export default function TeamPerformancePage() {
   const { accountRole } = useAuth()
   
   const [scorecard, setScorecard] = useState<any[] | null>(null)
+  const [departmentMembers, setDepartmentMembers] = useState<any[]>([])
+  const [departments, setDepartments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -20,13 +22,28 @@ export default function TeamPerformancePage() {
     if (startDate) url += `startDate=${startDate}&`
     if (endDate) url += `endDate=${endDate}&`
     
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        setScorecard(data.leaderboard)
-      })
-      .catch((err) => console.error('[team-performance] scorecard failed:', err))
-      .finally(() => setLoading(false))
+    async function load() {
+      try {
+        const { createClient } = await import('@/lib/supabase/client')
+        const supabase = createClient()
+        
+        const [scorecardRes, deptMemRes, deptRes] = await Promise.all([
+          fetch(url).then(res => res.json()),
+          supabase.from('department_members').select('user_id, department_id, role'),
+          supabase.from('departments').select('id, name')
+        ])
+        
+        setScorecard(scorecardRes.leaderboard || [])
+        if (deptMemRes.data) setDepartmentMembers(deptMemRes.data)
+        if (deptRes.data) setDepartments(deptRes.data)
+      } catch (err) {
+        console.error('[team-performance] data load failed:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    load()
   }, [startDate, endDate])
 
   const title = accountRole === 'agent' ? 'My Performance' : 'Team Performance'
@@ -48,6 +65,8 @@ export default function TeamPerformancePage() {
         loading={loading} 
         startDate={startDate}
         endDate={endDate}
+        departmentMembers={departmentMembers}
+        departments={departments}
         onDateChange={(start, end) => {
           setStartDate(start)
           setEndDate(end)

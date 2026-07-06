@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Pipeline, PipelineStage, Deal } from "@/types";
 import { PipelineBoard } from "@/components/pipelines/pipeline-board";
@@ -67,6 +67,12 @@ export default function PipelinesPage() {
   const [dealFormOpen, setDealFormOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const [defaultStageId, setDefaultStageId] = useState<string>("");
+
+  // Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [agentFilter, setAgentFilter] = useState("all");
 
   // Guard against double-seeding (React StrictMode double-effect in dev).
   const seedAttempted = useRef(false);
@@ -295,6 +301,35 @@ export default function PipelinesPage() {
 
   const selectedPipeline = pipelines.find((p) => p.id === selectedPipelineId);
 
+  const agents = useMemo(() => {
+    const map = new Map<string, string>();
+    deals.forEach(d => {
+      if (d.assignee) map.set(d.assignee.id, d.assignee.full_name || 'Unknown Agent');
+    });
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [deals]);
+
+  const filteredDeals = useMemo(() => {
+    return deals.filter(d => {
+      if (searchQuery) {
+         const query = searchQuery.toLowerCase();
+         const matchTitle = d.title?.toLowerCase().includes(query);
+         const matchContact = d.contact?.name?.toLowerCase().includes(query) || d.contact?.phone?.includes(query) || d.contact?.email?.toLowerCase().includes(query);
+         if (!matchTitle && !matchContact) return false;
+      }
+      if (fromDate) {
+         if (new Date(d.created_at) < new Date(fromDate)) return false;
+      }
+      if (toDate) {
+         if (new Date(d.created_at) > new Date(toDate + 'T23:59:59')) return false;
+      }
+      if (agentFilter !== "all") {
+         if (d.assigned_to !== agentFilter) return false;
+      }
+      return true;
+    });
+  }, [deals, searchQuery, fromDate, toDate, agentFilter]);
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -410,10 +445,61 @@ export default function PipelinesPage() {
         </div>
       ) : (
         <>
-          <PipelineAnalytics stages={stages} deals={deals} />
+          {/* Filters */}
+          <div className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-card/60 p-4">
+            <div className="flex-1 min-w-[200px]">
+              <Label className="text-xs text-muted-foreground mb-1 block">Search Client or Deal</Label>
+              <Input 
+                placeholder="Search deals, clients, emails..." 
+                value={searchQuery} 
+                onChange={e => setSearchQuery(e.target.value)}
+                className="h-9 bg-background border-border"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">From Date</Label>
+              <Input 
+                type="date" 
+                value={fromDate} 
+                onChange={e => setFromDate(e.target.value)}
+                className="h-9 w-auto bg-background border-border"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">To Date</Label>
+              <Input 
+                type="date" 
+                value={toDate} 
+                onChange={e => setToDate(e.target.value)}
+                className="h-9 w-auto bg-background border-border"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Agent</Label>
+              <select 
+                value={agentFilter} 
+                onChange={e => setAgentFilter(e.target.value)}
+                className="h-9 w-auto rounded-md border border-border bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                <option value="all">All Agents</option>
+                {agents.map(a => (
+                   <option key={a.id} value={a.id}>{a.name}</option>
+                ))}
+              </select>
+            </div>
+            {(searchQuery || fromDate || toDate || agentFilter !== "all") && (
+               <div>
+                 <Button variant="ghost" size="sm" className="h-9 text-muted-foreground border border-dashed border-border" onClick={() => { setSearchQuery(""); setFromDate(""); setToDate(""); setAgentFilter("all"); }}>
+                   Clear Filters
+                 </Button>
+               </div>
+            )}
+          </div>
+
+          <PipelineAnalytics stages={stages} deals={filteredDeals} />
           <PipelineBoard
             stages={stages}
-            deals={deals}
+            deals={filteredDeals}
             onDealMoved={handleDealMoved}
             onAddDeal={handleAddDeal}
             onEditDeal={handleEditDeal}

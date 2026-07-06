@@ -15,6 +15,7 @@ import { TemplateManager } from '@/components/settings/template-manager';
 import { FieldsAndTagsPanel } from '@/components/settings/fields-and-tags-panel';
 import { DealsSettings } from '@/components/settings/deals-settings';
 import { MembersTab } from '@/components/settings/members-tab';
+import { DepartmentsPanel } from '@/components/settings/departments-panel';
 import { ApiKeysSettings } from '@/components/settings/api-keys-settings';
 import { BusinessHoursPanel } from '@/components/settings/business-hours-panel';
 import { PlanPanel } from '@/components/settings/plan-panel';
@@ -68,6 +69,7 @@ export default function SettingsPage() {
     fields: <FieldsAndTagsPanel />,
     deals: <DealsSettings />,
     members: <MembersTab />,
+    departments: <DepartmentsPanel />,
     api: <ApiKeysSettings />,
     business: <BusinessHoursPanel />,
     plan: <PlanPanel />,

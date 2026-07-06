@@ -49,8 +49,8 @@ import {
   Filter,
   X,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { ContactForm } from '@/components/contacts/contact-form';
-import { ContactDetailView } from '@/components/contacts/contact-detail-view';
 import { ImportModal } from '@/components/contacts/import-modal';
 import { CustomFieldsManager } from '@/components/contacts/custom-fields-manager';
 import { useCan } from '@/hooks/use-can';
@@ -70,6 +70,7 @@ export default function ContactsPage() {
   const { account, isAgent } = useAuth();
   const canEdit = useCan('send-messages');
   const canEditSettings = useCan('edit-settings');
+  const router = useRouter();
 
   const [contacts, setContacts] = useState<ContactWithTags[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,8 +84,6 @@ export default function ContactsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editContact, setEditContact] = useState<Contact | null>(null);
   const [editContactTags, setEditContactTags] = useState<ContactTag[]>([]);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [detailContactId, setDetailContactId] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [customFieldsOpen, setCustomFieldsOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -241,8 +240,7 @@ export default function ContactsPage() {
   }
 
   function openDetail(contactId: string) {
-    setDetailContactId(contactId);
-    setDetailOpen(true);
+    router.push(`/contacts/${contactId}`);
   }
 
   function confirmDelete(contact: Contact) {
@@ -740,14 +738,6 @@ export default function ContactsPage() {
           setFormOpen(false);
           openDetail(id);
         }}
-      />
-
-      {/* Contact Detail Sheet */}
-      <ContactDetailView
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-        contactId={detailContactId}
-        onUpdated={fetchContacts}
       />
 
       {/* Import Modal */}

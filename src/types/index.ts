@@ -160,9 +160,19 @@ export interface Conversation {
   ai_summary?: string;
   is_bot_paused?: boolean;
   contact?: Contact;
+  // Enterprise Routing Engine extensions
+  department_id?: string | null;
+  routing_status?: 'unassigned' | 'needs_manual_review' | 'department_queue' | 'assigned' | 'transferred' | 'bot_handled';
+  routing_method?: string | null;
+  ai_processing_status?: 'pending' | 'completed' | 'failed' | 'skipped';
+  priority?: 'low' | 'medium' | 'high' | 'vip';
+  tags?: string[];
+  ai_classification_confidence?: number | null;
+  ai_detected_intent?: string | null;
+  ai_detected_sentiment?: string | null;
 }
 
-export type SenderType = 'customer' | 'agent' | 'bot';
+export type SenderType = 'customer' | 'agent' | 'bot' | 'system';
 export type ContentType =
   | 'text'
   | 'image'
@@ -172,7 +182,8 @@ export type ContentType =
   | 'location'
   | 'template'
   /** Customer tapped a reply button or list row on a message we sent. */
-  | 'interactive';
+  | 'interactive'
+  | 'system_event';
 export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
 
 export interface Message {

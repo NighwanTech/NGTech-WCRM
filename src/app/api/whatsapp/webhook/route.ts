@@ -10,6 +10,7 @@ import { dispatchInboundToFlows } from '@/lib/flows/engine'
 import { AIProviderService } from '@/lib/services/ai/provider.service'
 import { AIPromptService } from '@/lib/services/ai/prompt.service'
 import { AIAnalyticsService } from '@/lib/services/ai/analytics.service'
+import { AIClassificationService } from '@/lib/services/ai/classification.service'
 import {
   handleTemplateWebhookChange,
   isTemplateWebhookField,
@@ -550,47 +551,91 @@ async function processMessage(
   if (!contactOutcome) return
   const contactRecord = contactOutcome.contact
 
-  // Find or create conversation
-  const conversation = await findOrCreateConversation(
+  const conversationOutcome = await findOrCreateConversation(
     accountId,
     configOwnerUserId,
     contactRecord.id
   )
-  if (!conversation) return
+  if (!conversationOutcome) return
+  const conversation = conversationOutcome.conversation
 
   // ============================================================
-  // Smart Auto-Assignment & OOO Routing
+  // Enterprise Routing Engine: Trigger AI Classification for NEW
   // ============================================================
-  if (autoAssignEnabled) {
-    let shouldAutoAssign = false
+  if (conversationOutcome.wasCreated) {
+    // Fire and forget to avoid blocking the webhook response
+    const firstMessageText = message.text?.body || '';
     
-    if (!conversation.assigned_agent_id) {
-      shouldAutoAssign = true
-    } else {
-      // Out of Office Routing: check if the currently assigned agent is suspended
-      const { data: assigneeProfile } = await supabaseAdmin()
-        .from('profiles')
-        .select('is_suspended')
-        .eq('user_id', conversation.assigned_agent_id)
-        .maybeSingle()
+    // Self-executing async function for background processing
+    (async () => {
+      try {
+        console.log(`[webhook] Starting AI classification for new conversation: ${conversation.id}`);
+        const result = await AIClassificationService.classifyIncomingMessage(accountId, firstMessageText);
         
-      if (assigneeProfile?.is_suspended) {
-        shouldAutoAssign = true
-        console.log(`[webhook] Conversation ${conversation.id} assignee is suspended; re-routing...`)
+        const updates: any = {
+          ai_processing_status: 'completed',
+          routing_status: 'needs_manual_review',
+        };
+
+        if (result) {
+          updates.priority = result.priority || 'medium';
+          updates.tags = result.tags || [];
+          updates.ai_classification_confidence = result.confidence || 0;
+          updates.ai_detected_intent = result.intent || null;
+          updates.ai_detected_sentiment = result.sentiment || null;
+
+          // Fetch the confidence threshold
+          const { data: aiSettings } = await supabaseAdmin()
+            .from('ai_assistant_settings')
+            .select('routing_confidence_threshold')
+            .eq('account_id', accountId)
+            .maybeSingle();
+            
+          const threshold = aiSettings?.routing_confidence_threshold ?? 90;
+
+          // Check if AI confidently found a department
+          if (result.department && result.confidence >= threshold) {
+            // Validate the department exists
+            const { data: deptRow } = await supabaseAdmin()
+              .from('departments')
+              .select('id')
+              .eq('account_id', accountId)
+              .ilike('name', result.department)
+              .maybeSingle();
+
+            if (deptRow) {
+              updates.department_id = deptRow.id;
+              updates.routing_status = 'department_queue';
+            }
+          }
+        } else {
+          updates.ai_processing_status = 'failed';
+        }
+
+        // Apply updates
+        await supabaseAdmin()
+          .from('conversations')
+          .update(updates)
+          .eq('id', conversation.id);
+
+        // Log the AI classification
+        await supabaseAdmin().from('conversation_routing_logs').insert({
+          conversation_id: conversation.id,
+          account_id: accountId,
+          event_type: 'ai_classification',
+          details: result || { error: 'Classification failed' },
+          reason: result?.reason || 'No result returned'
+        });
+
+        // Trigger auto-assign if it made it to the department queue
+        if (updates.routing_status === 'department_queue') {
+          console.log(`[webhook] Conversation ${conversation.id} assigned to dept queue, triggering routing engine...`);
+          await supabaseAdmin().rpc('auto_assign_conversation', { p_conversation_id: conversation.id });
+        }
+      } catch (err) {
+        console.error('[webhook] AI classification failed:', err);
       }
-    }
-    
-    if (shouldAutoAssign) {
-      const { data: assignedAgentId, error: assignErr } = await supabaseAdmin()
-        .rpc('auto_assign_conversation', { p_conversation_id: conversation.id })
-      
-      if (assignErr) {
-        console.error('[webhook] Auto-assignment failed:', assignErr)
-      } else if (assignedAgentId) {
-        conversation.assigned_agent_id = assignedAgentId
-        console.log(`[webhook] Conversation ${conversation.id} auto-assigned to ${assignedAgentId}`)
-      }
-    }
+    })();
   }
 
   // Reactions short-circuit here — they aren't messages. We never insert
@@ -752,6 +797,9 @@ async function processMessage(
   )[] = []
   // Content-level triggers are suppressed when a flow consumed the
   // message — see the comment block above.
+  let detectedLanguage = 'English';
+  let detectedIntent = 'General';
+
   if (!flowConsumed) {
     automationTriggers.push('new_message_received', 'keyword_match')
 
@@ -764,12 +812,16 @@ async function processMessage(
             schema: z.object({
               sentiment: z.enum(['positive', 'neutral', 'negative']),
               lead_score: z.enum(['cold', 'warm', 'hot']),
-              topic: z.string().describe('Primary topic: pricing, support, complaint, product_inquiry, general, appointment, feedback'),
+              topic: z.string().describe('Primary intent category: Pricing, Support, Complaint, General, Sales, Technical, Appointment'),
+              language: z.string().describe('The primary language of the message (e.g. English, Spanish, Hindi, etc)'),
               auto_tags: z.array(z.string()).describe('Up to 3 relevant tags like: interested, urgent, complaint, follow-up, pricing, technical'),
             }),
-            prompt: `Analyze the following customer message to determine their sentiment, lead temperature, primary topic, and suggested tags.
+            prompt: `Analyze the following customer message to determine their sentiment, lead temperature, primary topic, language, and suggested tags.
 Message: "${inboundText}"`,
           });
+          
+          detectedLanguage = object.language;
+          detectedIntent = object.topic;
           
           await supabaseAdmin()
             .from('conversations')
@@ -777,6 +829,7 @@ Message: "${inboundText}"`,
               ai_sentiment: object.sentiment,
               ai_lead_score: object.lead_score,
               ai_topic: object.topic,
+              ai_language: object.language,
               ai_auto_tags: object.auto_tags
             })
             .eq('id', conversation.id);
@@ -940,12 +993,19 @@ Message: "${inboundText}"`,
               console.log(`[ai-handoff] Triggered for conversation ${conversation.id}. Reason: ${reason}`);
               
               // Pause the bot and mark conversation as open (needs attention)
+              const assignTo = aiConfig?.handoff_rules?.assign_to;
+              const updateData: any = { 
+                is_bot_paused: true,
+                status: 'open' 
+              };
+              
+              if (assignTo && assignTo !== 'unassigned') {
+                updateData.department_id = assignTo;
+              }
+
               await supabaseAdmin()
                 .from('conversations')
-                .update({ 
-                  is_bot_paused: true,
-                  status: 'open' 
-                })
+                .update(updateData)
                 .eq('id', conversation.id);
                 
               const transitionMessage = aiConfig?.handoff_rules?.fallback_message || "I am transferring you to a human agent now, they will be right with you.";
@@ -984,7 +1044,9 @@ Message: "${inboundText}"`,
                  total_tokens: result.usage?.totalTokens || (promptTokens + completionTokens),
                  estimated_cost: AIAnalyticsService.estimateCost(provider, modelName, promptTokens, completionTokens),
                  is_handoff: isHandoff,
-                 is_error: false
+                 is_error: false,
+                 language: detectedLanguage,
+                 intent_category: detectedIntent
                });
             }
 
@@ -1003,7 +1065,9 @@ Message: "${inboundText}"`,
                  estimated_cost: 0,
                  is_handoff: false,
                  is_error: true,
-                 error_message: err.message
+                 error_message: err.message,
+                 language: detectedLanguage,
+                 intent_category: detectedIntent
                });
             }
           }
@@ -1265,7 +1329,7 @@ async function findOrCreateConversation(
     .single()
 
   if (!findError && existing) {
-    return existing
+    return { conversation: existing, wasCreated: false }
   }
 
   // Create new conversation. Same tenancy + audit split as
@@ -1276,6 +1340,8 @@ async function findOrCreateConversation(
       account_id: accountId,
       user_id: configOwnerUserId,
       contact_id: contactId,
+      routing_status: 'unassigned',
+      ai_processing_status: 'pending'
     })
     .select()
     .single()
@@ -1284,6 +1350,14 @@ async function findOrCreateConversation(
     console.error('Error creating conversation:', createError)
     return null
   }
+  
+  // Log creation
+  await supabaseAdmin().from('conversation_routing_logs').insert({
+    conversation_id: newConv.id,
+    account_id: accountId,
+    event_type: 'new_conversation',
+    reason: 'Received first message'
+  });
 
-  return newConv
+  return { conversation: newConv, wasCreated: true }
 }

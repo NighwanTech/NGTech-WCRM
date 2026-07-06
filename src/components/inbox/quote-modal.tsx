@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
 
 interface QuoteModalProps {
   open: boolean;
@@ -23,7 +24,27 @@ export function QuoteModal({ open, onOpenChange, contactId, onQuoteGenerated }: 
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [validUntil, setValidUntil] = useState("");
+  const [dealId, setDealId] = useState("auto");
+  const [activeDeals, setActiveDeals] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open && contactId) {
+      const fetchDeals = async () => {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("deals")
+          .select("id, title, value, currency")
+          .eq("contact_id", contactId)
+          .neq("status", "won")
+          .neq("status", "lost")
+          .order("updated_at", { ascending: false });
+          
+        if (data) setActiveDeals(data);
+      };
+      fetchDeals();
+    }
+  }, [open, contactId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +60,7 @@ export function QuoteModal({ open, onOpenChange, contactId, onQuoteGenerated }: 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contact_id: contactId,
+          deal_id: dealId,
           description,
           amount: parseFloat(amount),
           currency,
@@ -55,6 +77,7 @@ export function QuoteModal({ open, onOpenChange, contactId, onQuoteGenerated }: 
         setDescription("");
         setAmount("");
         setValidUntil("");
+        setDealId("auto");
       } else {
         toast.error(data.error || "Failed to generate quote.");
       }
@@ -72,6 +95,24 @@ export function QuoteModal({ open, onOpenChange, contactId, onQuoteGenerated }: 
           <DialogTitle>Generate Quote</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Attach to Deal</label>
+            <select
+              value={dealId}
+              onChange={(e) => setDealId(e.target.value)}
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="auto">✨ Auto (Smart Detect & Create)</option>
+              {activeDeals.map((deal) => (
+                <option key={deal.id} value={deal.id}>
+                  {deal.title} ({deal.currency} {deal.value})
+                </option>
+              ))}
+              <option value="none">Do not attach to pipeline</option>
+            </select>
+          </div>
+
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Description</label>
             <input

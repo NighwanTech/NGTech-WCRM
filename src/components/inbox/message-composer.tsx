@@ -651,7 +651,7 @@ export function MessageComposer({
                 ? "Read-only — viewers can browse but not reply"
                 : sessionExpired
                   ? "Session expired - use a template"
-                  : "Type a message... (Shift+Enter for new line)"
+                  : "Type a message..."
             }
             disabled={sessionExpired || readOnly}
             rows={1}

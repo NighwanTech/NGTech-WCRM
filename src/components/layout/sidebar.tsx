@@ -171,14 +171,14 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
   return (
     <>
       {/* Backdrop — only exists on mobile and only when open. Clicking
-          it closes the drawer. Hidden from lg+ since the sidebar is
+          it closes the drawer. Hidden from md+ since the sidebar is
           part of the main flex row there. */}
       <button
         type="button"
         aria-label="Close menu"
         onClick={onClose}
         className={cn(
-          "fixed inset-0 z-30 bg-background/70 backdrop-blur-sm transition-opacity lg:hidden",
+          "fixed inset-0 z-30 bg-background/70 backdrop-blur-sm transition-opacity md:hidden",
           open
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0",
@@ -187,48 +187,74 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
 
       <aside
         className={cn(
-          // Mobile: fixed drawer that slides in from the left.
-          "fixed inset-y-0 left-0 z-40 flex h-full w-64 flex-col border-r border-border bg-card",
-          "transition-transform duration-200 ease-out will-change-transform",
+          // Base: fixed drawer (mobile)
+          "fixed inset-y-0 left-0 z-40 flex h-full flex-col border-r border-border bg-card",
+          "transition-all duration-200 ease-out will-change-transform",
+          // Mobile: slide in/out
+          "w-[var(--sidebar-mobile-width)]",
           open ? "translate-x-0" : "-translate-x-full",
-          // Desktop: static, always visible unless collapsed.
-          "lg:static lg:z-0 lg:translate-x-0",
-          collapsed ? "lg:w-[72px] lg:transition-all" : "lg:w-60 lg:transition-all",
+          // Tablet (md): always visible as a 60px icon rail
+          "md:static md:z-0 md:translate-x-0 md:w-[var(--sidebar-rail-width)]",
+          // Desktop (lg): full 240px sidebar
+          collapsed
+            ? "lg:w-[var(--sidebar-rail-width)]"
+            : "lg:w-[var(--sidebar-width)]",
         )}
         aria-label="Primary"
       >
-        {/* Logo row. On mobile we put a close button here; on desktop the
-            close button is hidden since the sidebar is always-visible. */}
-        <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
-          <Link href="/dashboard" className={cn("flex items-center gap-2 min-w-0 transition-all", collapsed && "hidden")}>
+        {/* Logo row. On mobile we put a close button here; on tablet
+            the logo is hidden (icon rail only); on desktop it shows. */}
+        <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border px-3">
+          <Link
+            href="/dashboard"
+            className={cn(
+              "flex items-center gap-2 min-w-0 transition-all",
+              (collapsed) && "hidden",
+              "md:hidden lg:flex"  /* hide on tablet rail, show on desktop */
+            )}
+          >
             <div className="flex h-8 shrink-0 items-center justify-center overflow-hidden">
               <img src="/logo.png" alt="NGTech Logo" className="h-full w-auto object-contain" />
             </div>
-            <span className="text-sm font-bold text-foreground truncate transition-all duration-200">
-              NGTech WCRM
-            </span>
+            {!collapsed && (
+              <span className="text-sm font-bold text-foreground truncate">
+                NGTech WCRM
+              </span>
+            )}
           </Link>
-          <div className={cn("flex items-center gap-1", collapsed && "w-full justify-center")}>
-            <button
-              type="button"
-              onClick={() => setCollapsed(!collapsed)}
-              className="hidden lg:flex shrink-0 h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close menu"
-              className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
+          {/* Logo icon only (tablet rail + collapsed desktop) */}
+          <Link
+            href="/dashboard"
+            className={cn(
+              "hidden md:flex lg:hidden items-center justify-center w-full",
+              collapsed && "lg:flex"
+            )}
+          >
+            <div className="flex h-8 items-center justify-center">
+              <img src="/logo.png" alt="NGTech Logo" className="h-8 w-8 object-contain" />
+            </div>
+          </Link>
+          {/* Collapse toggle — desktop only */}
+          <button
+            type="button"
+            onClick={() => setCollapsed(!collapsed)}
+            className="hidden lg:flex shrink-0 h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          </button>
+          {/* Close button — mobile only */}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close menu"
+            className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         {/* Main navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 overflow-y-auto px-2 py-4">
           <ul className="flex flex-col gap-1">
             {activeNavItems.map((item) => {
               const isActive =
@@ -238,35 +264,46 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
               const showUnreadDot =
                 item.href === "/inbox" && totalUnread > 0 && !isActive;
 
+              // On tablet rail: show icon-only centered buttons (no label)
+              const isRailMode = !collapsed; // We rely on CSS md:hidden for label
+
               return (
                 <li key={item.href}>
                   <Link
                     href={item.href}
+                    title={item.label} /* tooltip on hover in rail mode */
                     className={cn(
-                      // Taller on mobile so fingers can hit the row reliably (≥44px).
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:py-2",
+                      // Base layout: icon + label
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      "min-h-[var(--touch-min)]",
+                      // Tablet rail: center the icon
+                      "md:justify-center md:px-2 lg:justify-start lg:px-3",
                       isActive
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
+                    {/* Label: hidden on tablet rail, visible on mobile drawer & desktop */}
                     <span className={cn(
                       "flex-1 overflow-hidden whitespace-nowrap transition-all duration-200",
-                      collapsed ? "w-0 opacity-0 hidden" : "w-auto opacity-100"
-                    )}>{t(item.label)}</span>
-                    {item.beta && (
+                      "md:hidden lg:block", /* hide on tablet rail */
+                      collapsed && "lg:hidden",
+                    )}>
+                      {t(item.label)}
+                    </span>
+                    {item.beta && !collapsed && (
                       <span
                         aria-label="Beta feature"
-                        className="rounded-full border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-300"
+                        className="hidden lg:inline-flex rounded-full border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-300"
                       >
                         Beta
                       </span>
                     )}
                     {showUnreadDot && (
                       <span
-                        aria-label={`${totalUnread} unread conversation${totalUnread === 1 ? "" : "s"}`}
-                        className="relative flex h-2 w-2"
+                        aria-label={`${totalUnread} unread`}
+                        className="relative flex h-2 w-2 shrink-0"
                       >
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
                         <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />

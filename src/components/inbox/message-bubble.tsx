@@ -18,6 +18,7 @@ import {
 import { format } from "date-fns";
 import { ReplyQuote } from "./reply-quote";
 import { MessageReactions } from "./message-reactions";
+import { renderWhatsAppMarkdown } from "./whatsapp-markdown";
 
 interface MessageBubbleProps {
   message: Message;
@@ -121,9 +122,9 @@ function MessageContent({ message }: { message: Message }) {
   switch (message.content_type) {
     case "text":
       return (
-        <p className="whitespace-pre-wrap break-words text-sm">
-          {message.content_text}
-        </p>
+        <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+          {renderWhatsAppMarkdown(message.content_text)}
+        </div>
       );
 
     case "image":
@@ -135,9 +136,9 @@ function MessageContent({ message }: { message: Message }) {
             <MediaUnavailable label="Image" />
           )}
           {message.content_text && (
-            <p className="mt-1 whitespace-pre-wrap break-words text-sm">
-              {message.content_text}
-            </p>
+            <div className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed">
+              {renderWhatsAppMarkdown(message.content_text)}
+            </div>
           )}
         </div>
       );
@@ -155,9 +156,9 @@ function MessageContent({ message }: { message: Message }) {
             <MediaUnavailable label="Video" />
           )}
           {message.content_text && (
-            <p className="mt-1 whitespace-pre-wrap break-words text-sm">
-              {message.content_text}
-            </p>
+            <div className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed">
+              {renderWhatsAppMarkdown(message.content_text)}
+            </div>
           )}
         </div>
       );
@@ -199,9 +200,9 @@ function MessageContent({ message }: { message: Message }) {
             Template
           </span>
           {message.content_text && (
-            <p className="mt-1 whitespace-pre-wrap break-words text-sm">
-              {message.content_text}
-            </p>
+            <div className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed">
+              {renderWhatsAppMarkdown(message.content_text)}
+            </div>
           )}
         </div>
       );
@@ -249,6 +250,19 @@ export function MessageBubble({
   currentUserId,
   onToggleReaction,
 }: MessageBubbleProps) {
+  if (message.content_type === 'system_event') {
+    return (
+      <div className="flex w-full justify-center my-4">
+        <div className="bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 px-4 py-1.5 rounded-full flex items-center gap-2 shadow-sm max-w-md">
+          <Info className="h-3.5 w-3.5 text-zinc-400" />
+          <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-300">
+            {message.content_text}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   const isAgent = message.sender_type === "agent" || message.sender_type === "bot";
   const time = format(new Date(message.created_at), "HH:mm");
 

@@ -42,13 +42,32 @@ export function ProfileForm() {
   const [removeAvatar, setRemoveAvatar] = useState(false);
   const [saving, setSaving] = useState(false);
   const [emailChangePending, setEmailChangePending] = useState(false);
+  const [departments, setDepartments] = useState<string[]>([]);
 
   // Seed form state once the profile loads.
   useEffect(() => {
-    if (!profile) return;
+    if (!profile || !user) return;
     setFullName(profile.full_name ?? '');
     setEmail(profile.email ?? '');
-  }, [profile]);
+    
+    async function fetchDepartments() {
+      const { data, error } = await supabase
+        .from('department_members')
+        .select(`
+          department_id,
+          departments:department_id (name)
+        `)
+        .eq('user_id', user!.id);
+        
+      if (data) {
+        const deptNames = data
+          .map(d => (d.departments as any)?.name)
+          .filter(Boolean) as string[];
+        setDepartments(deptNames);
+      }
+    }
+    fetchDepartments();
+  }, [profile, user]);
 
   // Cleanup object URLs to avoid leaks.
   useEffect(() => {
@@ -316,6 +335,20 @@ export function ProfileForm() {
                 <dt className="text-muted-foreground">Joined</dt>
                 <dd className="mt-0.5 text-foreground">{joined}</dd>
               </div>
+              {departments.length > 0 && (
+                <div className="sm:col-span-2">
+                  <dt className="text-muted-foreground">Departments</dt>
+                  <dd className="mt-0.5 text-foreground">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {departments.map((dept, i) => (
+                        <span key={i} className="text-[10px] uppercase font-semibold h-5 px-2 whitespace-nowrap bg-primary/10 text-primary border border-primary/20 rounded-full inline-flex items-center">
+                          {dept}
+                        </span>
+                      ))}
+                    </div>
+                  </dd>
+                </div>
+              )}
               <div className="sm:col-span-2">
                 <dt className="text-muted-foreground">User ID</dt>
                 <dd className="mt-0.5 break-all font-mono text-xs text-muted-foreground">

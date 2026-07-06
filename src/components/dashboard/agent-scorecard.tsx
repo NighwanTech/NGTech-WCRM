@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Trophy, Search, Star, MessageSquare, Timer, CheckCircle, Shield, Calendar, Users, Briefcase, CalendarDays, Bot, Sparkles } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -39,25 +39,33 @@ interface AgentScorecardProps {
   loading: boolean
   startDate?: string
   endDate?: string
+  departmentMembers?: any[]
+  departments?: any[]
   onDateChange?: (start: string, end: string) => void
 }
 
 type SortOption = 'score' | 'csat' | 'time' | 'resolution' | 'sla' | 'leads' | 'deals' | 'meetings' | 'bot'
 
-export function AgentScorecard({ data, loading, startDate, endDate, onDateChange }: AgentScorecardProps) {
+export function AgentScorecard({ data, loading, startDate, endDate, departmentMembers = [], departments = [], onDateChange }: AgentScorecardProps) {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
-  const [sortedData, setSortedData] = useState<AgentPerformance[]>([])
+  const [selectedDepartment, setSelectedDepartment] = useState('all')
   const [sortBy, setSortBy] = useState<SortOption>('score')
   const [sortDesc, setSortDesc] = useState(true)
 
-  useEffect(() => {
-    if (!data) return
-    let filtered = data.filter(
+  const sortedData = useMemo(() => {
+    if (!data) return []
+    let filtered = [...data].filter(
       (agent) =>
         agent.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         agent.email.toLowerCase().includes(searchQuery.toLowerCase())
     )
+    
+    if (selectedDepartment !== 'all') {
+      filtered = filtered.filter((agent) => {
+        return departmentMembers.some(dm => dm.user_id === agent.userId && dm.department_id === selectedDepartment)
+      })
+    }
 
     filtered.sort((a, b) => {
       let comparison = 0
@@ -74,8 +82,8 @@ export function AgentScorecard({ data, loading, startDate, endDate, onDateChange
       return sortDesc ? -comparison : comparison
     })
 
-    setSortedData(filtered)
-  }, [data, searchQuery, sortBy, sortDesc])
+    return filtered
+  }, [data, searchQuery, selectedDepartment, sortBy, sortDesc, departmentMembers])
 
   const toggleSort = (field: SortOption) => {
     if (sortBy === field) {
@@ -144,7 +152,7 @@ export function AgentScorecard({ data, loading, startDate, endDate, onDateChange
             </div>
           )}
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-1">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center pt-1">
           <div className="relative w-full sm:max-w-xs">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <input
@@ -155,6 +163,23 @@ export function AgentScorecard({ data, loading, startDate, endDate, onDateChange
               className="h-9 w-full rounded-md border border-border bg-background pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
+          {departments.length > 0 && (
+            <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+              <SelectTrigger className="w-[180px] h-9">
+                <SelectValue placeholder="All Departments">
+                  {selectedDepartment === 'all' 
+                    ? 'All Departments' 
+                    : departments.find(d => d.id === selectedDepartment)?.name}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Departments</SelectItem>
+                {departments.map(dept => (
+                  <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </CardHeader>
       <CardContent>
@@ -186,7 +211,10 @@ export function AgentScorecard({ data, loading, startDate, endDate, onDateChange
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {sortedData.map((agent, index) => (
+                {sortedData.map((agent, index) => {
+                  const agentDepts = departmentMembers.filter(dm => dm.user_id === agent.userId);
+                  
+                  return (
                   <tr 
                     key={agent.userId} 
                     className="group hover:bg-muted/50 transition-colors cursor-pointer"
@@ -216,7 +244,9 @@ export function AgentScorecard({ data, loading, startDate, endDate, onDateChange
                               </span>
                             ) : null}
                           </div>
-                          <div className="text-xs text-muted-foreground">{agent.email}</div>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 mt-0.5">
+                            <div className="text-[11px] text-muted-foreground">{agent.email}</div>
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -295,7 +325,8 @@ export function AgentScorecard({ data, loading, startDate, endDate, onDateChange
                       </div>
                     </td>
                   </tr>
-                ))}
+                );
+                })}
               </tbody>
             </table>
           </div>

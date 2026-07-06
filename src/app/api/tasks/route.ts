@@ -49,11 +49,23 @@ export async function POST(request: Request) {
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     }
+    
+    // Fetch account_id for RLS and data isolation
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('account_id')
+      .eq('user_id', user.id)
+      .single()
+      
+    if (!profile?.account_id) {
+      return NextResponse.json({ error: 'No account linked' }, { status: 400 })
+    }
 
     const { data, error } = await supabase
       .from('tasks')
       .insert({
         user_id: user.id,
+        account_id: profile.account_id,
         contact_id,
         title,
         description,

@@ -16,11 +16,11 @@ export class AIPromptService {
       advanced_settings
     } = config;
 
-    let finalPrompt = `System: ${system_prompt}\n\nIMPORTANT INSTRUCTIONS:\n1. Detect the language of the customer's message and ALWAYS reply in that exact same language. Never switch languages unless the customer does first.\n2. Answer the user's question concisely using ONLY the provided Knowledge Base below.\n3. If the user explicitly asks to speak to a human, expresses extreme frustration, or asks a complex question entirely unrelated to the Knowledge Base, you MUST call the requestHumanHandoff tool.\n4. Do not offer a human specialist unless they ask for one or you absolutely cannot help them with the Knowledge Base.`;
+    let finalPrompt = `System: ${system_prompt}\n\nIMPORTANT INSTRUCTIONS:\n1. Detect the language of the customer's message and ALWAYS reply in that exact same language. Never switch languages unless the customer does first.\n2. Answer the user's question concisely using ONLY the provided Knowledge Base below.\n3. CONVERSATIONAL GREETING: If the user only says "Hi", "Hello", or gives a simple greeting, DO NOT dump company information. Reply with a brief, friendly greeting and ask how you can help them today.\n4. If the user explicitly asks to speak to a human, expresses extreme frustration, or asks a complex question entirely unrelated to the Knowledge Base, you MUST call the requestHumanHandoff tool.\n5. Do not offer a human specialist unless they ask for one or you absolutely cannot help them with the Knowledge Base.`;
     
     // 1. Language constraint override
     if (advanced_settings?.response_language && advanced_settings.response_language !== 'auto') {
-      finalPrompt += `\n5. EXCEPTION to Instruction 1: You must ONLY reply in ${advanced_settings.response_language}.`;
+      finalPrompt += `\n6. EXCEPTION to Instruction 1: You must ONLY reply in ${advanced_settings.response_language}.`;
     }
 
     // 2. Personality

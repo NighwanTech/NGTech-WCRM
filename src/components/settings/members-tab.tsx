@@ -133,6 +133,9 @@ export function MembersTab() {
 
   const [members, setMembers] = useState<Member[]>([]);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [departmentMembers, setDepartmentMembers] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [loading, setLoading] = useState(true);
 
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -143,11 +146,16 @@ export function MembersTab() {
 
   const loadEverything = useCallback(async () => {
     try {
-      const [mres, ires] = await Promise.all([
+      const { createClient } = await import('@/lib/supabase/client');
+      const supabase = createClient();
+      
+      const [mres, ires, deptMemRes, deptRes] = await Promise.all([
         fetch('/api/account/members', { cache: 'no-store' }),
         canManageMembers
           ? fetch('/api/account/invitations', { cache: 'no-store' })
           : Promise.resolve(null),
+        supabase.from('department_members').select('user_id, department_id, role'),
+        supabase.from('departments').select('id, name')
       ]);
 
       if (!mres.ok) {
@@ -169,6 +177,10 @@ export function MembersTab() {
       } else {
         setInvitations([]);
       }
+      
+      if (deptMemRes.data) setDepartmentMembers(deptMemRes.data);
+      if (deptRes.data) setDepartments(deptRes.data);
+      
     } catch (err) {
       console.error('[MembersTab] load error:', err);
       toast.error('Could not reach the server');
@@ -323,6 +335,11 @@ export function MembersTab() {
     );
   }
 
+  const filteredMembers = members.filter(member => {
+    if (selectedDepartment === 'all') return true;
+    return departmentMembers.some(dm => dm.user_id === member.user_id && dm.department_id === selectedDepartment);
+  });
+
   return (
     <section className="animate-in fade-in-50 space-y-6 duration-200">
       <SettingsPanelHead
@@ -338,37 +355,62 @@ export function MembersTab() {
         }
       />
 
-      {/* Live presence summary across the roster. Updates without a
-          full refresh as heartbeats and the local re-derive tick land. */}
-      {members.length > 0 &&
-        (() => {
-          const counts = summarize(members.map((m) => getPresence(m.user_id)));
-          return (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5">
-                <PresenceDot status="online" />
-                {counts.online} online
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <PresenceDot status="away" />
-                {counts.away} away
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <PresenceDot status="offline" />
-                {counts.offline} offline
-              </span>
-              <span className="text-muted-foreground/70">
-                · {members.length} member{members.length === 1 ? '' : 's'}
-              </span>
-            </div>
-          );
-        })()}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Live presence summary across the roster. Updates without a
+            full refresh as heartbeats and the local re-derive tick land. */}
+        {filteredMembers.length > 0 ?
+          (() => {
+            const counts = summarize(filteredMembers.map((m) => getPresence(m.user_id)));
+            return (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <PresenceDot status="online" />
+                  {counts.online} online
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <PresenceDot status="away" />
+                  {counts.away} away
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <PresenceDot status="offline" />
+                  {counts.offline} offline
+                </span>
+                <span className="text-muted-foreground/70">
+                  · {filteredMembers.length} member{filteredMembers.length === 1 ? '' : 's'}
+                </span>
+              </div>
+            );
+          })() : <div />}
+
+        {departments.length > 0 && (
+          <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+            <SelectTrigger className="w-full sm:w-[200px] h-8 text-xs bg-background">
+              <SelectValue placeholder="All Departments">
+                {selectedDepartment === 'all' 
+                  ? 'All Departments' 
+                  : departments.find(d => d.id === selectedDepartment)?.name}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Departments</SelectItem>
+              {departments.map(dept => (
+                <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      </div>
 
       {/* Roster */}
       <Card>
         <CardContent className="p-0">
           <ul className="divide-y divide-border">
-            {members.map((member) => {
+            {filteredMembers.length === 0 && (
+              <li className="px-4 py-8 text-center text-sm text-muted-foreground">
+                No members found in this department.
+              </li>
+            )}
+            {filteredMembers.map((member) => {
               const roleMeta = ROLE_META[member.role];
               const RoleIcon = roleMeta.icon;
               const isSelf = member.user_id === user?.id;
@@ -439,11 +481,13 @@ export function MembersTab() {
                           </Badge>
                         )}
                       </div>
-                      {member.email && (
-                        <p className="truncate text-xs text-muted-foreground">
-                          {member.email}
-                        </p>
-                      )}
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-0.5">
+                        {member.email && (
+                          <p className="truncate text-xs text-muted-foreground">
+                            {member.email}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
 

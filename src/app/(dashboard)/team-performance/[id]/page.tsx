@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import Link from 'next/link'
 
+import { createClient } from '@/lib/supabase/client'
+
 interface AgentProfile {
   user_id: string
   full_name: string
@@ -90,6 +92,7 @@ interface AgentMetrics {
 export default function AgentDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const supabase = createClient()
   
   const [profile, setProfile] = useState<AgentProfile | null>(null)
   const [contacts, setContacts] = useState<Contact[]>([])
@@ -99,6 +102,7 @@ export default function AgentDetailPage() {
   const [notes, setNotes] = useState<Note[]>([])
   const [suspensions, setSuspensions] = useState<Suspension[]>([])
   const [metrics, setMetrics] = useState<AgentMetrics | null>(null)
+  const [departments, setDepartments] = useState<string[]>([])
   
   // AI Evaluation State
   const [evaluating, setEvaluating] = useState(false)
@@ -112,9 +116,10 @@ export default function AgentDetailPage() {
 
     Promise.all([
       fetch(`/api/analytics/agent/${params.id}`).then(res => res.json()),
-      fetch(`/api/analytics/scorecard`).then(res => res.json())
+      fetch(`/api/analytics/scorecard`).then(res => res.json()),
+      supabase.from('department_members').select('department_id, departments:department_id (name)').eq('user_id', params.id)
     ])
-      .then(([agentData, scorecardData]) => {
+      .then(([agentData, scorecardData, deptRes]) => {
         if (agentData.error) {
           setError(agentData.error)
         } else {
@@ -130,11 +135,18 @@ export default function AgentDetailPage() {
             const agentMetrics = scorecardData.leaderboard.find((l: any) => l.userId === params.id)
             if (agentMetrics) setMetrics(agentMetrics)
           }
+          
+          if (deptRes.data) {
+            const deptNames = deptRes.data
+              .map(d => (d.departments as any)?.name)
+              .filter(Boolean) as string[];
+            setDepartments(deptNames);
+          }
         }
       })
       .catch((err) => setError("Failed to load agent data"))
       .finally(() => setLoading(false))
-  }, [params.id])
+  }, [params.id, supabase])
 
   const handleAiEvaluation = async () => {
     if (!params.id) return
@@ -248,6 +260,20 @@ export default function AgentDetailPage() {
                       {profile.account_role}
                     </span>
                   </div>
+                  {departments.length > 0 && (
+                    <div className="flex items-center justify-between text-sm py-2">
+                      <span className="text-muted-foreground flex items-center gap-2">
+                        <Briefcase className="h-4 w-4" /> Departments
+                      </span>
+                      <div className="flex flex-wrap items-center justify-end gap-1.5 max-w-[150px]">
+                        {departments.map((dept, i) => (
+                          <span key={i} className="text-[10px] uppercase font-semibold h-5 px-2 whitespace-nowrap bg-primary/10 text-primary border border-primary/20 rounded-full inline-flex items-center">
+                            {dept}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between text-sm py-2">
                     <span className="text-muted-foreground flex items-center gap-2">
                       <Clock className="h-4 w-4" /> Total Leave / Suspended

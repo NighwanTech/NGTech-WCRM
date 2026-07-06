@@ -5,7 +5,7 @@ export class AIAnalyticsService {
   /**
    * Logs an AI interaction to the database for analytics reporting.
    */
-  static async logEvent(event: Omit<AIAnalyticsEvent, 'id' | 'created_at'>) {
+  static async logEvent(event: Omit<AIAnalyticsEvent, 'id' | 'created_at'> & { language?: string, intent_category?: string }) {
     try {
       const supabase = await createClient();
       
@@ -23,7 +23,9 @@ export class AIAnalyticsService {
           estimated_cost: event.estimated_cost,
           is_handoff: event.is_handoff,
           is_error: event.is_error,
-          error_message: event.error_message
+          error_message: event.error_message,
+          language: event.language,
+          intent_category: event.intent_category
         });
 
       if (error) {

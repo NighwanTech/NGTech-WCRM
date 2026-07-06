@@ -78,6 +78,10 @@ interface MessageThreadProps {
     conversationId: string,
     assignedAgentId: string | null,
   ) => void;
+  onDepartmentAssignChange?: (
+    conversationId: string,
+    departmentId: string | null,
+  ) => void;
   /**
    * On mobile, the thread is shown full-screen with the conversation list
    * hidden. This callback lets the page deselect the active conversation
@@ -175,6 +179,7 @@ export function MessageThread({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [templateModalOpen, setTemplateModalOpen] = useState(false);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
   const [reactions, setReactions] = useState<MessageReaction[]>([]);
   
   // Realtime Presence state for collision detection
@@ -310,6 +315,19 @@ export function MessageThread({
         }
         setProfiles((data as Profile[]) ?? []);
       });
+
+    supabase
+      .from("departments")
+      .select("*")
+      .eq("account_id", accountId)
+      .order("name")
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (!error && data) {
+          setDepartments(data);
+        }
+      });
+      
     return () => {
       cancelled = true;
     };
@@ -906,6 +924,38 @@ export function MessageThread({
     [conversation, onAssignChange],
   );
 
+  const handleDepartmentAssignChange = useCallback(
+    async (departmentId: string | null) => {
+      if (!conversation) return;
+
+      try {
+        const res = await fetch('/api/conversations/transfer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conversation_id: conversation.id,
+            new_department_id: departmentId
+          })
+        });
+
+        const data = await res.json();
+        
+        if (!res.ok) {
+          toast.error(`Transfer failed: ${data.error}`);
+          return;
+        }
+
+        toast.success("Department transferred and routing engine triggered");
+        
+        // If the API returned a new assigned agent, we might want to update local state,
+        // but realtime will catch it anyway.
+      } catch (err) {
+        toast.error("Network error during transfer");
+      }
+    },
+    [conversation],
+  );
+
   const handleGenerateDraft = useCallback(async () => {
     if (!conversation) return "";
     try {
@@ -954,7 +1004,21 @@ export function MessageThread({
   const currentAssignee = profiles.find((p) => p.user_id === assignedAgentId);
   const assignLabel = assignedAgentId
     ? (currentAssignee?.full_name ?? "Assigned")
-    : "Assign";
+    : "Agent";
+    
+  const assignedDeptId = conversation.department_id ?? null;
+  const currentDept = departments.find((d) => d.id === assignedDeptId);
+  const deptLabel = assignedDeptId
+    ? (currentDept?.name ?? "Department")
+    : "Department";
+
+  // Follow-up banner logic
+  const hoursSinceLastMsg = conversation.last_message_at
+    ? (Date.now() - new Date(conversation.last_message_at).getTime()) / (1000 * 60 * 60)
+    : 0;
+  const isAgentLastSender = conversation.last_message_sender_type !== 'customer';
+  const isNegotiationDeal = deals.some(d => d.status === 'active' && d.stage?.name?.toLowerCase() === 'negotiation');
+  const showFollowupBanner = isNegotiationDeal && isAgentLastSender && hoursSinceLastMsg >= 48;
 
   return (
     // `min-w-0` is load-bearing: the page already puts min-w-0 on the
@@ -965,212 +1029,180 @@ export function MessageThread({
     // clipped and the hover toolbar overlaps the Tags panel. Letting the
     // root shrink lets the bubbles' break-words / max-w caps apply.
     // Issue #257.
-    <div className={cn("flex min-w-0 flex-1 flex-col", DOODLE_BG_CLASSES)}>
-      {/* Header — solid card surface sits on top of the doodle so the
-          name/avatar/dropdowns stay legible. */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-3 py-3 sm:px-4">
-        <div className="flex min-w-[200px] flex-1 items-center gap-2 sm:gap-3">
-          {/* Back-to-list button — mobile only. Hidden on lg+ where the
-              conversation list is always visible next to the thread. */}
+    <div
+      className={cn("min-w-0 w-full h-full overflow-hidden flex flex-col", DOODLE_BG_CLASSES)}
+    >
+      {/* ── Header Bar (2-Row Adaptive) ──────────────────────────────────────── */}
+      <div className="flex flex-col border-b border-border bg-background/80 backdrop-blur-xl shrink-0 z-10 shadow-sm">
+        
+        {/* Row 1: Customer Info */}
+        <div className="flex items-center px-3 py-2 gap-3 min-w-0">
           {onBack && (
-            <button
-              type="button"
-              onClick={onBack}
-              aria-label="Back to conversations"
-              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
-            >
+            <button type="button" onClick={onBack} aria-label="Back"
+              className="touch-target -ml-1 shrink-0 rounded-md text-muted-foreground hover:bg-muted lg:hidden">
               <ArrowLeft className="h-5 w-5" />
             </button>
           )}
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium text-foreground">
+
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
             {displayName.charAt(0).toUpperCase()}
           </div>
-          <div className="min-w-0 flex-shrink">
-            <h2 className="truncate text-sm font-semibold text-foreground">{displayName}</h2>
-            <p className="truncate text-xs text-muted-foreground">{contact.phone}</p>
+
+          <div className="flex flex-col min-w-0 flex-1 justify-center">
+            <div className="flex items-center gap-2">
+              <span className="truncate text-base font-semibold text-foreground leading-none">{displayName}</span>
+              <Badge variant="secondary" className="hidden sm:inline-flex text-[10px] px-1.5 py-0 h-4">VIP</Badge>
+            </div>
+            <div className="flex items-center gap-1.5 mt-1 text-[11px] text-muted-foreground">
+              <span className="truncate">{contact.phone}</span>
+              <span className="hidden sm:inline">•</span>
+              <span className="hidden sm:inline truncate">New Lead</span>
+            </div>
           </div>
-          {/* Session timer badge — hidden on the narrowest phones so
-              the name + back arrow keep their room. */}
-          <Badge
-            variant="outline"
-            className={cn(
-              "ml-1 hidden flex-shrink-0 gap-1 border-border text-[10px] sm:inline-flex sm:ml-2",
-              sessionInfo.expired ? "text-red-400" : "text-primary"
-            )}
-          >
-            <Clock className="h-3 w-3" />
-            {sessionInfo.remaining}
+
+          <Badge variant="outline" className={cn(
+            "shrink-0 gap-1 border-border text-[10px] py-1 shadow-sm",
+            sessionInfo.expired ? "text-red-400 bg-red-400/10" : "text-primary bg-primary/10"
+          )}>
+            <Clock className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{sessionInfo.remaining}</span>
           </Badge>
         </div>
 
-        <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2">
-          {/* Bot Pause Toggle */}
-          {conversation && (
-            <button
-              type="button"
-              onClick={handleBotToggle}
-              title={conversation.is_bot_paused ? "Bot Paused (Click to Resume)" : "Bot Active (Click to Pause)"}
-              className={cn(
-                "inline-flex h-7 flex-shrink-0 items-center justify-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors hover:bg-muted",
-                conversation.is_bot_paused ? "text-amber-500" : "text-emerald-500"
-              )}
-            >
-              <Bot className="h-4 w-4" />
-              <span className="hidden xl:inline">{conversation.is_bot_paused ? 'Paused' : 'Active'}</span>
-            </button>
-          )}
-
-          {/* Contact-panel toggle — desktop only. The contact sidebar
-              eats a chunk of horizontal width that crowds the thread on
-              smaller laptops; this lets agents reclaim it when they just
-              want to read and reply. Hidden on mobile, where the sidebar
-              never renders as a permanent panel anyway. Issue #258. */}
-          {onToggleContactPanel && (
-            <button
-              type="button"
-              onClick={onToggleContactPanel}
-              aria-label={
-                contactPanelOpen ? "Hide contact panel" : "Show contact panel"
-              }
-              aria-pressed={contactPanelOpen}
-              title={contactPanelOpen ? "Hide contact" : "Show contact"}
-              className={cn(
-                "inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-all shadow-sm border",
-                contactPanelOpen
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20",
-              )}
-            >
-              {contactPanelOpen ? (
-                <>
-                  <PanelRightClose className="h-4 w-4" />
-                  <span className="hidden sm:inline">Close Info</span>
-                </>
-              ) : (
-                <>
-                  <Info className="h-4 w-4" />
-                  <span>Contact Info</span>
-                </>
-              )}
-            </button>
-          )}
-
-          {/* Manual refresh — forces a refetch of the messages + the
-              conversation list (the parent bumps its resyncToken). Useful
-              when realtime missed an event or the agent just wants to be
-              sure nothing's stale. Only rendered when the parent wires
-              up `onRefresh`. */}
-          {onRefresh && (
-            <button
-              type="button"
-              onClick={handleRefreshClick}
-              disabled={isRefreshing}
-              aria-label="Refresh conversation"
-              title="Refresh"
-              className={cn(
-                "inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-60",
-              )}
-            >
-              <RefreshCw
-                className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")}
-              />
-            </button>
-          )}
-
-          {/* Status dropdown */}
+        {/* Row 2: Actions */}
+        {/* Using overflow-x-auto with hidden scrollbar for mobile so users can swipe,
+            and flex-wrap for tablet/desktop so it wraps cleanly if narrow. */}
+        <div className="flex items-center px-3 pb-2 gap-2 overflow-x-auto scrollbar-hide flex-nowrap sm:flex-wrap">
+          
+          {/* Status Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger className={cn(
-                  "inline-flex items-center justify-center h-7 gap-1 px-2 text-xs rounded-md hover:bg-muted",
-                  currentStatus?.color ?? "text-muted-foreground"
-                )}>
-                {currentStatus?.label ?? "Status"}
-                <ChevronDown className="h-3 w-3" />
+              "shrink-0 inline-flex items-center gap-1.5 h-8 px-2.5 text-xs font-medium rounded-md border shadow-sm transition-colors",
+              currentStatus?.color ?? "text-muted-foreground border-border bg-background hover:bg-muted"
+            )}>
+              {currentStatus?.label ?? "Status"}<ChevronDown className="h-3.5 w-3.5 opacity-50" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="border-border bg-popover"
-            >
+            <DropdownMenuContent align="start" className="border-border bg-popover">
               {STATUS_OPTIONS.map((opt) => (
-                <DropdownMenuItem
-                  key={opt.value}
-                  onClick={() => handleStatusChange(opt.value)}
-                  className={cn("text-sm", opt.color)}
-                >
+                <DropdownMenuItem key={opt.value} onClick={() => handleStatusChange(opt.value)} className={cn("text-sm", opt.color)}>
                   {opt.label}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Assign dropdown */}
+          {/* Department Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger
-              className={cn(
-                "inline-flex items-center justify-center h-7 gap-1 px-2 text-xs rounded-md hover:bg-muted",
-                assignedAgentId ? "text-primary" : "text-muted-foreground"
-              )}
-            >
-              <UserPlus className="h-3 w-3" />
-              <span className="hidden sm:inline">{assignLabel}</span>
-              <ChevronDown className="h-3 w-3" />
+            <DropdownMenuTrigger className={cn(
+              "shrink-0 inline-flex items-center gap-1.5 h-8 px-2.5 text-xs font-medium rounded-md border shadow-sm transition-colors max-w-[150px]",
+              assignedDeptId ? "text-primary border-primary/20 bg-primary/5" : "text-muted-foreground border-border bg-background hover:bg-muted"
+            )}>
+              <span className="truncate">{deptLabel}</span><ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="border-border bg-popover"
-            >
-              {profiles.length === 0 ? (
-                <DropdownMenuItem disabled className="text-sm text-muted-foreground">
-                  No teammates available
-                </DropdownMenuItem>
-              ) : (
-                profiles.map((p) => {
-                  const isSelected = p.user_id === assignedAgentId;
-                  const presence = getPresence(p.user_id);
-                  return (
-                    <DropdownMenuItem
-                      key={p.id}
-                      onClick={() => handleAssignChange(p.user_id)}
-                      className={cn(
-                        "text-sm",
-                        isSelected ? "text-primary" : "text-popover-foreground"
-                      )}
-                    >
-                      <PresenceDot
-                        status={presence}
-                        label={presenceLabel(
-                          presence,
-                          getRow(p.user_id)?.last_seen_at ?? null,
-                          now
-                        )}
-                        className="mr-2"
-                      />
-                      <span className="flex-1">
-                        {p.full_name}
-                        {p.user_id === user?.id ? " (me)" : ""}
-                      </span>
-                      {isSelected && <Check className="ml-2 h-3 w-3" />}
-                    </DropdownMenuItem>
-                  );
-                })
-              )}
-              {assignedAgentId && (
+            <DropdownMenuContent align="start" className="border-border bg-popover max-h-[300px] overflow-y-auto">
+              {departments.length === 0 ? (
+                <DropdownMenuItem disabled className="text-sm text-muted-foreground">No departments</DropdownMenuItem>
+              ) : departments.map((d) => {
+                const isSelected = d.id === assignedDeptId;
+                return (
+                  <DropdownMenuItem key={d.id} onClick={() => handleDepartmentAssignChange(d.id)}
+                    className={cn("text-sm", isSelected ? "text-primary" : "text-popover-foreground")}>
+                    <span className="flex-1 truncate">{d.name}</span>
+                    {isSelected && <Check className="ml-2 h-4 w-4" />}
+                  </DropdownMenuItem>
+                );
+              })}
+              {assignedDeptId && (
                 <>
                   <DropdownMenuSeparator className="bg-border" />
-                  <DropdownMenuItem
-                    onClick={() => handleAssignChange(null)}
-                    className="text-sm text-muted-foreground"
-                  >
-                    Unassign
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDepartmentAssignChange(null)} className="text-sm text-muted-foreground">Clear Department</DropdownMenuItem>
                 </>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Agent Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className={cn(
+              "shrink-0 inline-flex items-center gap-1.5 h-8 px-2.5 text-xs font-medium rounded-md border shadow-sm transition-colors max-w-[140px]",
+              assignedAgentId ? "text-primary border-primary/20 bg-primary/5" : "text-muted-foreground border-border bg-background hover:bg-muted"
+            )}>
+              <UserPlus className="h-4 w-4 shrink-0" />
+              <span className="truncate">{assignLabel}</span><ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="border-border bg-popover">
+              {profiles.length === 0 ? (
+                <DropdownMenuItem disabled className="text-sm text-muted-foreground">No teammates</DropdownMenuItem>
+              ) : profiles.map((p) => {
+                const isSelected = p.user_id === assignedAgentId;
+                const presence = getPresence(p.user_id);
+                return (
+                  <DropdownMenuItem key={p.id} onClick={() => handleAssignChange(p.user_id)}
+                    className={cn("text-sm", isSelected ? "text-primary" : "text-popover-foreground")}>
+                    <PresenceDot status={presence} label={presenceLabel(presence, getRow(p.user_id)?.last_seen_at ?? null, now)} className="mr-2" />
+                    <span className="flex-1">{p.full_name}{p.user_id === user?.id ? " (me)" : ""}</span>
+                    {isSelected && <Check className="ml-2 h-4 w-4" />}
+                  </DropdownMenuItem>
+                );
+              })}
+              {assignedAgentId && (
+                <>
+                  <DropdownMenuSeparator className="bg-border" />
+                  <DropdownMenuItem onClick={() => handleAssignChange(null)} className="text-sm text-muted-foreground">Unassign</DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <div className="w-px h-6 bg-border mx-1 shrink-0 hidden sm:block" />
+
+          {/* Bot toggle */}
+          {conversation && (
+            <button type="button" onClick={handleBotToggle}
+              title={conversation.is_bot_paused ? "Bot Paused – click to resume" : "Bot Active – click to pause"}
+              className={cn(
+                "shrink-0 inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium border shadow-sm transition-colors",
+                conversation.is_bot_paused 
+                  ? "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20" 
+                  : "text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20"
+              )}>
+              <Bot className="h-4 w-4" />
+              <span className="hidden md:inline">{conversation.is_bot_paused ? "Paused" : "Active"}</span>
+            </button>
+          )}
+
+          {/* Refresh */}
+          {onRefresh && (
+            <button type="button" onClick={handleRefreshClick} disabled={isRefreshing}
+              aria-label="Refresh" title="Refresh"
+              className="shrink-0 inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background shadow-sm text-muted-foreground hover:bg-muted disabled:opacity-50">
+              <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
+            </button>
+          )}
+
+          {/* Spacer to push right-aligned items */}
+          <div className="flex-1 min-w-[8px]" />
+
+          {/* Contact panel toggle */}
+          {onToggleContactPanel && (
+            <button type="button" onClick={onToggleContactPanel}
+              aria-label={contactPanelOpen ? "Hide Details" : "Show Details"}
+              title={contactPanelOpen ? "Hide Details" : "Show Details"}
+              className={cn(
+                "shrink-0 inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium border shadow-sm transition-colors",
+                contactPanelOpen
+                  ? "bg-secondary text-secondary-foreground border-border"
+                  : "bg-background text-muted-foreground border-border hover:bg-muted"
+              )}>
+              {contactPanelOpen ? <PanelRightClose className="h-4 w-4" /> : <Info className="h-4 w-4" />}
+              <span className="hidden md:inline">Details</span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* Messages Area */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -1242,38 +1274,27 @@ export function MessageThread({
         )}
       </div>
 
-      {/* Follow-up Banner */}
-      {(() => {
-        const hoursSinceLastMessage = conversation.last_message_at 
-          ? (Date.now() - new Date(conversation.last_message_at).getTime()) / (1000 * 60 * 60)
-          : 0;
-        const isAgentLastSender = conversation.last_message_sender_type !== 'customer';
-        const isNegotiation = deals.some(d => d.status === 'active' && d.stage?.name?.toLowerCase() === 'negotiation');
-        
-        const showFollowupBanner = isNegotiation && isAgentLastSender && (hoursSinceLastMessage >= 48 || process.env.NODE_ENV === 'development');
-        
-        if (!showFollowupBanner) return null;
-
-        return (
-          <div className="mx-4 mb-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
-              <p className="text-xs text-muted-foreground">
-                Customer silent in <span className="font-semibold text-amber-400">Negotiation</span> stage ({Math.floor(hoursSinceLastMessage)}h elapsed).
-              </p>
-            </div>
-            <Button
-              onClick={handleGenerateFollowup}
-              disabled={generatingFollowup}
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
-            >
-              {generatingFollowup ? "Drafting..." : "Draft Follow-Up"}
-            </Button>
+      {/* Bottom zone: banners + AI Copilot + Composer — all in one grid row */}
+      <div className="flex flex-col bg-card shrink-0">
+      {showFollowupBanner && (
+        <div className="mx-4 mb-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
+            <p className="text-xs text-muted-foreground">
+              Customer silent in <span className="font-semibold text-amber-400">Negotiation</span> stage. Consider a follow-up.
+            </p>
           </div>
-        );
-      })()}
+          <Button
+            onClick={handleGenerateFollowup}
+            disabled={generatingFollowup}
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+          >
+            {generatingFollowup ? "Drafting..." : "Draft Follow-Up"}
+          </Button>
+        </div>
+      )}
 
       {/* Agent Collision Banner */}
       {Object.values(activeAgents).length > 0 && (
@@ -1288,6 +1309,8 @@ export function MessageThread({
           ))}
         </div>
       )}
+
+
 
       {/* Composer */}
       <MessageComposer
@@ -1310,6 +1333,7 @@ export function MessageThread({
         onOpenChange={setTemplateModalOpen}
         onSelect={handleSendTemplate}
       />
+      </div>
     </div>
   );
 }

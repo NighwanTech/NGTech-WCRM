@@ -1,29 +1,56 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { maskPhone } from "@/lib/masking";
 import type { Contact, Deal, ContactNote, Tag, Conversation } from "@/types";
 import {
+  MoreVertical,
+  Pencil,
+  Trash,
+  Info,
+  Calendar,
   Phone,
   Mail,
+  Video,
+  Settings,
+  X,
+  Plus,
+  RefreshCcw,
+  Bot,
+  User as UserIcon,
+  MessageSquare,
+  Sparkles,
   Copy,
   Check,
   User,
   Tag as TagIcon,
   DollarSign,
   StickyNote,
-  Plus,
-  Sparkles,
   CheckSquare,
-  Calendar,
   Receipt,
   FileText,
   MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Avatar } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CustomerTimeline } from "./customer-timeline";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -77,6 +104,14 @@ export function ContactSidebar({
   const [generatingFollowup, setGeneratingFollowup] = useState<{ [key: string]: boolean }>({});
   
   const [msgStats, setMsgStats] = useState({ bot: 0, agent: 0, customer: 0 });
+  const [expandedSections, setExpandedSections] = useState<string[]>(["ai-insights", "deals"]);
+  
+  // Track loaded sections per contact to avoid re-fetching on toggle
+  const loadedSectionsRef = useRef<{ [key: string]: boolean }>({});
+
+  const handleAccordionChange = (value: string[]) => {
+    setExpandedSections(value);
+  };
 
   const handleGenerateFollowup = async (meeting: Meeting) => {
     const notesToUse = meetingNotes[meeting.id] ?? meeting.notes;
@@ -135,14 +170,31 @@ export function ContactSidebar({
 
   const parsedSummary = useMemo(() => {
     if (!summary) return null;
+    
+    try {
+      const data = JSON.parse(summary);
+      if (data.summary || data.points) {
+        return {
+          summaryText: data.summary || '',
+          points: data.points || [],
+          lastObjection: data.last_objection || null,
+          actionText: data.action || null
+        };
+      }
+    } catch (e) {
+      // Fallback for old format
+    }
+
     const parts = summary.split('ACTION:');
     if (parts.length > 1) {
       return {
         summaryText: parts[0].replace('SUMMARY:', '').trim(),
-        actionText: parts[1].trim()
+        actionText: parts[1].trim(),
+        points: [],
+        lastObjection: null
       };
     }
-    return { summaryText: summary, actionText: null };
+    return { summaryText: summary, actionText: null, points: [], lastObjection: null };
   }, [summary]);
 
   useEffect(() => {
@@ -219,86 +271,85 @@ export function ContactSidebar({
     }
   }, []);
 
-  const fetchContactData = useCallback(async () => {
+  useEffect(() => {
     if (!contact) return;
-
+    const cid = contact.id;
     const supabase = createClient();
 
-    const [dealsRes, notesRes, tagsRes, tasksRes, meetingsRes, quotesRes] = await Promise.all([
-      supabase
-        .from("deals")
-        .select("*, stage:pipeline_stages(*)")
-        .eq("contact_id", contact.id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("contact_notes")
-        .select("*")
-        .eq("contact_id", contact.id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("contact_tags")
-        .select("id, tag_id, tags(*)")
-        .eq("contact_id", contact.id),
-      fetch(`/api/tasks?contact_id=${contact.id}`).then(res => res.json()).catch(() => ({ tasks: [] })),
-      supabase
-        .from("meetings")
-        .select("*")
-        .eq("contact_id", contact.id)
-        .order("scheduled_at", { ascending: true }),
-      supabase
-        .from("quotes")
-        .select("*")
-        .eq("contact_id", contact.id)
-        .order("created_at", { ascending: false }),
-    ]);
-
-    // Fetch message stats if a conversation is active
-    if (conversation?.id) {
-      const [botRes, agentRes, custRes] = await Promise.all([
-        supabase.from("messages").select("id", { count: "exact", head: true }).eq("conversation_id", conversation.id).eq("sender_type", "bot"),
-        supabase.from("messages").select("id", { count: "exact", head: true }).eq("conversation_id", conversation.id).eq("sender_type", "agent"),
-        supabase.from("messages").select("id", { count: "exact", head: true }).eq("conversation_id", conversation.id).eq("sender_type", "customer"),
-      ]);
-      setMsgStats({
-        bot: botRes.count || 0,
-        agent: agentRes.count || 0,
-        customer: custRes.count || 0,
+    // AI Insights (Tags & Stats)
+    if (expandedSections.includes("ai-insights") && !loadedSectionsRef.current[`${cid}_ai-insights`]) {
+      loadedSectionsRef.current[`${cid}_ai-insights`] = true;
+      
+      // Fetch Tags
+      supabase.from("contact_tags").select("id, tag_id, tags(*)").eq("contact_id", cid).then(({ data }) => {
+        if (data) {
+          const mapped = data
+            .filter((ct: Record<string, unknown>) => ct.tags)
+            .map((ct: Record<string, unknown>) => ({
+              ...(ct.tags as Tag),
+              contact_tag_id: ct.id as string,
+            }));
+          setTags(mapped);
+        }
       });
-    } else {
-      setMsgStats({ bot: 0, agent: 0, customer: 0 });
+
+      // Fetch Stats
+      if (conversation?.id) {
+        Promise.all([
+          supabase.from("messages").select("id", { count: "exact", head: true }).eq("conversation_id", conversation.id).eq("sender_type", "bot"),
+          supabase.from("messages").select("id", { count: "exact", head: true }).eq("conversation_id", conversation.id).eq("sender_type", "agent"),
+          supabase.from("messages").select("id", { count: "exact", head: true }).eq("conversation_id", conversation.id).eq("sender_type", "customer"),
+        ]).then(([botRes, agentRes, custRes]) => {
+          setMsgStats({
+            bot: botRes.count || 0,
+            agent: agentRes.count || 0,
+            customer: custRes.count || 0,
+          });
+        });
+      }
     }
 
-    if (dealsRes.data) setDeals(dealsRes.data);
-    if (notesRes.data) setNotes(notesRes.data);
-    if (tasksRes?.tasks) setTasks(tasksRes.tasks);
-    if (meetingsRes.data) setMeetings(meetingsRes.data);
-    if (quotesRes.data) setQuotes(quotesRes.data);
-    if (tagsRes.data) {
-      const mapped = tagsRes.data
-        .filter((ct: Record<string, unknown>) => ct.tags)
-        .map((ct: Record<string, unknown>) => ({
-          ...(ct.tags as Tag),
-          contact_tag_id: ct.id as string,
-        }));
-      setTags(mapped);
+    // Deals & Quotes
+    if (expandedSections.includes("deals") && !loadedSectionsRef.current[`${cid}_deals`]) {
+      loadedSectionsRef.current[`${cid}_deals`] = true;
+      supabase.from("deals").select("*, stage:pipeline_stages(*)").eq("contact_id", cid).order("created_at", { ascending: false }).then(({ data }) => {
+        if (data) setDeals(data);
+      });
+      supabase.from("quotes").select("*").eq("contact_id", cid).order("created_at", { ascending: false }).then(({ data }) => {
+        if (data) setQuotes(data);
+      });
     }
-  }, [contact, conversation?.id]);
 
-  // Load on contact change. setContactData/setTags run inside async
-  // Supabase callbacks, not synchronously in the effect body.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchContactData();
-  }, [fetchContactData]);
+    // Meetings
+    if (expandedSections.includes("meetings") && !loadedSectionsRef.current[`${cid}_meetings`]) {
+      loadedSectionsRef.current[`${cid}_meetings`] = true;
+      supabase.from("meetings").select("*").eq("contact_id", cid).order("scheduled_at", { ascending: true }).then(({ data }) => {
+        if (data) setMeetings(data);
+      });
+    }
+
+    // Tasks
+    if (expandedSections.includes("tasks") && !loadedSectionsRef.current[`${cid}_tasks`]) {
+      loadedSectionsRef.current[`${cid}_tasks`] = true;
+      fetch(`/api/tasks?contact_id=${cid}`).then(res => res.json()).then(data => {
+        if (data?.tasks) setTasks(data.tasks);
+      }).catch(() => {});
+    }
+
+    // Notes
+    if (expandedSections.includes("notes") && !loadedSectionsRef.current[`${cid}_notes`]) {
+      loadedSectionsRef.current[`${cid}_notes`] = true;
+      supabase.from("contact_notes").select("*").eq("contact_id", cid).order("created_at", { ascending: false }).then(({ data }) => {
+        if (data) setNotes(data);
+      });
+    }
+  }, [expandedSections, contact, conversation?.id]);
 
   const handleCopyPhone = useCallback(async () => {
     if (!contact?.phone) return;
     await navigator.clipboard.writeText(contact.phone);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    // Dep is the whole `contact` object (not `contact?.phone`) so the
-    // React Compiler's inference agrees with the manual dep list —
-    // fixes the `preserve-manual-memoization` lint error.
   }, [contact]);
 
   const handleAddNote = useCallback(async () => {
@@ -344,7 +395,7 @@ export function ContactSidebar({
 
   return (
     <div className="flex h-full w-full flex-col border-l border-border bg-card relative">
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto min-h-0 scrollbar-hide">
         <div className="p-4 pt-6">
           {/* Mobile close button */}
           {onClose && (
@@ -352,15 +403,14 @@ export function ContactSidebar({
               onClick={onClose}
               className="absolute right-4 top-4 lg:hidden rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
-              <User className="h-4 w-4 hidden" /> {/* Just to import, but using X from somewhere else? Wait, let's just use text 'X' or import X */}
+              <X className="h-4 w-4" />
               <span className="sr-only">Close</span>
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4"><path d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
             </button>
           )}
 
-          {/* Contact Info */}
-          <div className="flex flex-col items-center text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-lg font-semibold text-foreground">
+          {/* Contact Info (Always Visible) */}
+          <div className="flex flex-col items-center text-center pb-4 border-b border-border">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
               {contact.avatar_url ? (
                 <img
                   src={contact.avatar_url}
@@ -371,412 +421,375 @@ export function ContactSidebar({
                 initials
               )}
             </div>
-            <h3 className="mt-3 text-sm font-semibold text-foreground">
+            <h3 className="mt-4 text-base font-bold tracking-tight text-foreground">
               {displayName}
             </h3>
             {contact.company && (
-              <p className="text-xs text-muted-foreground">{contact.company}</p>
+              <p className="text-sm font-medium text-muted-foreground mt-0.5">{contact.company}</p>
             )}
-          </div>
 
-          {/* Phone */}
-          <div className="mt-4 space-y-2">
-            <button
-              onClick={handleCopyPhone}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted"
-            >
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <span className="flex-1 text-left">{maskedPhone}</span>
-              {copied ? (
-                <Check className="h-3 w-3 text-primary" />
-              ) : (
-                <Copy className="h-3 w-3 text-muted-foreground" />
-              )}
-            </button>
-
-            {contact.email && (
-              <div className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="truncate">{contact.email}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Divider */}
-          <div className="my-4 border-t border-border" />
-
-          {/* AI Summary */}
-          {conversation && (
-            <div>
-              <div className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                <Sparkles className="h-3 w-3 text-purple-500" />
-                AI Summary
-              </div>
-              <div className="mt-2 space-y-2">
-                {summary ? (
-                  <div className="max-h-48 overflow-y-auto rounded-lg bg-muted px-3 py-2 space-y-2">
-                    {parsedSummary?.actionText ? (
-                      <>
-                        <p className="text-xs text-muted-foreground whitespace-pre-wrap"><strong className="text-foreground">Summary:</strong><br />{parsedSummary.summaryText}</p>
-                        <div className="border-t border-border pt-2 mt-2">
-                          <p className="text-xs text-muted-foreground whitespace-pre-wrap"><strong className="text-foreground">Action:</strong><br />{parsedSummary.actionText}</p>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="mt-2 w-full text-xs h-7"
-                            onClick={() => handleCreateTask(parsedSummary.actionText!)}
-                            disabled={creatingTask}
-                          >
-                            <CheckSquare className="w-3 h-3 mr-2" />
-                            {creatingTask ? "Creating..." : "Convert to Task"}
-                          </Button>
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-xs text-muted-foreground whitespace-pre-wrap">{summary}</p>
-                    )}
-                  </div>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-xs text-muted-foreground"
-                    onClick={handleGenerateSummary}
-                    disabled={generatingSummary}
-                  >
-                    {generatingSummary ? "Generating..." : "Generate Summary"}
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Divider */}
-          <div className="my-4 border-t border-border" />
-
-          {/* Message Analytics */}
-          {conversation && (
-            <div>
-              <div className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                <MessageCircle className="h-3 w-3 text-blue-500" />
-                Message Analytics
-              </div>
-              <div className="mt-2 grid grid-cols-3 gap-2">
-                <div className="flex flex-col items-center justify-center rounded-lg bg-muted py-2">
-                  <span className="text-[10px] font-medium uppercase text-muted-foreground">Bot</span>
-                  <span className="text-lg font-bold text-foreground">{msgStats.bot}</span>
+            <div className="mt-4 w-full grid grid-cols-2 gap-2">
+              <button
+                onClick={handleCopyPhone}
+                className="flex items-center justify-center gap-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 px-3 py-2 text-xs font-medium transition-colors"
+              >
+                <Phone className="h-3.5 w-3.5" />
+                <span className="truncate">{maskedPhone}</span>
+              </button>
+              {contact.email && (
+                <div className="flex items-center justify-center gap-2 rounded-md bg-secondary text-secondary-foreground px-3 py-2 text-xs font-medium">
+                  <Mail className="h-3.5 w-3.5" />
+                  <span className="truncate">{contact.email}</span>
                 </div>
-                <div className="flex flex-col items-center justify-center rounded-lg bg-muted py-2">
-                  <span className="text-[10px] font-medium uppercase text-muted-foreground">Agent</span>
-                  <span className="text-lg font-bold text-foreground">{msgStats.agent}</span>
-                </div>
-                <div className="flex flex-col items-center justify-center rounded-lg bg-muted py-2">
-                  <span className="text-[10px] font-medium uppercase text-muted-foreground">Customer</span>
-                  <span className="text-lg font-bold text-foreground">{msgStats.customer}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Divider */}
-          <div className="my-4 border-t border-border" />
-
-          {/* Tags */}
-          <div>
-            <div className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              <TagIcon className="h-3 w-3" />
-              Tags
-            </div>
-            <div className="mt-2 flex flex-wrap gap-1">
-              {tags.length === 0 && (!conversation || !(conversation as any).ai_auto_tags?.length) ? (
-                <p className="px-1 text-xs text-muted-foreground">No tags</p>
-              ) : (
-                <>
-                  {tags.map((tag) => (
-                    <span
-                      key={tag.contact_tag_id}
-                      className="rounded-full px-2 py-0.5 text-[10px] font-medium"
-                      style={{
-                        backgroundColor: `${tag.color}20`,
-                        color: tag.color,
-                      }}
-                    >
-                      {tag.name}
-                    </span>
-                  ))}
-                  {conversation && (conversation as any).ai_auto_tags?.map((tagStr: string, idx: number) => (
-                    <span
-                      key={`ai-tag-${idx}`}
-                      className="rounded-full bg-primary/10 border border-primary/20 text-primary px-2 py-0.5 text-[10px] font-medium flex items-center gap-0.5"
-                    >
-                      <span>🤖</span> {tagStr}
-                    </span>
-                  ))}
-                </>
               )}
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="my-4 border-t border-border" />
-
-          {/* Active Deals */}
-          <div>
-            <div className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              <DollarSign className="h-3 w-3" />
-              Active Deals
+          {/* ── Tabs (Overview vs Timeline) ───────────────────────── */}
+          <Tabs defaultValue="overview" className="flex-1 flex flex-col overflow-hidden min-h-0">
+            <div className="px-4 border-b border-border">
+              <TabsList className="w-full grid grid-cols-2 bg-muted/50 p-1 rounded-lg h-9">
+                <TabsTrigger value="overview" className="text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md">
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="timeline" className="text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md">
+                  Timeline
+                </TabsTrigger>
+              </TabsList>
             </div>
-            <div className="mt-2 space-y-2">
-              {deals.length === 0 ? (
-                <p className="px-1 text-xs text-muted-foreground">No deals</p>
-              ) : (
-                deals.map((deal) => (
-                  <div
-                    key={deal.id}
-                    className="rounded-lg bg-muted px-3 py-2"
-                  >
-                    <p className="text-sm font-medium text-foreground">
-                      {deal.title}
-                    </p>
-                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                      <span>
-                        {deal.currency ?? "$"}
-                        {deal.value.toLocaleString()}
-                      </span>
-                      {deal.stage && (
-                        <span
-                          className="rounded-full px-1.5 py-0.5 text-[10px]"
-                          style={{
-                            backgroundColor: `${deal.stage.color}20`,
-                            color: deal.stage.color,
-                          }}
-                        >
-                          {deal.stage.name}
-                        </span>
-                      )}
-                    </div>
+
+            <TabsContent value="overview" className="flex-1 overflow-y-auto no-scrollbar m-0 outline-none">
+              <Accordion 
+                multiple
+                value={expandedSections}
+                onValueChange={handleAccordionChange as any}
+                className="w-full border-t-0"
+              >
+            
+            {/* AI Insights & Analytics */}
+            {conversation && (
+              <AccordionItem value="ai-insights" className="border-b-0">
+                <AccordionTrigger className="hover:no-underline py-3 px-1">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    <Sparkles className="h-3.5 w-3.5 text-purple-500" />
+                    AI Insights & Analytics
                   </div>
-                ))
-              )}
-            </div>
-          </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-1 pb-3">
+                  <div className="space-y-3">
+                    {/* Summary */}
+                    {summary ? (
+                      <div className="rounded-lg bg-purple-500/5 border border-purple-500/20 px-3 py-2.5">
+                        {parsedSummary?.actionText || parsedSummary?.points?.length ? (
+                          <>
+                            <p className="text-xs text-muted-foreground leading-relaxed"><strong className="text-foreground">Summary:</strong><br />{parsedSummary.summaryText}</p>
+                            
+                            {parsedSummary.points && parsedSummary.points.length > 0 && (
+                              <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                                {parsedSummary.points.map((pt: string, i: number) => (
+                                  <li key={i} className="flex items-start gap-1.5"><span className="text-purple-500">•</span> {pt}</li>
+                                ))}
+                              </ul>
+                            )}
+                            
+                            {parsedSummary.lastObjection && (
+                              <div className="mt-2 pt-2 border-t border-purple-500/10">
+                                <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Last Objection:</p>
+                                <p className="text-xs font-medium text-amber-600 bg-amber-500/10 px-2 py-1 rounded inline-block">{parsedSummary.lastObjection}</p>
+                              </div>
+                            )}
 
-          {/* Divider */}
-          <div className="my-4 border-t border-border" />
-
-          {/* Quotes */}
-          <div>
-            <div className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              <Receipt className="h-3 w-3" />
-              Quotes
-            </div>
-            <div className="mt-2 space-y-2">
-              {quotes.length === 0 ? (
-                <p className="px-1 text-xs text-muted-foreground">No quotes sent</p>
-              ) : (
-                quotes.map((quote) => (
-                  <div key={quote.id} className="rounded-lg bg-muted px-3 py-2">
-                    <p className="text-sm font-medium text-foreground">{quote.description}</p>
-                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{quote.currency} {quote.amount.toLocaleString()}</span>
-                      <span className={cn("rounded-full px-1.5 py-0.5 text-[10px]", 
-                        quote.status === 'accepted' ? "bg-green-100 text-green-700" :
-                        quote.status === 'rejected' ? "bg-red-100 text-red-700" :
-                        "bg-yellow-100 text-yellow-700"
-                      )}>
-                        {quote.status.toUpperCase()}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="my-4 border-t border-border" />
-
-          {/* Meetings */}
-          <div>
-            <div className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              <Calendar className="h-3 w-3" />
-              Meetings
-            </div>
-            <div className="mt-2 space-y-3">
-              {meetings.length === 0 ? (
-                <p className="px-1 text-xs text-muted-foreground">No meetings yet</p>
-              ) : (
-                meetings.map((meeting) => {
-                  const isPast = meeting.scheduled_at ? new Date(meeting.scheduled_at) < new Date() : false;
-                  const hasNotes = !!(meetingNotes[meeting.id] ?? meeting.notes);
-                  return (
-                    <div key={meeting.id} className={`rounded-lg px-3 py-2 border ${isPast ? 'bg-muted/50 border-border/40' : 'bg-muted border-border'}`}>
-                      {/* Header row */}
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-medium text-foreground leading-snug">{meeting.title}</p>
-                        <span className={`shrink-0 text-[9px] font-semibold uppercase rounded-full px-1.5 py-0.5 ${
-                          meeting.status === 'completed' ? 'bg-green-500/15 text-green-500' :
-                          meeting.status === 'cancelled' ? 'bg-red-500/15 text-red-400' :
-                          isPast ? 'bg-orange-500/15 text-orange-400' :
-                          'bg-primary/15 text-primary'
-                        }`}>
-                          {meeting.status === 'completed' ? 'Done' : meeting.status === 'cancelled' ? 'Cancelled' : isPast ? 'Past' : 'Upcoming'}
-                        </span>
-                      </div>
-
-                      {/* Date + notes saved indicator */}
-                      <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {meeting.scheduled_at 
-                            ? format(new Date(meeting.scheduled_at), "MMM d, yyyy · h:mm a") 
-                            : "Date TBD"}
-                        </span>
-                        {hasNotes && (
-                          <span className="flex items-center gap-1 text-green-500 text-[10px] font-medium">
-                            <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block" />
-                            Notes saved
-                          </span>
+                            {parsedSummary.actionText && (
+                              <div className="border-t border-purple-500/10 pt-2 mt-2">
+                                <p className="text-xs text-muted-foreground leading-relaxed"><strong className="text-foreground">Action:</strong><br />{parsedSummary.actionText}</p>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="mt-2 w-full text-xs h-7 border-purple-500/30 text-purple-600 hover:bg-purple-500/10"
+                                  onClick={() => handleCreateTask(parsedSummary.actionText!)}
+                                  disabled={creatingTask}
+                                >
+                                  <CheckSquare className="w-3 h-3 mr-2" />
+                                  {creatingTask ? "Creating..." : "Convert to Task"}
+                                </Button>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <p className="text-xs text-muted-foreground leading-relaxed">{summary}</p>
                         )}
                       </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-xs text-muted-foreground border-dashed"
+                        onClick={handleGenerateSummary}
+                        disabled={generatingSummary}
+                      >
+                        {generatingSummary ? "Generating..." : "Generate AI Summary"}
+                      </Button>
+                    )}
 
-                      {/* Meeting link */}
-                      {meeting.meeting_link && (
-                        <a 
-                          href={meeting.meeting_link} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="mt-1 flex items-center gap-1 text-[10px] text-primary hover:underline truncate"
-                        >
-                          🔗 {meeting.meeting_link}
-                        </a>
-                      )}
-
-                      {/* Meeting Notes Editor */}
-                      <div className="mt-3 pt-2 border-t border-border/50">
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                          Meeting Notes
-                        </label>
-                        <textarea
-                          value={meetingNotes[meeting.id] ?? meeting.notes ?? ""}
-                          onChange={(e) => setMeetingNotes(prev => ({ ...prev, [meeting.id]: e.target.value }))}
-                          placeholder="Take notes during the call..."
-                          rows={3}
-                          className="mt-1 w-full resize-none rounded-md border border-border bg-background px-2 py-1.5 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
-                        />
-                        <div className="mt-1 flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            className="h-6 flex-1 text-[10px]"
-                            onClick={() => handleSaveMeetingNote(meeting.id)}
-                            disabled={savingMeetingNote[meeting.id] || (meetingNotes[meeting.id] === undefined && !meeting.notes)}
+                    {/* Tags */}
+                    {((tags && tags.length > 0) || ((conversation as any).ai_auto_tags && (conversation as any).ai_auto_tags.length > 0)) && (
+                      <div className="pt-2 border-t border-border/40">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 mb-1.5 block">Conversation Tags</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {tags.map((tag) => (
+                          <span
+                            key={tag.contact_tag_id}
+                            className="rounded-md px-2 py-1 text-[10px] font-bold tracking-wide uppercase"
+                            style={{
+                              backgroundColor: `${tag.color}15`,
+                              color: tag.color,
+                              border: `1px solid ${tag.color}30`
+                            }}
                           >
-                            {savingMeetingNote[meeting.id] ? "Saving..." : "💾 Save Notes"}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-6 flex-1 text-[10px] bg-primary/5 text-primary hover:bg-primary/10 border-primary/20"
-                            onClick={() => handleGenerateFollowup(meeting)}
-                            disabled={generatingFollowup[meeting.id] || !hasNotes}
+                            {tag.name}
+                          </span>
+                        ))}
+                        {(conversation as any).ai_auto_tags?.map((tagStr: string, idx: number) => (
+                          <span
+                            key={`ai-tag-${idx}`}
+                            className="rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-600 px-2 py-1 text-[10px] font-bold tracking-wide uppercase flex items-center gap-1"
                           >
-                            {generatingFollowup[meeting.id] ? "Drafting..." : "✨ Follow-up"}
-                          </Button>
-                        </div>
+                            <Sparkles className="w-2.5 h-2.5" /> {tagStr}
+                          </span>
+                        ))}
                       </div>
                     </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="my-4 border-t border-border" />
-
-          {/* Tasks */}
-          <div>
-            <div className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              <CheckSquare className="h-3 w-3" />
-              Tasks
-            </div>
-            <div className="mt-2 space-y-2">
-              {tasks.length === 0 ? (
-                <p className="px-1 text-xs text-muted-foreground">No pending tasks</p>
-              ) : (
-                tasks.map((task) => (
-                  <div key={task.id} className="rounded-lg bg-muted px-3 py-2">
-                    <p className="text-sm font-medium text-foreground">{task.title}</p>
-                    {task.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{task.description}</p>
                     )}
-                    <div className="mt-2 flex items-center justify-between text-[10px]">
-                      <span className={cn("rounded-full px-1.5 py-0.5", 
-                        task.status === 'completed' ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
-                      )}>
-                        {task.status.toUpperCase()}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-5 px-2 text-[10px]"
-                        onClick={() => handleUpdateTaskStatus(task.id, task.status === 'completed' ? 'pending' : 'completed')}
-                      >
-                        {task.status === 'completed' ? 'Undo' : 'Mark Done'}
-                      </Button>
+
+                    {/* Analytics */}
+                    <div className="pt-2 border-t border-border/40">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 mb-1.5 block">Message Volume</span>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="flex flex-col items-center justify-center rounded-md bg-muted/50 border border-border/50 py-2">
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Bot</span>
+                        <span className="text-sm font-black text-foreground mt-0.5">{msgStats.bot}</span>
+                      </div>
+                      <div className="flex flex-col items-center justify-center rounded-md bg-muted/50 border border-border/50 py-2">
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Agent</span>
+                        <span className="text-sm font-black text-foreground mt-0.5">{msgStats.agent}</span>
+                      </div>
+                      <div className="flex flex-col items-center justify-center rounded-md bg-muted/50 border border-border/50 py-2">
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Customer</span>
+                        <span className="text-sm font-black text-foreground mt-0.5">{msgStats.customer}</span>
+                      </div>
+                      </div>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
+                </AccordionContent>
+              </AccordionItem>
+            )}
 
-          {/* Divider */}
-          <div className="my-4 border-t border-border" />
-
-          {/* Notes */}
-          <div>
-            <div className="flex items-center gap-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              <StickyNote className="h-3 w-3" />
-              Notes
-            </div>
-            <div className="mt-2">
-              <div className="flex gap-2">
-                <textarea
-                  value={newNote}
-                  onChange={(e) => setNewNote(e.target.value)}
-                  placeholder="Add a note..."
-                  rows={2}
-                  className="flex-1 resize-none rounded-lg border border-border bg-muted px-3 py-2 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-primary/50"
-                />
-                <Button
-                  size="sm"
-                  className="h-auto bg-primary px-2 hover:bg-primary/90"
-                  onClick={handleAddNote}
-                  disabled={!newNote.trim() || addingNote}
-                >
-                  <Plus className="h-3 w-3" />
-                </Button>
-              </div>
-
-              <div className="mt-2 space-y-2">
-                {notes.map((note) => (
-                  <div
-                    key={note.id}
-                    className="rounded-lg bg-muted px-3 py-2"
-                  >
-                    <p className="whitespace-pre-wrap text-xs text-muted-foreground">
-                      {note.note_text}
-                    </p>
-                    <p className="mt-1 text-[10px] text-muted-foreground">
-                      {format(new Date(note.created_at), "MMM d, yyyy HH:mm")}
-                    </p>
+            {/* Deals & Quotes */}
+            <AccordionItem value="deals" className="border-b-0">
+              <AccordionTrigger className="hover:no-underline py-3 px-1">
+                <div className="flex items-center justify-between w-full pr-2">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    <DollarSign className="h-3.5 w-3.5" />
+                    Deals & Quotes
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-1 pb-3">
+                <div className="space-y-4">
+                  {/* Deals */}
+                  <div className="space-y-2">
+                    {deals.length === 0 ? (
+                      <p className="text-xs text-muted-foreground italic">No active deals</p>
+                    ) : (
+                      deals.map((deal) => (
+                        <div key={deal.id} className="rounded-lg border border-border bg-card p-2.5 shadow-sm hover:shadow-md transition-shadow">
+                          <p className="text-sm font-semibold text-foreground line-clamp-1">{deal.title}</p>
+                          <div className="mt-1.5 flex items-center justify-between">
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {deal.currency ?? "$"}{deal.value.toLocaleString()}
+                            </span>
+                            {deal.stage && (
+                              <span
+                                className="rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
+                                style={{ backgroundColor: `${deal.stage.color}15`, color: deal.stage.color }}
+                              >
+                                {deal.stage.name}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  
+                  {/* Quotes */}
+                  {quotes.length > 0 && (
+                    <div className="space-y-2 pt-2 border-t border-border/50">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Quotes Sent</p>
+                      {quotes.map((quote) => (
+                        <div key={quote.id} className="rounded-lg border border-border bg-card p-2.5 shadow-sm">
+                          <p className="text-xs font-medium text-foreground line-clamp-1">{quote.description}</p>
+                          <div className="mt-1.5 flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">{quote.currency} {quote.amount.toLocaleString()}</span>
+                            <span className={cn("rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider", 
+                              quote.status === 'accepted' ? "bg-green-500/15 text-green-600" :
+                              quote.status === 'rejected' ? "bg-red-500/15 text-red-600" :
+                              "bg-yellow-500/15 text-yellow-600"
+                            )}>
+                              {quote.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Meetings & Appointments */}
+            <AccordionItem value="meetings" className="border-b-0">
+              <AccordionTrigger className="hover:no-underline py-3 px-1">
+                <div className="flex items-center justify-between w-full pr-2">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5" />
+                    Meetings
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-1 pb-3">
+                <div className="space-y-3">
+                  {meetings.length === 0 ? (
+                    <p className="text-xs text-muted-foreground italic">No meetings scheduled</p>
+                  ) : (
+                    meetings.map((meeting) => {
+                      const isPast = meeting.scheduled_at ? new Date(meeting.scheduled_at) < new Date() : false;
+                      const hasNotes = !!(meetingNotes[meeting.id] ?? meeting.notes);
+                      return (
+                        <div key={meeting.id} className={cn("rounded-lg border p-2.5 shadow-sm", isPast ? 'bg-muted/30 border-border/50' : 'bg-card border-border')}>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className={cn("text-sm font-semibold line-clamp-1", isPast ? "text-muted-foreground" : "text-foreground")}>{meeting.title}</p>
+                              <span className={cn("shrink-0 text-[9px] font-bold uppercase tracking-wider rounded-md px-1.5 py-0.5",
+                                meeting.status === 'completed' ? 'bg-green-500/15 text-green-600' :
+                                meeting.status === 'cancelled' ? 'bg-red-500/15 text-red-600' :
+                                isPast ? 'bg-orange-500/15 text-orange-600' :
+                                'bg-primary/15 text-primary'
+                              )}>
+                                {meeting.status === 'completed' ? 'Done' : meeting.status === 'cancelled' ? 'Cancelled' : isPast ? 'Past' : 'Upcoming'}
+                              </span>
+                            </div>
+                            <span className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                              <Calendar className="h-3 w-3" />
+                              {meeting.scheduled_at ? format(new Date(meeting.scheduled_at), "MMM d, yyyy · h:mm a") : "TBD"}
+                            </span>
+                          </div>
+
+                          <div className="mt-2.5 pt-2.5 border-t border-border/50">
+                            <textarea
+                              value={meetingNotes[meeting.id] ?? meeting.notes ?? ""}
+                              onChange={(e) => setMeetingNotes(prev => ({ ...prev, [meeting.id]: e.target.value }))}
+                              placeholder="Take notes..."
+                              rows={2}
+                              className="w-full resize-none rounded-md border border-border bg-background px-2 py-1.5 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-primary/50"
+                            />
+                            <div className="mt-1.5 flex gap-1.5">
+                              <Button size="sm" variant="secondary" className="h-6 flex-1 text-[10px] font-semibold" onClick={() => handleSaveMeetingNote(meeting.id)} disabled={savingMeetingNote[meeting.id]}>
+                                {savingMeetingNote[meeting.id] ? "Saving..." : "Save Notes"}
+                              </Button>
+                              <Button size="sm" variant="outline" className="h-6 flex-1 text-[10px] font-semibold text-primary border-primary/20 hover:bg-primary/10" onClick={() => handleGenerateFollowup(meeting)} disabled={generatingFollowup[meeting.id] || !hasNotes}>
+                                <Sparkles className="h-3 w-3 mr-1" /> Follow-up
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Tasks & Tickets */}
+            <AccordionItem value="tasks" className="border-b-0">
+              <AccordionTrigger className="hover:no-underline py-3 px-1">
+                <div className="flex items-center justify-between w-full pr-2">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    <CheckSquare className="h-3.5 w-3.5" />
+                    Tasks & Tickets
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-1 pb-3">
+                <div className="space-y-2">
+                  {tasks.length === 0 ? (
+                    <p className="text-xs text-muted-foreground italic">No pending tasks</p>
+                  ) : (
+                    tasks.map((task) => (
+                      <div key={task.id} className="rounded-lg border border-border bg-card p-2.5 shadow-sm group">
+                        <div className="flex gap-2">
+                          <button onClick={() => handleUpdateTaskStatus(task.id, task.status === 'completed' ? 'pending' : 'completed')} className="mt-0.5 text-muted-foreground hover:text-primary transition-colors">
+                            {task.status === 'completed' ? <CheckSquare className="h-4 w-4 text-green-500" /> : <div className="h-4 w-4 rounded-[3px] border-2 border-muted-foreground/40 group-hover:border-primary/50" />}
+                          </button>
+                          <div className="flex-1">
+                            <p className={cn("text-sm font-medium", task.status === 'completed' ? "text-muted-foreground line-through" : "text-foreground")}>{task.title}</p>
+                            {task.description && (
+                              <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{task.description}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Notes & Files */}
+            <AccordionItem value="notes" className="border-b-0">
+              <AccordionTrigger className="hover:no-underline py-3 px-1">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  <StickyNote className="h-3.5 w-3.5" />
+                  Notes & Files
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-1 pb-3">
+                <div className="space-y-3">
+                  <div className="flex gap-2 bg-muted/50 p-2 rounded-lg border border-border/50">
+                    <textarea
+                      value={newNote}
+                      onChange={(e) => setNewNote(e.target.value)}
+                      placeholder="Add a private note..."
+                      rows={2}
+                      className="flex-1 resize-none bg-transparent text-xs text-foreground placeholder-muted-foreground outline-none"
+                    />
+                    <Button size="icon" className="h-7 w-7 rounded-md shrink-0" onClick={handleAddNote} disabled={!newNote.trim() || addingNote}>
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {notes.map((note) => (
+                      <div key={note.id} className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-3 py-2.5">
+                        <p className="whitespace-pre-wrap text-xs text-amber-900 dark:text-amber-100">
+                          {note.note_text}
+                        </p>
+                        <p className="mt-1.5 text-[9px] font-semibold uppercase tracking-wider text-amber-700/60 dark:text-amber-400/60">
+                          {format(new Date(note.created_at), "MMM d, yyyy · h:mm a")}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+            </Accordion>
+            </TabsContent>
+
+            <TabsContent value="timeline" className="flex-1 m-0 outline-none h-full overflow-hidden">
+              <CustomerTimeline contactId={contact.id} />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>

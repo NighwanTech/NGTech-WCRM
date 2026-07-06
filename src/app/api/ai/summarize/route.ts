@@ -66,13 +66,15 @@ export async function POST(request: Request) {
     const { object } = await generateObject({
       model: groq('llama-3.1-8b-instant'),
       schema: z.object({
-        summary: z.string().describe('A very concise 1-2 sentence summary of the conversation.'),
+        summary: z.string().describe('A very concise 1-2 sentence overall summary of the conversation.'),
+        points: z.array(z.string()).describe('List of 3-5 key bullet points extracting core intent, budget, timeline, or requests (e.g. Customer wants an ERP Integration, Budget is ₹10 Lakhs).'),
+        last_objection: z.string().nullable().describe('The primary objection or concern raised by the customer, if any (e.g. Implementation Cost and timeline). Null if none.'),
         action: z.string().describe('A very short, 1-sentence recommended action for the human agent.')
       }),
-      prompt: `Analyze the following conversation between a Customer and an Agent.\n\nConversation Transcript:\n${transcript}`
+      prompt: `Analyze the following conversation between a Customer and an Agent to extract key intelligence points.\n\nConversation Transcript:\n${transcript}`
     })
 
-    const finalSummary = `SUMMARY:\n${object.summary}\n\nACTION:\n${object.action}`
+    const finalSummary = JSON.stringify(object);
 
     // Save summary to the database
     await supabase
