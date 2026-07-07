@@ -39,13 +39,15 @@ export async function GET() {
     const topicDistribution: Record<string, number> = {}
     if (!topicsErr && topics) {
       for (const t of topics) {
-        topicDistribution[t.topic] = (topicDistribution[t.topic] || 0) + 1
+        if (!t.topic) continue
+        const name = t.topic.charAt(0).toUpperCase() + t.topic.slice(1).toLowerCase()
+        topicDistribution[name] = (topicDistribution[name] || 0) + 1
       }
     }
 
     // Convert topic distribution to UI format
     const topicData = Object.entries(topicDistribution).map(([name, value]) => ({
-      name: name.charAt(0).toUpperCase() + name.slice(1),
+      name,
       value,
     }))
 
