@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// We must use the Service Role Key here because the public marketing 
-// website visitor is unauthenticated, but we need to insert into the 
-// `contacts` table which is protected by Row Level Security (RLS).
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: { persistSession: false }
-})
-
 export async function POST(req: NextRequest) {
+  // Lazy-init inside handler — env vars aren't available at build time on Vercel
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  )
   try {
     const body = await req.json()
     
