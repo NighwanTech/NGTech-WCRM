@@ -69,20 +69,48 @@ export async function POST(request: Request) {
         summary: z.string().describe('A very concise 1-2 sentence overall summary of the conversation.'),
         points: z.array(z.string()).describe('List of 3-5 key bullet points extracting core intent, budget, timeline, or requests (e.g. Customer wants an ERP Integration, Budget is ₹10 Lakhs).'),
         last_objection: z.string().nullable().describe('The primary objection or concern raised by the customer, if any (e.g. Implementation Cost and timeline). Null if none.'),
-        action: z.string().describe('A very short, 1-sentence recommended action for the human agent.')
+        action: z.string().describe('A very short, 1-sentence recommended action for the human agent.'),
+        lead_score: z.string().describe('Evaluate the customer lead status. MUST be exactly one of: hot, warm, cold'),
+        sentiment: z.string().describe('Overall sentiment. MUST be exactly one of: positive, neutral, negative'),
+        priority: z.string().describe('Priority level. MUST be exactly one of: high, medium, low'),
+        confidence: z.number().min(0).max(100).describe('Confidence score (0-100) of your evaluation.')
       }),
-      prompt: `Analyze the following conversation between a Customer and an Agent to extract key intelligence points.\n\nConversation Transcript:\n${transcript}`
+      prompt: `Analyze the following conversation between a Customer and an Agent to extract key intelligence points and health metrics.\n\nConversation Transcript:\n${transcript}`
     })
 
-    const finalSummary = JSON.stringify(object);
+    const finalSummary = JSON.stringify({
+      summary: object.summary,
+      points: object.points,
+      last_objection: object.last_objection,
+      action: object.action
+    });
 
-    // Save summary to the database
+    // Safely parse the enum fields to prevent database constraint errors
+    const safeLeadScore = ['hot', 'warm', 'cold'].includes(object.lead_score?.toLowerCase()) ? object.lead_score.toLowerCase() : 'warm';
+    const safeSentiment = ['positive', 'neutral', 'negative'].includes(object.sentiment?.toLowerCase()) ? object.sentiment.toLowerCase() : 'neutral';
+    const safePriority = ['high', 'medium', 'low'].includes(object.priority?.toLowerCase()) ? object.priority.toLowerCase() : 'medium';
+    const safeConfidence = typeof object.confidence === 'number' ? Math.round(object.confidence) : 80;
+
+    // Save summary and health metrics to the database
     await supabase
       .from('conversations')
-      .update({ ai_summary: finalSummary })
+      .update({ 
+        ai_summary: finalSummary,
+        ai_lead_score: safeLeadScore,
+        ai_sentiment: safeSentiment,
+        priority: safePriority,
+        ai_confidence: safeConfidence
+      })
       .eq('id', conversation_id)
 
-    return NextResponse.json({ success: true, summary: finalSummary })
+    return NextResponse.json({ 
+      success: true, 
+      summary: finalSummary,
+      lead_score: safeLeadScore,
+      sentiment: safeSentiment,
+      priority: safePriority,
+      confidence: safeConfidence
+    })
   } catch (error: any) {
     console.error('Error in AI summarize POST:', error)
     return NextResponse.json(

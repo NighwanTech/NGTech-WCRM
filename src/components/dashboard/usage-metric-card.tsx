@@ -23,7 +23,7 @@ export function UsageMetricCard({ title, icon: Icon, bars }: UsageMetricCardProp
           <Icon className="h-4 w-4" />
         </div>
       </div>
-      
+
       <div className="relative z-10 flex flex-col gap-3">
         {bars.map((bar, i) => {
           const isUnlimited = bar.max <= 0
@@ -31,7 +31,7 @@ export function UsageMetricCard({ title, icon: Icon, bars }: UsageMetricCardProp
           const threshold = bar.warningThreshold ?? 80
           const isWarning = pct >= threshold && pct < 100
           const isDanger = pct >= 100
-          
+
           return (
             <div key={i} className="space-y-1.5">
               <div className="flex items-center justify-between text-xs font-medium">
@@ -43,12 +43,12 @@ export function UsageMetricCard({ title, icon: Icon, bars }: UsageMetricCardProp
                   {bar.current.toLocaleString()} / {isUnlimited ? 'Unlimited' : bar.max.toLocaleString()}
                 </span>
               </div>
-              <Progress 
-                value={Math.min(pct, 100)} 
+              <Progress
+                value={Math.min(pct, 100)}
                 className={cn(
                   "h-1.5 transition-colors",
                   isDanger && "[&>div]:bg-destructive"
-                )} 
+                )}
               />
             </div>
           )

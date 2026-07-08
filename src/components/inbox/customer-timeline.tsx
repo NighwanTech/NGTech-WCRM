@@ -4,8 +4,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import { format, isToday, isYesterday, isThisWeek, subWeeks, isSameWeek } from "date-fns";
 import { cn } from "@/lib/utils";
 import { 
-  MessageSquare, DollarSign, Sparkles, LifeBuoy, 
-  Calendar, CheckSquare, ShoppingCart, Settings,
+  DollarSign, LifeBuoy, 
+  Calendar, CheckSquare, Settings,
   ChevronDown, ChevronUp, ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,13 +31,10 @@ interface CustomerTimelineProps {
 
 const CATEGORIES = [
   { id: "all", label: "All" },
-  { id: "communication", label: "Communication", color: "text-blue-500", bg: "bg-blue-500/10" },
   { id: "sales", label: "Sales", color: "text-emerald-500", bg: "bg-emerald-500/10" },
   { id: "support", label: "Support", color: "text-orange-500", bg: "bg-orange-500/10" },
-  { id: "ai", label: "AI", color: "text-purple-500", bg: "bg-purple-500/10" },
-  { id: "meetings", label: "Meetings", color: "text-yellow-500", bg: "bg-yellow-500/10" },
-  { id: "tasks", label: "Tasks", color: "text-gray-500", bg: "bg-gray-500/10" },
-  { id: "orders", label: "Orders", color: "text-indigo-500", bg: "bg-indigo-500/10" },
+  { id: "meetings", label: "Meetings", color: "text-amber-500", bg: "bg-amber-500/10" },
+  { id: "tasks", label: "Tasks", color: "text-cyan-500", bg: "bg-cyan-500/10" },
   { id: "system", label: "System", color: "text-slate-500", bg: "bg-slate-500/10" },
 ];
 
@@ -47,13 +44,10 @@ function getCategoryConfig(category: string) {
 
 function getCategoryIcon(category: string) {
   switch (category) {
-    case "communication": return <MessageSquare className="h-4 w-4" />;
     case "sales": return <DollarSign className="h-4 w-4" />;
     case "support": return <LifeBuoy className="h-4 w-4" />;
-    case "ai": return <Sparkles className="h-4 w-4" />;
     case "meetings": return <Calendar className="h-4 w-4" />;
     case "tasks": return <CheckSquare className="h-4 w-4" />;
-    case "orders": return <ShoppingCart className="h-4 w-4" />;
     case "system": default: return <Settings className="h-4 w-4" />;
   }
 }
@@ -257,24 +251,15 @@ function ActivityCard({ activity, config, isLast }: { activity: Activity, config
               </div>
             </div>
             
-            {/* Metadata Payload Render */}
-            {Object.keys(activity.metadata || {}).length > 0 && (
-              <div className="rounded border border-border bg-background p-2 font-mono text-[10px]">
-                <pre className="whitespace-pre-wrap break-all text-muted-foreground">
-                  {JSON.stringify(activity.metadata, null, 2)}
-                </pre>
-              </div>
-            )}
-            
-            {/* Deep Links (Example implementation based on metadata) */}
+            {/* Deep Links based on metadata */}
             {activity.metadata?.deal_id && (
               <Button size="sm" variant="secondary" className="mt-3 h-7 text-xs w-full justify-between">
-                Open Deal <ExternalLink className="h-3 w-3 ml-2" />
+                View Deal Details <ExternalLink className="h-3 w-3 ml-2" />
               </Button>
             )}
             {activity.metadata?.ticket_id && (
               <Button size="sm" variant="secondary" className="mt-3 h-7 text-xs w-full justify-between">
-                Open Ticket <ExternalLink className="h-3 w-3 ml-2" />
+                View Support Ticket <ExternalLink className="h-3 w-3 ml-2" />
               </Button>
             )}
           </div>

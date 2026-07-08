@@ -76,7 +76,7 @@ BEGIN
         PERFORM log_customer_activity(
             NEW.account_id,
             NEW.contact_id,
-            NEW.owner_id,
+            auth.uid(),
             'sales',
             'deal_created',
             'Deal Created',
@@ -128,7 +128,7 @@ BEGIN
         PERFORM log_customer_activity(
             NEW.account_id,
             NEW.contact_id,
-            NEW.assigned_to,
+            auth.uid(),
             'meetings',
             'meeting_scheduled',
             'Meeting Scheduled',
@@ -204,12 +204,12 @@ BEGIN
         PERFORM log_customer_activity(
             NEW.account_id,
             NEW.contact_id,
-            NEW.assigned_to,
+            auth.uid(),
             'tasks',
             'task_created',
-            'Task Created',
-            'Task "' || NEW.title || '" was created.',
-            jsonb_build_object('task_id', NEW.id),
+            'Task: ' || NEW.title,
+            COALESCE(NEW.description, 'A new task was created.'),
+            jsonb_build_object('task_id', NEW.id, 'status', NEW.status),
             FALSE
         );
     ELSIF TG_OP = 'UPDATE' AND OLD.status != NEW.status AND NEW.status = 'completed' THEN
@@ -219,9 +219,9 @@ BEGIN
             auth.uid(),
             'tasks',
             'task_completed',
-            'Task Completed',
-            'Task "' || NEW.title || '" was marked as done.',
-            jsonb_build_object('task_id', NEW.id),
+            'Task Completed: ' || NEW.title,
+            'Action taken: ' || COALESCE(NEW.description, 'Task was marked as done.'),
+            jsonb_build_object('task_id', NEW.id, 'status', NEW.status, 'completed_at', NOW()),
             FALSE
         );
     END IF;

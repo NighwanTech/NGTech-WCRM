@@ -96,7 +96,7 @@ export default function DashboardPage() {
   const [intelligenceLoading, setIntelligenceLoading] = useState(true)
 
   const [selectedAgent, setSelectedAgent] = useState<string | 'all'>('all')
-  const [agents, setAgents] = useState<{user_id: string, full_name: string}[]>([])
+  const [agents, setAgents] = useState<{ user_id: string, full_name: string }[]>([])
 
   const loadAll = useCallback(() => {
     const db = createClient()
@@ -184,10 +184,10 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!account?.id) return
     const db = createClient()
-    db.from('account_members').select('user_id').eq('account_id', account.id).then(({data: members}) => {
+    db.from('account_members').select('user_id').eq('account_id', account.id).then(({ data: members }) => {
       if (members) {
         const ids = members.map((m: any) => m.user_id);
-        db.from('profiles').select('user_id, full_name').in('user_id', ids).then(({data: profiles}) => {
+        db.from('profiles').select('user_id, full_name').in('user_id', ids).then(({ data: profiles }) => {
           if (profiles) setAgents(profiles as any);
         });
       }
@@ -232,7 +232,7 @@ export default function DashboardPage() {
           </p>
         </div>
         {(account?.role === 'admin' || account?.role === 'owner') && (
-          <Select value={selectedAgent} onValueChange={(v) => { setSelectedAgent(v); setSeries({7: null, 30: null, 90: null}) }}>
+          <Select value={selectedAgent} onValueChange={(v) => { setSelectedAgent(v); setSeries({ 7: null, 30: null, 90: null }) }}>
             <SelectTrigger className="w-[200px] bg-muted border-border">
               <SelectValue placeholder="Filter by Agent" />
             </SelectTrigger>

@@ -37,6 +37,8 @@ import {
   Clock,
   HeartPulse,
   Plus,
+  ChevronDown,
+  Calendar,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -96,6 +98,7 @@ export default function ContactProfilePage({ params }: { params: Promise<{ id: s
   const [showAllDeals, setShowAllDeals] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const [tasks, setTasks] = useState<any[]>([]);
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   
   // Health / AI Data
   const [latestConversation, setLatestConversation] = useState<any>(null);
@@ -591,8 +594,8 @@ export default function ContactProfilePage({ params }: { params: Promise<{ id: s
                     <Plus className="size-3" />
                   </Button>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
+                <CardContent className="px-3 pb-3 pt-0">
+                  <div className="space-y-1.5">
                     {tasks.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-6 text-center">
                         <div className="size-10 rounded-full bg-muted flex items-center justify-center mb-2">
@@ -601,38 +604,113 @@ export default function ContactProfilePage({ params }: { params: Promise<{ id: s
                         <p className="text-sm text-muted-foreground">No tasks.</p>
                       </div>
                     ) : (
-                      tasks.map((task) => (
-                        <div key={task.id} className="rounded-lg border border-border bg-card p-3 shadow-sm flex items-start gap-3 group">
-                          <button 
-                            className="mt-0.5 text-muted-foreground hover:text-primary transition-colors shrink-0"
-                            onClick={async () => {
-                              const newStatus = task.status === 'completed' ? 'pending' : 'completed';
-                              const res = await fetch("/api/tasks", {
-                                method: "PATCH",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ task_id: task.id, status: newStatus }),
-                              });
-                              if (res.ok) {
-                                fetchContactData();
-                              } else {
-                                toast.error("Failed to update task");
-                              }
-                            }}
-                          >
-                            {task.status === 'completed' ? (
-                              <CheckSquare className="size-4 text-green-500" />
-                            ) : (
-                              <div className="size-4 rounded-[3px] border-2 border-muted-foreground/40 group-hover:border-primary/50" />
+                      tasks.map((task) => {
+                        const isCompleted = task.status === 'completed';
+                        const isExpanded = expandedTaskId === task.id;
+                        return (
+                          <div 
+                            key={task.id} 
+                            className={cn(
+                              "rounded-md transition-colors",
+                              isCompleted ? "opacity-60" : "",
+                              isExpanded ? "bg-muted/50 ring-1 ring-border" : ""
                             )}
-                          </button>
-                          <div>
-                            <p className={cn("text-sm font-medium leading-tight", task.status === 'completed' ? "text-muted-foreground line-through" : "text-foreground")}>{task.title}</p>
-                            {task.description && (
-                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{task.description}</p>
+                          >
+                            <div 
+                              className={cn(
+                                "flex items-start gap-2.5 px-2.5 py-2 group cursor-pointer rounded-md",
+                                !isExpanded && !isCompleted && "hover:bg-muted/50"
+                              )}
+                            >
+                              <button 
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  const newStatus = isCompleted ? 'pending' : 'completed';
+                                  const res = await fetch("/api/tasks", {
+                                    method: "PATCH",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ task_id: task.id, status: newStatus }),
+                                  });
+                                  if (res.ok) {
+                                    fetchContactData();
+                                  } else {
+                                    toast.error("Failed to update task");
+                                  }
+                                }} 
+                                className="mt-0.5 shrink-0 transition-colors"
+                              >
+                                {isCompleted ? (
+                                  <CheckSquare className="h-4 w-4 text-emerald-500" />
+                                ) : (
+                                  <div className="h-4 w-4 rounded border-2 border-muted-foreground/30 group-hover:border-primary/60 transition-colors" />
+                                )}
+                              </button>
+                              <div 
+                                className="flex-1 min-w-0"
+                                onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className={cn(
+                                    "text-xs font-medium leading-tight",
+                                    isCompleted ? "text-muted-foreground line-through" : "text-foreground"
+                                  )}>
+                                    {task.title}
+                                  </p>
+                                  <ChevronDown className={cn(
+                                    "h-3 w-3 shrink-0 text-muted-foreground/50 transition-transform",
+                                    isExpanded && "rotate-180"
+                                  )} />
+                                </div>
+                                {!isExpanded && task.description && (
+                                  <p className="text-[11px] text-muted-foreground/70 line-clamp-1 mt-0.5">{task.description}</p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Expanded Detail Panel */}
+                            {isExpanded && (
+                              <div className="px-3 pb-2.5 pt-0 space-y-2">
+                                {task.description && (
+                                  <p className="text-[11px] text-muted-foreground leading-relaxed pl-6.5 whitespace-pre-wrap">
+                                    {task.description}
+                                  </p>
+                                )}
+                                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-muted-foreground/80 pl-6.5 pt-1 border-t border-border/40">
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    Created {new Date(task.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                  </span>
+                                  {task.due_date && task.status !== 'completed' && (
+                                    <span className={cn(
+                                      "flex items-center gap-1 font-medium",
+                                      new Date(task.due_date) < new Date()
+                                        ? "text-red-500"
+                                        : "text-muted-foreground"
+                                    )}>
+                                      <Calendar className="h-3 w-3" />
+                                      Due {new Date(task.due_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                    </span>
+                                  )}
+                                  {isCompleted && task.updated_at && (
+                                    <span className="flex items-center gap-1 font-medium text-emerald-600/80">
+                                      <CheckSquare className="h-3 w-3" />
+                                      Completed {new Date(task.updated_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    </span>
+                                  )}
+                                  <span className={cn(
+                                    "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-semibold uppercase",
+                                    isCompleted 
+                                      ? "bg-emerald-500/10 text-emerald-600" 
+                                      : "bg-amber-500/10 text-amber-600"
+                                  )}>
+                                    {isCompleted ? "Done" : "Pending"}
+                                  </span>
+                                </div>
+                              </div>
                             )}
                           </div>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 </CardContent>
@@ -663,6 +741,17 @@ export default function ContactProfilePage({ params }: { params: Promise<{ id: s
                 <CardContent className="relative z-10">
                   <div className="text-sm text-foreground/80 leading-relaxed space-y-4">
                     {(() => {
+                      if (!latestConversation?.id) {
+                        return (
+                          <div className="flex flex-col items-center justify-center py-6 text-center">
+                            <BrainCircuit className="size-8 text-indigo-500/50 mb-3" />
+                            <p className="text-muted-foreground mb-4">
+                              Start a WhatsApp conversation with this contact first to generate an AI intelligence summary.
+                            </p>
+                          </div>
+                        );
+                      }
+
                       if (!latestConversation?.ai_summary) {
                         return (
                           <div className="flex flex-col items-center justify-center py-6 text-center">
@@ -672,10 +761,6 @@ export default function ContactProfilePage({ params }: { params: Promise<{ id: s
                               variant="outline" 
                               className="border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10"
                               onClick={async () => {
-                                if (!latestConversation?.id) {
-                                  toast.error("No active conversation found.");
-                                  return;
-                                }
                                 try {
                                   const res = await fetch('/api/ai/summarize', {
                                     method: 'POST',
@@ -684,13 +769,20 @@ export default function ContactProfilePage({ params }: { params: Promise<{ id: s
                                   });
                                   const data = await res.json();
                                   if (res.ok) {
-                                    setLatestConversation({ ...latestConversation, ai_summary: data.summary });
-                                    toast.success("Summary generated!");
+                                    setLatestConversation({ 
+                                      ...latestConversation, 
+                                      ai_summary: data.summary,
+                                      ai_lead_score: data.lead_score,
+                                      ai_sentiment: data.sentiment,
+                                      priority: data.priority,
+                                      ai_confidence: data.confidence
+                                    });
+                                    toast.success("AI Analysis Complete!");
                                   } else {
-                                    toast.error(data.error || "Failed to generate summary");
+                                    toast.error(data.error || "Failed to generate AI analysis");
                                   }
                                 } catch (e: any) {
-                                  toast.error("Failed to generate summary");
+                                  toast.error("Failed to generate AI analysis");
                                 }
                               }}
                             >

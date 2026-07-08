@@ -50,8 +50,8 @@ function DeltaRow({ sign, label }: { sign: number; label: string }) {
     sign > 0
       ? 'text-primary'
       : sign < 0
-      ? 'text-red-400'
-      : 'text-muted-foreground'
+        ? 'text-red-400'
+        : 'text-muted-foreground'
   const Arrow = sign > 0 ? ArrowUp : sign < 0 ? ArrowDown : Minus
   return (
     <div className={cn('mt-2 flex items-center gap-1 text-sm', tone)}>

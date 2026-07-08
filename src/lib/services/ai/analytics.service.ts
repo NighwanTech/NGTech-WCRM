@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import type { AIAnalyticsEvent } from '@/types';
 
 export class AIAnalyticsService {
@@ -7,7 +7,9 @@ export class AIAnalyticsService {
    */
   static async logEvent(event: Omit<AIAnalyticsEvent, 'id' | 'created_at'> & { language?: string, intent_category?: string }) {
     try {
-      const supabase = await createClient();
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
       
       const { error } = await supabase
         .from('ai_analytics_events')

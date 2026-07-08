@@ -102,7 +102,10 @@ export async function PATCH(request: Request) {
 
     const { data, error } = await supabase
       .from('tasks')
-      .update({ status })
+      .update({ 
+        status,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', task_id)
       .eq('user_id', user.id)
       .select()

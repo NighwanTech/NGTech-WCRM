@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { maskPhone } from "@/lib/masking";
+import { uploadAccountMedia } from "@/lib/storage/upload-media";
 import type { Contact, Deal, ContactNote, Tag, Conversation } from "@/types";
 import {
   MoreVertical,
@@ -33,6 +34,12 @@ import {
   Receipt,
   FileText,
   MessageCircle,
+  Clock,
+  ChevronDown,
+  Paperclip,
+  Loader2,
+  FileIcon,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -89,14 +96,18 @@ export function ContactSidebar({
   const agentName = profile?.full_name || "Your Agent";
   const [copied, setCopied] = useState(false);
   const [deals, setDeals] = useState<Deal[]>([]);
-  const [notes, setNotes] = useState<ContactNote[]>([]);
+  const [notes, setNotes] = useState<(ContactNote & { is_internal_message?: boolean })[]>([]);
   const [tags, setTags] = useState<(Tag & { contact_tag_id: string })[]>([]);
   const [newNote, setNewNote] = useState("");
   const [addingNote, setAddingNote] = useState(false);
   const [summary, setSummary] = useState(conversation?.ai_summary || "");
   const [generatingSummary, setGeneratingSummary] = useState(false);
   const [tasks, setTasks] = useState<any[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [creatingTask, setCreatingTask] = useState(false);
+  const [taskCreated, setTaskCreated] = useState(false);
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [meetingNotes, setMeetingNotes] = useState<{ [key: string]: string }>({});
@@ -240,6 +251,7 @@ export function ContactSidebar({
       const data = await res.json();
       if (res.ok && data.task) {
         setTasks((prev) => [data.task, ...prev]);
+        setTaskCreated(true);
         toast.success("Task created!");
       } else {
         toast.error(data.error || "Failed to create task");
@@ -336,11 +348,32 @@ export function ContactSidebar({
       }).catch(() => {});
     }
 
-    // Notes
+    // Notes & Files
     if (expandedSections.includes("notes") && !loadedSectionsRef.current[`${cid}_notes`]) {
       loadedSectionsRef.current[`${cid}_notes`] = true;
-      supabase.from("contact_notes").select("*").eq("contact_id", cid).order("created_at", { ascending: false }).then(({ data }) => {
-        if (data) setNotes(data);
+      
+      Promise.all([
+        supabase.from("contact_notes").select("*").eq("contact_id", cid),
+        conversation?.id 
+          ? supabase.from("messages").select("*").eq("conversation_id", conversation.id).eq("is_internal", true) 
+          : Promise.resolve({ data: [] })
+      ]).then(([notesRes, messagesRes]) => {
+        const standardNotes = (notesRes.data || []) as ContactNote[];
+        const internalNotes = (messagesRes.data || []).map((m: any) => ({
+          id: m.id,
+          contact_id: cid,
+          user_id: m.sender_id || '',
+          note_text: m.content_text,
+          media_url: m.media_url,
+          created_at: m.created_at,
+          is_internal_message: true
+        }));
+        
+        const merged = [...standardNotes, ...internalNotes].sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        
+        setNotes(merged);
       });
     }
   }, [expandedSections, contact, conversation?.id]);
@@ -351,6 +384,44 @@ export function ContactSidebar({
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [contact]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !contact || !accountId) return;
+
+    setIsUploading(true);
+    try {
+      const { publicUrl } = await uploadAccountMedia("chat-media", file);
+
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const { data, error } = await supabase
+        .from("contact_notes")
+        .insert({
+          contact_id: contact.id,
+          account_id: accountId,
+          user_id: session?.user?.id,
+          media_url: publicUrl,
+          media_name: file.name,
+          media_type: file.type,
+          note_text: null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      if (data) setNotes((prev) => [data, ...prev]);
+      
+      toast.success("File uploaded successfully");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to upload file");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const handleAddNote = useCallback(async () => {
     if (!contact || !newNote.trim()) return;
@@ -395,21 +466,20 @@ export function ContactSidebar({
 
   return (
     <div className="flex h-full w-full flex-col border-l border-border bg-card relative">
-      <div className="flex-1 overflow-y-auto min-h-0 scrollbar-hide">
-        <div className="p-4 pt-6">
-          {/* Mobile close button */}
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="absolute right-4 top-4 lg:hidden rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </button>
-          )}
+      {/* Mobile close button */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 lg:hidden z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </button>
+      )}
 
-          {/* Contact Info (Always Visible) */}
-          <div className="flex flex-col items-center text-center pb-4 border-b border-border">
+      <div className="p-4 pt-6 shrink-0">
+        {/* Contact Info (Always Visible) */}
+        <div className="flex flex-col items-center text-center pb-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
               {contact.avatar_url ? (
                 <img
@@ -444,22 +514,23 @@ export function ContactSidebar({
               )}
             </div>
           </div>
+        </div>
 
-          {/* ── Tabs (Overview vs Timeline) ───────────────────────── */}
-          <Tabs defaultValue="overview" className="flex-1 flex flex-col overflow-hidden min-h-0">
-            <div className="px-4 border-b border-border">
-              <TabsList className="w-full grid grid-cols-2 bg-muted/50 p-1 rounded-lg h-9">
-                <TabsTrigger value="overview" className="text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md">
-                  Overview
-                </TabsTrigger>
-                <TabsTrigger value="timeline" className="text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md">
-                  Timeline
-                </TabsTrigger>
-              </TabsList>
-            </div>
+      {/* ── Tabs (Overview vs Timeline) ───────────────────────── */}
+      <Tabs defaultValue="overview" className="flex-1 flex flex-col min-h-0">
+        <div className="px-4 pb-2 border-b border-border shrink-0">
+          <TabsList className="w-full grid grid-cols-2 bg-muted/50 p-1 rounded-lg h-9">
+            <TabsTrigger value="overview" className="text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md">
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="timeline" className="text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md">
+              Timeline
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-            <TabsContent value="overview" className="flex-1 overflow-y-auto no-scrollbar m-0 outline-none">
-              <Accordion 
+        <TabsContent value="overview" className="flex-1 overflow-y-auto no-scrollbar m-0 outline-none px-4">
+          <Accordion 
                 multiple
                 value={expandedSections}
                 onValueChange={handleAccordionChange as any}
@@ -505,12 +576,17 @@ export function ContactSidebar({
                                 <Button 
                                   variant="outline" 
                                   size="sm" 
-                                  className="mt-2 w-full text-xs h-7 border-purple-500/30 text-purple-600 hover:bg-purple-500/10"
-                                  onClick={() => handleCreateTask(parsedSummary.actionText!)}
-                                  disabled={creatingTask}
+                                  className={cn(
+                                    "mt-2 w-full text-xs h-7",
+                                    taskCreated 
+                                      ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10 cursor-default" 
+                                      : "border-purple-500/30 text-purple-600 hover:bg-purple-500/10"
+                                  )}
+                                  onClick={() => !taskCreated && handleCreateTask(parsedSummary.actionText!)}
+                                  disabled={creatingTask || taskCreated}
                                 >
                                   <CheckSquare className="w-3 h-3 mr-2" />
-                                  {creatingTask ? "Creating..." : "Convert to Task"}
+                                  {creatingTask ? "Creating..." : taskCreated ? "Task Created ✓" : "Convert to Task"}
                                 </Button>
                               </div>
                             )}
@@ -519,17 +595,27 @@ export function ContactSidebar({
                           <p className="text-xs text-muted-foreground leading-relaxed">{summary}</p>
                         )}
                       </div>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-xs text-muted-foreground border-dashed"
-                        onClick={handleGenerateSummary}
-                        disabled={generatingSummary}
-                      >
-                        {generatingSummary ? "Generating..." : "Generate AI Summary"}
-                      </Button>
-                    )}
+                    ) : null}
+
+                    {/* Generate / Regenerate Button — always visible */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "w-full text-xs h-7",
+                        summary 
+                          ? "text-muted-foreground hover:text-purple-600 hover:border-purple-500/30" 
+                          : "text-muted-foreground border-dashed"
+                      )}
+                      onClick={() => {
+                        setTaskCreated(false);
+                        handleGenerateSummary();
+                      }}
+                      disabled={generatingSummary}
+                    >
+                      <Sparkles className="w-3 h-3 mr-2" />
+                      {generatingSummary ? "Analyzing..." : summary ? "Regenerate AI Summary" : "Generate AI Summary"}
+                    </Button>
 
                     {/* Tags */}
                     {((tags && tags.length > 0) || ((conversation as any).ai_auto_tags && (conversation as any).ai_auto_tags.length > 0)) && (
@@ -718,28 +804,115 @@ export function ContactSidebar({
                     <CheckSquare className="h-3.5 w-3.5" />
                     Tasks & Tickets
                   </div>
+                  {tasks.length > 0 && (
+                    <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/15 px-1.5 text-[10px] font-bold text-primary">
+                      {tasks.filter(t => t.status !== 'completed').length}
+                    </span>
+                  )}
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-1 pb-3">
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {tasks.length === 0 ? (
-                    <p className="text-xs text-muted-foreground italic">No pending tasks</p>
+                    <p className="text-xs text-muted-foreground italic py-3 text-center">No tasks yet</p>
                   ) : (
-                    tasks.map((task) => (
-                      <div key={task.id} className="rounded-lg border border-border bg-card p-2.5 shadow-sm group">
-                        <div className="flex gap-2">
-                          <button onClick={() => handleUpdateTaskStatus(task.id, task.status === 'completed' ? 'pending' : 'completed')} className="mt-0.5 text-muted-foreground hover:text-primary transition-colors">
-                            {task.status === 'completed' ? <CheckSquare className="h-4 w-4 text-green-500" /> : <div className="h-4 w-4 rounded-[3px] border-2 border-muted-foreground/40 group-hover:border-primary/50" />}
-                          </button>
-                          <div className="flex-1">
-                            <p className={cn("text-sm font-medium", task.status === 'completed' ? "text-muted-foreground line-through" : "text-foreground")}>{task.title}</p>
-                            {task.description && (
-                              <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{task.description}</p>
+                    tasks.map((task) => {
+                      const isCompleted = task.status === 'completed';
+                      const isExpanded = expandedTaskId === task.id;
+                      return (
+                        <div 
+                          key={task.id} 
+                          className={cn(
+                            "rounded-md transition-colors",
+                            isCompleted ? "opacity-60" : "",
+                            isExpanded ? "bg-muted/50 ring-1 ring-border" : ""
+                          )}
+                        >
+                          <div 
+                            className={cn(
+                              "flex items-start gap-2.5 px-2.5 py-2 group cursor-pointer rounded-md",
+                              !isExpanded && !isCompleted && "hover:bg-muted/50"
                             )}
+                          >
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUpdateTaskStatus(task.id, isCompleted ? 'pending' : 'completed');
+                              }} 
+                              className="mt-0.5 shrink-0 transition-colors"
+                            >
+                              {isCompleted ? (
+                                <CheckSquare className="h-4 w-4 text-emerald-500" />
+                              ) : (
+                                <div className="h-4 w-4 rounded border-2 border-muted-foreground/30 group-hover:border-primary/60 transition-colors" />
+                              )}
+                            </button>
+                            <div 
+                              className="flex-1 min-w-0"
+                              onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <p className={cn(
+                                  "text-xs font-medium leading-tight",
+                                  isCompleted ? "text-muted-foreground line-through" : "text-foreground"
+                                )}>
+                                  {task.title}
+                                </p>
+                                <ChevronDown className={cn(
+                                  "h-3 w-3 shrink-0 text-muted-foreground/50 transition-transform",
+                                  isExpanded && "rotate-180"
+                                )} />
+                              </div>
+                              {!isExpanded && task.description && (
+                                <p className="text-[11px] text-muted-foreground/70 line-clamp-1 mt-0.5">{task.description}</p>
+                              )}
+                            </div>
                           </div>
+
+                          {/* Expanded Detail Panel */}
+                          {isExpanded && (
+                            <div className="px-3 pb-2.5 pt-0 space-y-2">
+                              {task.description && (
+                                <p className="text-[11px] text-muted-foreground leading-relaxed pl-6.5 whitespace-pre-wrap">
+                                  {task.description}
+                                </p>
+                              )}
+                              <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-muted-foreground/80 pl-6.5 pt-1 border-t border-border/40">
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  Created {new Date(task.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </span>
+                                {task.due_date && task.status !== 'completed' && (
+                                  <span className={cn(
+                                    "flex items-center gap-1 font-medium",
+                                    new Date(task.due_date) < new Date()
+                                      ? "text-red-500"
+                                      : "text-muted-foreground"
+                                  )}>
+                                    <Calendar className="h-3 w-3" />
+                                    Due {new Date(task.due_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                  </span>
+                                )}
+                                {isCompleted && task.updated_at && (
+                                  <span className="flex items-center gap-1 font-medium text-emerald-600/80">
+                                    <CheckSquare className="h-3 w-3" />
+                                    Completed {new Date(task.updated_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                  </span>
+                                )}
+                                <span className={cn(
+                                  "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-semibold uppercase",
+                                  isCompleted 
+                                    ? "bg-emerald-500/10 text-emerald-600" 
+                                    : "bg-amber-500/10 text-amber-600"
+                                )}>
+                                  {isCompleted ? "Done" : "Pending"}
+                                </span>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </AccordionContent>
@@ -755,26 +928,59 @@ export function ContactSidebar({
               </AccordionTrigger>
               <AccordionContent className="px-1 pb-3">
                 <div className="space-y-3">
-                  <div className="flex gap-2 bg-muted/50 p-2 rounded-lg border border-border/50">
+                  <div className="flex flex-col gap-2 bg-muted/30 p-2 rounded-xl border border-border/50 focus-within:bg-muted/50 focus-within:border-primary/30 transition-colors">
                     <textarea
                       value={newNote}
                       onChange={(e) => setNewNote(e.target.value)}
-                      placeholder="Add a private note..."
+                      placeholder="Type an internal note..."
                       rows={2}
-                      className="flex-1 resize-none bg-transparent text-xs text-foreground placeholder-muted-foreground outline-none"
+                      className="resize-none bg-transparent text-xs text-foreground placeholder-muted-foreground outline-none px-1"
                     />
-                    <Button size="icon" className="h-7 w-7 rounded-md shrink-0" onClick={handleAddNote} disabled={!newNote.trim() || addingNote}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center justify-between mt-1">
+                      <div>
+                        <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
+                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md text-muted-foreground hover:text-foreground" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                          {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                      <Button size="sm" className="h-7 rounded-md text-[10px] px-3 font-semibold" onClick={handleAddNote} disabled={!newNote.trim() || addingNote}>
+                        {addingNote ? "Adding..." : "Add Note"}
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
                     {notes.map((note) => (
-                      <div key={note.id} className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-3 py-2.5">
-                        <p className="whitespace-pre-wrap text-xs text-amber-900 dark:text-amber-100">
-                          {note.note_text}
-                        </p>
-                        <p className="mt-1.5 text-[9px] font-semibold uppercase tracking-wider text-amber-700/60 dark:text-amber-400/60">
+                      <div key={note.id} className="group relative rounded-xl bg-card border border-border/50 p-3 shadow-sm transition-all hover:border-border">
+                        {note.is_internal_message && (
+                          <div className="mb-1.5 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-amber-600/80 dark:text-amber-500/80">
+                            <Lock className="h-3 w-3" />
+                            Internal Message
+                          </div>
+                        )}
+                        {note.media_url && (
+                          <a href={note.media_url} target="_blank" rel="noopener noreferrer" className="mb-2 flex items-center gap-2 p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                            {note.media_type?.startsWith('image/') ? (
+                              <div className="h-8 w-8 rounded bg-border overflow-hidden shrink-0">
+                                <img src={note.media_url} alt="Attachment" className="h-full w-full object-cover" />
+                              </div>
+                            ) : (
+                              <div className="h-8 w-8 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                <FileIcon className="h-4 w-4" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium truncate text-foreground">{note.media_name || 'Attachment'}</p>
+                              <p className="text-[10px] text-muted-foreground truncate">Click to view</p>
+                            </div>
+                          </a>
+                        )}
+                        {note.note_text && (
+                          <p className="whitespace-pre-wrap text-[11px] leading-relaxed text-muted-foreground">
+                            {note.note_text}
+                          </p>
+                        )}
+                        <p className="mt-2 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                           {format(new Date(note.created_at), "MMM d, yyyy · h:mm a")}
                         </p>
                       </div>
@@ -790,8 +996,6 @@ export function ContactSidebar({
               <CustomerTimeline contactId={contact.id} />
             </TabsContent>
           </Tabs>
-        </div>
-      </div>
     </div>
   );
 }

@@ -54,6 +54,9 @@ export function AiIntelligence({ data, loading }: AiIntelligenceProps) {
   const [activeTab, setActiveTab] = useState<'topics' | 'faqs' | 'sentiment'>('topics')
   const [addingFaqId, setAddingFaqId] = useState<string | null>(null)
   const [dismissingFaqId, setDismissingFaqId] = useState<string | null>(null)
+  const [editingFaqId, setEditingFaqId] = useState<string | null>(null)
+  const [editingQuestion, setEditingQuestion] = useState('')
+  const [editingAnswer, setEditingAnswer] = useState('')
   const [localFaqs, setLocalFaqs] = useState<FaqItem[]>([])
 
   useEffect(() => {
@@ -81,8 +84,8 @@ export function AiIntelligence({ data, loading }: AiIntelligenceProps) {
 
   const { topics, sentiment, churnAlerts } = data
 
-  const handleAddFaqToKb = async (faq: FaqItem) => {
-    setAddingFaqId(faq.id)
+  const handleConfirmAddFaqToKb = async (faqId: string) => {
+    setAddingFaqId(faqId)
     try {
       const supabase = createClient()
       
@@ -95,7 +98,7 @@ export function AiIntelligence({ data, loading }: AiIntelligenceProps) {
       if (configErr) throw configErr
 
       const existingKb = config?.ai_knowledge_base || ''
-      const newKbEntry = `\n\nQ: ${faq.question}\nA: ${faq.answer}`
+      const newKbEntry = `\n\nQ: ${editingQuestion}\nA: ${editingAnswer}`
       const updatedKb = (existingKb + newKbEntry).trim()
 
       // 2. PATCH WhatsApp config
@@ -117,10 +120,11 @@ export function AiIntelligence({ data, loading }: AiIntelligenceProps) {
       await supabase
         .from('ai_insights')
         .update({ is_dismissed: true })
-        .eq('id', faq.id)
+        .eq('id', faqId)
 
-      setLocalFaqs((prev) => prev.filter((f) => f.id !== faq.id))
+      setLocalFaqs((prev) => prev.filter((f) => f.id !== faqId))
       toast.success('Successfully added to Knowledge Base!')
+      setEditingFaqId(null)
     } catch (err: any) {
       console.error(err)
       toast.error(err.message || 'Failed to add FAQ.')
@@ -356,47 +360,87 @@ export function AiIntelligence({ data, loading }: AiIntelligenceProps) {
                     key={faq.id}
                     className="rounded-lg border border-border bg-muted/10 p-4 space-y-2 hover:bg-muted/20 transition-colors"
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="font-semibold text-foreground text-sm flex items-center gap-2">
-                        <span className="flex h-5 w-5 items-center justify-center rounded bg-primary/10 text-[11px] font-bold text-primary">
-                          Q
-                        </span>
-                        {faq.question}
+                    {editingFaqId === faq.id ? (
+                      <div className="space-y-3">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase">Edit Question</label>
+                          <input
+                            type="text"
+                            value={editingQuestion}
+                            onChange={(e) => setEditingQuestion(e.target.value)}
+                            className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase">Edit Answer (Fill in placeholders)</label>
+                          <textarea
+                            value={editingAnswer}
+                            onChange={(e) => setEditingAnswer(e.target.value)}
+                            rows={3}
+                            className="w-full resize-none rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                          />
+                        </div>
+                        <div className="flex items-center justify-end gap-2 pt-1">
+                          <button
+                            onClick={() => setEditingFaqId(null)}
+                            disabled={addingFaqId === faq.id}
+                            className="inline-flex h-7 items-center justify-center rounded px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleConfirmAddFaqToKb(faq.id)}
+                            disabled={addingFaqId === faq.id || !editingQuestion.trim() || !editingAnswer.trim()}
+                            className="inline-flex h-7 items-center justify-center gap-1 rounded bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/95 transition-colors disabled:opacity-50"
+                          >
+                            {addingFaqId === faq.id ? (
+                              <><Loader2 className="h-3 w-3 animate-spin" /> Saving...</>
+                            ) : (
+                              <><Check className="h-3 w-3" /> Save to Knowledge Base</>
+                            )}
+                          </button>
+                        </div>
                       </div>
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase bg-muted px-2 py-0.5 rounded flex-shrink-0">
-                        {faq.frequency} Ask{faq.frequency === 1 ? '' : 's'}
-                      </span>
-                    </div>
-                    <div className="text-xs text-muted-foreground leading-relaxed pl-7">
-                      <strong className="text-foreground font-semibold">Suggested Answer: </strong>
-                      {faq.answer}
-                    </div>
-                    <div className="flex items-center justify-end gap-2 pt-2 pl-7">
-                      <button
-                        onClick={() => handleDismissFaq(faq.id)}
-                        disabled={dismissingFaqId === faq.id || addingFaqId === faq.id}
-                        className="inline-flex h-7 items-center justify-center rounded px-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                      >
-                        Dismiss
-                      </button>
-                      <button
-                        onClick={() => handleAddFaqToKb(faq)}
-                        disabled={addingFaqId === faq.id || dismissingFaqId === faq.id}
-                        className="inline-flex h-7 items-center justify-center gap-1 rounded bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/95 transition-colors disabled:opacity-50"
-                      >
-                        {addingFaqId === faq.id ? (
-                          <>
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                            Adding...
-                          </>
-                        ) : (
-                          <>
+                    ) : (
+                      <>
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="font-semibold text-foreground text-sm flex items-center gap-2">
+                            <span className="flex h-5 w-5 items-center justify-center rounded bg-primary/10 text-[11px] font-bold text-primary">
+                              Q
+                            </span>
+                            {faq.question}
+                          </div>
+                          <span className="text-[10px] font-semibold text-muted-foreground uppercase bg-muted px-2 py-0.5 rounded flex-shrink-0">
+                            {faq.frequency} Ask{faq.frequency === 1 ? '' : 's'}
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground leading-relaxed pl-7">
+                          <strong className="text-foreground font-semibold">Suggested Answer: </strong>
+                          {faq.answer}
+                        </div>
+                        <div className="flex items-center justify-end gap-2 pt-2 pl-7">
+                          <button
+                            onClick={() => handleDismissFaq(faq.id)}
+                            disabled={dismissingFaqId === faq.id || addingFaqId === faq.id}
+                            className="inline-flex h-7 items-center justify-center rounded px-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                          >
+                            Dismiss
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingFaqId(faq.id)
+                              setEditingQuestion(faq.question)
+                              setEditingAnswer(faq.answer)
+                            }}
+                            disabled={addingFaqId === faq.id || dismissingFaqId === faq.id}
+                            className="inline-flex h-7 items-center justify-center gap-1 rounded bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/95 transition-colors disabled:opacity-50"
+                          >
                             <Check className="h-3 w-3" />
-                            Add to Knowledge Base
-                          </>
-                        )}
-                      </button>
-                    </div>
+                            Review & Add...
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>

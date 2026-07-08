@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Briefcase, Calendar, CalendarDays, CheckCircle, Mail, Phone, Users, Shield, Clock, Trophy, Star, Timer, Bot, Sparkles, FileText, ChevronDown, Loader2 } from 'lucide-react'
+import { ArrowLeft, Briefcase, Calendar, CalendarDays, CheckCircle, Mail, Phone, Users, Shield, Clock, Trophy, Star, Timer, Bot, Sparkles, FileText, ChevronDown, Loader2, CheckSquare } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/client'
+import { cn } from '@/lib/utils'
 
 interface AgentProfile {
   user_id: string
@@ -69,6 +70,17 @@ interface Note {
   created_at: string
 }
 
+interface Task {
+  id: string
+  contact_id: string
+  title: string
+  description: string
+  due_date: string
+  status: string
+  created_at: string
+  updated_at: string
+}
+
 interface Suspension {
   id: string
   suspended_at: string
@@ -100,6 +112,7 @@ export default function AgentDetailPage() {
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [notes, setNotes] = useState<Note[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
   const [suspensions, setSuspensions] = useState<Suspension[]>([])
   const [metrics, setMetrics] = useState<AgentMetrics | null>(null)
   const [departments, setDepartments] = useState<string[]>([])
@@ -129,6 +142,7 @@ export default function AgentDetailPage() {
           setMeetings(agentData.meetings)
           setQuotes(agentData.quotes)
           setNotes(agentData.notes)
+          setTasks(agentData.tasks || [])
           setSuspensions(agentData.suspensions)
           
           if (scorecardData.leaderboard) {
@@ -376,6 +390,7 @@ export default function AgentDetailPage() {
                     const contactMeetings = meetings.filter(m => m.contact_id === contact.id)
                     const contactQuotes = quotes.filter(q => q.contact_id === contact.id)
                     const contactNotes = notes.filter(n => n.contact_id === contact.id)
+                    const contactTasks = tasks.filter(t => t.contact_id === contact.id)
                     
                     return (
                       <AccordionItem key={contact.id} value={contact.id} className="border-border">
@@ -402,6 +417,7 @@ export default function AgentDetailPage() {
                               <TabsTrigger value="deals" className="text-xs">Deals ({contactDeals.length})</TabsTrigger>
                               <TabsTrigger value="meetings" className="text-xs">Meetings ({contactMeetings.length})</TabsTrigger>
                               <TabsTrigger value="quotes" className="text-xs">Quotes ({contactQuotes.length})</TabsTrigger>
+                              <TabsTrigger value="tasks" className="text-xs">Tasks ({contactTasks.length})</TabsTrigger>
                             </TabsList>
                             
                             <TabsContent value="notes" className="space-y-3">
@@ -470,6 +486,53 @@ export default function AgentDetailPage() {
                                     </div>
                                   </div>
                                 ))
+                              }
+                            </TabsContent>
+
+                            <TabsContent value="tasks" className="space-y-3">
+                              {contactTasks.length === 0 ? <p className="text-xs text-muted-foreground">No tasks recorded.</p> : 
+                                contactTasks.map(t => {
+                                  const isCompleted = t.status === 'completed';
+                                  return (
+                                  <div key={t.id} className={cn("text-sm border border-border p-4 rounded-lg flex flex-col gap-2 transition-colors shadow-sm", isCompleted ? "opacity-60 bg-muted/20" : "")}>
+                                    <div className="flex items-start gap-3">
+                                      <div className="mt-0.5 shrink-0">
+                                        {isCompleted ? (
+                                          <CheckSquare className="h-4 w-4 text-emerald-500" />
+                                        ) : (
+                                          <div className="h-4 w-4 rounded border-2 border-muted-foreground/30" />
+                                        )}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between gap-2">
+                                          <p className={cn("font-medium text-foreground text-sm", isCompleted && "line-through text-muted-foreground")}>
+                                            {t.title}
+                                          </p>
+                                          <span className={cn("text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full shrink-0", isCompleted ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground')}>
+                                            {isCompleted ? 'Done' : 'Pending'}
+                                          </span>
+                                        </div>
+                                        
+                                        {t.description && (
+                                          <p className="text-[12px] text-muted-foreground mt-2 leading-relaxed whitespace-pre-wrap">
+                                            {t.description}
+                                          </p>
+                                        )}
+                                  
+                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-[11px] text-muted-foreground">
+                                          <span className="flex items-center gap-1">
+                                            <Clock className="h-3.5 w-3.5" /> Created {new Date(t.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                          </span>
+                                          {isCompleted && (
+                                            <span className="flex items-center gap-1 text-emerald-600">
+                                              <CheckSquare className="h-3.5 w-3.5" /> Completed {new Date(t.updated_at || t.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )})
                               }
                             </TabsContent>
 

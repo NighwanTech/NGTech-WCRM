@@ -72,6 +72,13 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
       .eq('user_id', agentId)
       .order('created_at', { ascending: false })
 
+    // Fetch tasks
+    const { data: tasks } = await admin
+      .from('tasks')
+      .select('id, contact_id, title, description, due_date, status, created_at, updated_at')
+      .or(`user_id.eq.${agentId},assigned_to.eq.${agentId}`)
+      .order('created_at', { ascending: false })
+
     // Fetch suspension / leave records
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: suspensions } = await (admin as any)
@@ -87,6 +94,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
       meetings: meetings || [],
       quotes: quotes || [],
       notes: notes || [],
+      tasks: tasks || [],
       suspensions: suspensions || []
     })
   } catch (error: any) {

@@ -139,7 +139,10 @@ export interface ContactNote {
   id: string;
   contact_id: string;
   user_id: string;
-  note_text: string;
+  note_text?: string | null;
+  media_url?: string | null;
+  media_name?: string | null;
+  media_type?: string | null;
   created_at: string;
 }
 

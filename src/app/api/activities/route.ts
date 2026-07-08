@@ -23,10 +23,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Build the query
+    // Build the query (without joining auth.users which throws an error)
     let query = supabase
       .from("customer_activities")
-      .select("*, actor:auth.users!actor_id(email, raw_user_meta_data)", { count: "exact" })
+      .select("*", { count: "exact" })
       .eq("contact_id", contactId)
       .order("created_at", { ascending: false });
 
@@ -48,6 +48,31 @@ export async function GET(request: Request) {
         { error: "Failed to fetch activities" },
         { status: 500 }
       );
+    }
+
+    // Manually enrich with actor profiles to avoid cross-schema join issues
+    if (activities && activities.length > 0) {
+      const actorIds = [...new Set(activities.map((a: any) => a.actor_id).filter(Boolean))];
+      if (actorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, email')
+          .in('user_id', actorIds);
+
+        const profileMap = (profiles || []).reduce((acc: any, p: any) => {
+          acc[p.user_id] = p;
+          return acc;
+        }, {});
+
+        activities.forEach((a: any) => {
+          if (a.actor_id && profileMap[a.actor_id]) {
+            a.actor = {
+              email: profileMap[a.actor_id].email,
+              raw_user_meta_data: { full_name: profileMap[a.actor_id].full_name }
+            };
+          }
+        });
+      }
     }
 
     return NextResponse.json({
