@@ -61,7 +61,8 @@ export async function GET(req: NextRequest) {
     }
 
     const { account_id, account_role, accounts } = currentUserProfile
-    const businessHours = Array.isArray(accounts) ? accounts[0]?.business_hours : accounts?.business_hours
+    const accountsData = accounts as any;
+    const businessHours = Array.isArray(accountsData) ? accountsData[0]?.business_hours : accountsData?.business_hours
 
     let profilesQuery = supabase
       .from('profiles')

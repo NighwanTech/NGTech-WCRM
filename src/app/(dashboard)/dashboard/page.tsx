@@ -53,7 +53,7 @@ type RangeDays = 7 | 30 | 90
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard')
-  const { defaultCurrency, account } = useAuth()
+  const { defaultCurrency, account, isAdmin, isOwner } = useAuth()
   const [metrics, setMetrics] = useState<MetricsBundle | null>(null)
   const [metricsLoading, setMetricsLoading] = useState(true)
 
@@ -231,8 +231,8 @@ export default function DashboardPage() {
             {t('Subtitle')}
           </p>
         </div>
-        {(account?.role === 'admin' || account?.role === 'owner') && (
-          <Select value={selectedAgent} onValueChange={(v) => { setSelectedAgent(v); setSeries({ 7: null, 30: null, 90: null }) }}>
+        {(isAdmin || isOwner) && (
+          <Select value={selectedAgent} onValueChange={(v) => { setSelectedAgent(v || 'all'); setSeries({ 7: null, 30: null, 90: null }) }}>
             <SelectTrigger className="w-[200px] bg-muted border-border">
               <SelectValue placeholder="Filter by Agent" />
             </SelectTrigger>

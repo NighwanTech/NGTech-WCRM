@@ -164,7 +164,7 @@ export function AgentScorecard({ data, loading, startDate, endDate, departmentMe
             />
           </div>
           {departments.length > 0 && (
-            <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+            <Select value={selectedDepartment} onValueChange={(v) => setSelectedDepartment(v || 'all')}>
               <SelectTrigger className="w-[180px] h-9">
                 <SelectValue placeholder="All Departments">
                   {selectedDepartment === 'all' 
