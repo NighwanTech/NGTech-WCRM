@@ -46,6 +46,7 @@ interface AccountSummary {
   plan: string;
   status: string;
   trial_ends_at: string | null;
+  enabledMenus: string[];
 }
 
 interface AuthContextValue {
@@ -87,6 +88,8 @@ interface AuthContextValue {
   accountRole: AccountRole | null;
   /** Lightweight account meta — id + name + default_currency. Null while loading. */
   account: AccountSummary | null;
+  /** Active menus dynamically configured by the account's plan. */
+  enabledMenus: string[];
   /** Account default deal currency. Falls back to DEFAULT_CURRENCY
    *  while loading or when no account is resolved, so callers can use
    *  it unconditionally. */
@@ -178,6 +181,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               code: accountErr.code,
             });
           } else if (account) {
+            let fetchedMenus: string[] = [
+              "/dashboard",
+              "/team-performance",
+              "/inbox",
+              "/contacts",
+              "/pipelines",
+              "/broadcasts",
+              "/ai-assistant"
+            ];
+            
+            if (account.plan) {
+              const { data: planData } = await supabase
+                .from("saas_pricing_plans")
+                .select("enabled_menus")
+                .eq("slug", account.plan)
+                .maybeSingle();
+                
+              if (planData?.enabled_menus) {
+                fetchedMenus = planData.enabled_menus;
+              }
+            }
+
             accountRow = {
               id: account.id,
               name: account.name,
@@ -186,6 +211,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               plan: account.plan ?? 'free',
               status: account.status ?? 'active',
               trial_ends_at: account.trial_ends_at ?? null,
+              enabledMenus: fetchedMenus,
             };
           }
         }
@@ -337,6 +363,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signOut,
         refreshProfile,
         account,
+        enabledMenus: account?.enabledMenus ?? [],
         defaultCurrency: account?.default_currency ?? DEFAULT_CURRENCY,
         ...derived,
       }}
@@ -367,6 +394,7 @@ export function useAuth(): AuthContextValue {
       },
       refreshProfile: async () => {},
       account: null,
+      enabledMenus: [],
       defaultCurrency: DEFAULT_CURRENCY,
       accountId: null,
       accountRole: null,

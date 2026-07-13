@@ -26,8 +26,10 @@ import {
   X,
   Zap,
   LayoutGrid,
-  FileText,
-  Bot
+  Bot,
+  ShoppingCart,
+  Route,
+  FileText
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
 
@@ -102,6 +104,8 @@ const navItems: NavItem[] = [
   { href: "/automations", label: "Automations", icon: Zap },
   { href: "/ai-assistant", label: "AI Assistant", icon: Bot },
   { href: "/flows", label: "Flows", icon: Workflow },
+  { href: "/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/sequences", label: "Sequences", icon: Route },
 ];
 
 const bottomNavItems = [
@@ -119,7 +123,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
   const tHeader = useTranslations('Header');
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const { user, profile, profileLoading, account, accountRole, signOut } = useAuth();
+  const { user, profile, profileLoading, account, accountRole, enabledMenus, signOut } = useAuth();
   const totalUnread = useTotalUnread();
   // Only surface the account-name strip when it actually carries
   // information. A solo user's personal account is named after them
@@ -142,14 +146,18 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-  // Hide premium features if the trial has expired
-  const isTrialExpired = account?.plan === 'free' && account.trial_ends_at && new Date(account.trial_ends_at).getTime() < new Date().getTime();
+  // Determine if user is currently on an active trial
+  const isTrialActive = account?.plan === 'free' && account.trial_ends_at && new Date(account.trial_ends_at).getTime() > new Date().getTime();
   
   const activeNavItems = navItems.filter(item => {
-    if (isTrialExpired && (item.href === '/automations' || item.href === '/flows')) {
-      return false;
-    }
-    return true;
+    // If the profile is still loading, show all to prevent empty flash
+    if (profileLoading) return true;
+    
+    // During a free trial, grant access to all menus
+    if (isTrialActive) return true;
+    
+    // Otherwise, ensure the menu is explicitly enabled by the package
+    return enabledMenus.length > 0 ? enabledMenus.includes(item.href) : true;
   });
 
   // Lock body scroll and allow Escape to close while the drawer is open on

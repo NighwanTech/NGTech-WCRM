@@ -23,6 +23,7 @@ import {
   Receipt,
   Plus,
   Lock,
+  ShoppingBag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GatedButton } from "@/components/ui/gated-button";
@@ -111,6 +112,7 @@ interface MessageComposerProps {
   externalDraft?: string;
   onConsumeExternalDraft?: () => void;
   onTyping?: (isTyping: boolean) => void;
+  onSendCommerce?: (payload: { type: 'catalog' | 'product', productId?: string }) => void;
 }
 
 function formatDuration(seconds: number): string {
@@ -137,6 +139,7 @@ export function MessageComposer({
   externalDraft,
   onConsumeExternalDraft,
   onTyping,
+  onSendCommerce,
 }: MessageComposerProps) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -582,6 +585,29 @@ export function MessageComposer({
               >
                 <Receipt className="h-4 w-4 text-green-500" />
                 Generate Quote
+              </DropdownMenuItem>
+
+              <div className="my-1 h-px bg-border" />
+              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Commerce</div>
+              
+              <DropdownMenuItem 
+                onClick={() => onSendCommerce?.({ type: 'catalog' })}
+                className="gap-2 cursor-pointer rounded-md py-2"
+              >
+                <ShoppingBag className="h-4 w-4 text-emerald-500" />
+                Send Full Catalog
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => {
+                  const id = window.prompt("Enter specific Product ID from Catalog:");
+                  if (id) {
+                    onSendCommerce?.({ type: 'product', productId: id.trim() });
+                  }
+                }}
+                className="gap-2 cursor-pointer rounded-md py-2"
+              >
+                <ShoppingBag className="h-4 w-4 text-emerald-500" />
+                Send Specific Product
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

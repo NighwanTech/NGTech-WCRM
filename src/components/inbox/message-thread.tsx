@@ -699,6 +699,59 @@ export function MessageThread({
     [conversation, onNewMessage, onUpdateMessage],
   );
 
+  const handleSendCommerce = useCallback(
+    async (payload: { type: 'catalog' | 'product', productId?: string }) => {
+      if (!conversation) return;
+
+      const tempId = `temp-${Date.now()}`;
+      const contentText = payload.type === 'product' ? 'Check out this product' : 'View our catalog';
+      
+      const optimisticMsg: Message = {
+        id: tempId,
+        conversation_id: conversation.id,
+        sender_type: "agent",
+        content_type: "interactive",
+        content_text: contentText,
+        status: "sending",
+        created_at: new Date().toISOString(),
+      };
+      onNewMessage(optimisticMsg);
+      setReplyTo(null);
+
+      try {
+        const res = await fetch("/api/whatsapp/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            conversation_id: conversation.id,
+            message_type: "interactive",
+            commerce_type: payload.type,
+            product_id: payload.productId,
+            content_text: contentText,
+          }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          const reason = data?.error || `HTTP ${res.status}`;
+          console.error("Failed to send commerce message:", reason);
+          toast.error(`Failed to send: ${reason}`);
+          onUpdateMessage(tempId, { status: "failed" });
+          return;
+        }
+
+        onUpdateMessage(tempId, { status: "sent" });
+      } catch (err) {
+        console.error("Failed to send commerce message:", err);
+        const reason = err instanceof Error ? err.message : "network error";
+        toast.error(`Failed to send: ${reason}`);
+        onUpdateMessage(tempId, { status: "failed" });
+      }
+    },
+    [conversation, onNewMessage, onUpdateMessage],
+  );
+
   const handleStatusChange = useCallback(
     async (status: ConversationStatus) => {
       if (!conversation) return;
@@ -1318,6 +1371,7 @@ export function MessageThread({
         sessionExpired={sessionInfo.expired}
         onSend={handleSend}
         onSendMedia={handleSendMedia}
+        onSendCommerce={handleSendCommerce}
         onOpenTemplates={handleOpenTemplates}
         replyTo={replyTo}
         onClearReply={() => setReplyTo(null)}

@@ -62,6 +62,9 @@ export function WhatsAppConfig() {
   const [wabaId, setWabaId] = useState('');
   const [accessToken, setAccessToken] = useState('');
   const [verifyToken, setVerifyToken] = useState('');
+  const [catalogId, setCatalogId] = useState('');
+  const [appSecret, setAppSecret] = useState('');
+  const [appSecretEdited, setAppSecretEdited] = useState(false);
   const [pin, setPin] = useState('');
   const [tokenEdited, setTokenEdited] = useState(false);
   const [slaEnabled, setSlaEnabled] = useState(true);
@@ -121,6 +124,9 @@ export function WhatsAppConfig() {
         setWabaId(data.waba_id || '');
         setAccessToken(MASKED_TOKEN);
         setVerifyToken('');
+        setCatalogId(data.catalog_id || '');
+        setAppSecret(data.app_secret ? MASKED_TOKEN : '');
+        setAppSecretEdited(false);
         setPin('');
         setTokenEdited(false);
         setSlaEnabled(data.sla_enabled ?? true);
@@ -133,6 +139,9 @@ export function WhatsAppConfig() {
         setWabaId('');
         setAccessToken('');
         setVerifyToken('');
+        setCatalogId('');
+        setAppSecret('');
+        setAppSecretEdited(false);
         setPin('');
         setTokenEdited(false);
         setSlaEnabled(true);
@@ -210,6 +219,7 @@ export function WhatsAppConfig() {
         phone_number_id: phoneNumberId.trim(),
         waba_id: wabaId.trim() || null,
         verify_token: verifyToken.trim() || null,
+        catalog_id: catalogId.trim() || null,
         pin: pin.trim() || null,
         sla_enabled: slaEnabled,
         sla_first_reply_min: slaFirstReplyMin,
@@ -227,6 +237,10 @@ export function WhatsAppConfig() {
         toast.error('Please re-enter the Access Token to save changes');
         setSaving(false);
         return;
+      }
+
+      if (appSecretEdited && appSecret !== MASKED_TOKEN && appSecret.trim()) {
+        payload.app_secret = appSecret.trim();
       }
 
       const res = await fetch('/api/whatsapp/config', {
@@ -393,6 +407,9 @@ export function WhatsAppConfig() {
       setWabaId('');
       setAccessToken('');
       setVerifyToken('');
+      setCatalogId('');
+      setAppSecret('');
+      setAppSecretEdited(false);
       setTokenEdited(false);
       setConnectionStatus('disconnected');
       setResetReason(null);
@@ -729,6 +746,42 @@ export function WhatsAppConfig() {
                 PIN and are pre-registered — leave this blank for them.
                 Leaving it blank also keeps an existing registration
                 untouched.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Meta Commerce Catalog ID (Optional)</Label>
+              <Input
+                placeholder="e.g. 567890123456"
+                value={catalogId}
+                onChange={(e) => setCatalogId(e.target.value)}
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
+              />
+              <p className="text-xs text-muted-foreground">
+                Connect your Facebook Commerce Catalog to send products and process orders.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Meta App Secret</Label>
+              <Input
+                type="password"
+                placeholder="Enter your App Secret for Webhook Security"
+                value={appSecret}
+                onChange={(e) => {
+                  setAppSecret(e.target.value)
+                  setAppSecretEdited(true)
+                }}
+                onFocus={() => {
+                  if (appSecret === MASKED_TOKEN) {
+                    setAppSecret('');
+                    setAppSecretEdited(true);
+                  }
+                }}
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
+              />
+              <p className="text-xs text-muted-foreground">
+                Required to securely validate incoming webhook signatures (X-Hub-Signature-256). Find this in App Settings → Basic.
               </p>
             </div>
           </TabsContent>

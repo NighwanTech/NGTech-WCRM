@@ -19,6 +19,7 @@ export interface PricingPlan {
   max_messages_pm: number
   is_active: boolean
   sort_order: number
+  enabled_menus?: string[]
 }
 
 export default function AdminPlansPage() {
@@ -39,6 +40,7 @@ export default function AdminPlansPage() {
   const [maxMessagesPm, setMaxMessagesPm] = useState(0)
   const [isActive, setIsActive] = useState(true)
   const [sortOrder, setSortOrder] = useState(0)
+  const [enabledMenus, setEnabledMenus] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -71,6 +73,7 @@ export default function AdminPlansPage() {
     setMaxMessagesPm(p.max_messages_pm)
     setIsActive(p.is_active)
     setSortOrder(p.sort_order)
+    setEnabledMenus(p.enabled_menus || [])
   }
 
   function startAdd() {
@@ -86,6 +89,15 @@ export default function AdminPlansPage() {
     setMaxMessagesPm(1000)
     setIsActive(true)
     setSortOrder(plans.length + 1)
+    setEnabledMenus([
+      "/dashboard",
+      "/team-performance",
+      "/inbox",
+      "/contacts",
+      "/pipelines",
+      "/broadcasts",
+      "/ai-assistant"
+    ])
   }
 
   function cancelEdit() {
@@ -107,7 +119,8 @@ export default function AdminPlansPage() {
       max_contacts: maxContacts,
       max_messages_pm: maxMessagesPm,
       is_active: isActive,
-      sort_order: sortOrder
+      sort_order: sortOrder,
+      enabled_menus: enabledMenus
     }
 
     if (editingId) {
@@ -206,6 +219,42 @@ export default function AdminPlansPage() {
             <div className="flex items-center gap-2 mt-6">
               <input type="checkbox" id="isActive" checked={isActive} onChange={e => setIsActive(e.target.checked)} className="rounded border-border" />
               <label htmlFor="isActive" className="text-sm font-medium">Plan is Active</label>
+            </div>
+            
+            <div className="md:col-span-2 lg:col-span-3 mt-4 border-t border-border pt-4">
+              <label className="text-sm font-semibold mb-3 block text-foreground">Enabled Menus (Package Features)</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {[
+                  { id: '/dashboard', label: 'Dashboard' },
+                  { id: '/team-performance', label: 'Team Performance' },
+                  { id: '/inbox', label: 'Inbox' },
+                  { id: '/contacts', label: 'Contacts' },
+                  { id: '/pipelines', label: 'Pipelines' },
+                  { id: '/broadcasts', label: 'Broadcasts' },
+                  { id: '/automations', label: 'Automations' },
+                  { id: '/ai-assistant', label: 'AI Assistant' },
+                  { id: '/flows', label: 'Flows' },
+                ].map((menu) => (
+                  <div key={menu.id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`menu-${menu.id}`}
+                      checked={enabledMenus.includes(menu.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setEnabledMenus([...enabledMenus, menu.id]);
+                        } else {
+                          setEnabledMenus(enabledMenus.filter(m => m !== menu.id));
+                        }
+                      }}
+                      className="rounded border-border text-primary focus:ring-primary"
+                    />
+                    <label htmlFor={`menu-${menu.id}`} className="text-xs font-medium text-muted-foreground cursor-pointer">
+                      {menu.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           

@@ -4,6 +4,7 @@ import {
   sendTextMessage,
   sendTemplateMessage,
   sendMediaMessage,
+  sendInteractiveCommerce,
   type MediaKind,
 } from '@/lib/whatsapp/meta-api'
 import { decrypt, encrypt, isLegacyFormat } from '@/lib/whatsapp/encryption'
@@ -106,6 +107,8 @@ export async function POST(request: Request) {
       template_message_params,
       reply_to_message_id,
       is_internal,
+      commerce_type, // 'catalog' | 'product'
+      product_id,
     } = body
 
     if (!conversation_id || !message_type) {
@@ -122,10 +125,17 @@ export async function POST(request: Request) {
 
     // Reject anything outside the known set up front rather than letting
     // an unknown type fall through to the text path with empty content.
-    const VALID_MESSAGE_TYPES = ['text', 'template', ...MEDIA_KINDS] as const
+    const VALID_MESSAGE_TYPES = ['text', 'template', 'interactive', ...MEDIA_KINDS] as const
     if (!(VALID_MESSAGE_TYPES as readonly string[]).includes(message_type)) {
       return NextResponse.json(
         { error: `Unsupported message_type "${message_type}"` },
+        { status: 400 }
+      )
+    }
+
+    if (message_type === 'interactive' && !commerce_type) {
+      return NextResponse.json(
+        { error: 'commerce_type is required for interactive messages' },
         { status: 400 }
       )
     }
@@ -207,6 +217,13 @@ export async function POST(request: Request) {
     if (configError || !config) {
       return NextResponse.json(
         { error: 'WhatsApp not configured. Please set up your WhatsApp integration first.' },
+        { status: 400 }
+      )
+    }
+
+    if (message_type === 'interactive' && !config.catalog_id) {
+      return NextResponse.json(
+        { error: 'No Catalog ID configured. Please add it in Settings > WhatsApp Integration.' },
         { status: 400 }
       )
     }
@@ -370,6 +387,19 @@ export async function POST(request: Request) {
           link: media_url,
           caption: content_text || undefined,
           filename: filename || undefined,
+          contextMessageId,
+        })
+        return result.messageId
+      }
+      if (message_type === 'interactive') {
+        const result = await sendInteractiveCommerce({
+          phoneNumberId: config.phone_number_id,
+          accessToken,
+          to: phone,
+          commerceType: commerce_type,
+          catalogId: config.catalog_id,
+          productId: product_id,
+          bodyText: content_text || undefined,
           contextMessageId,
         })
         return result.messageId

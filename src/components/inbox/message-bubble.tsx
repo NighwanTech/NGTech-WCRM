@@ -14,6 +14,8 @@ import {
   ImageOff,
   CornerDownLeft,
   Lock,
+  Info,
+  ShoppingCart,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ReplyQuote } from "./reply-quote";
@@ -229,6 +231,41 @@ function MessageContent({ message }: { message: Message }) {
           </span>
           <p className="whitespace-pre-wrap break-words text-sm">
             {message.content_text || "[Interactive reply]"}
+          </p>
+        </div>
+      );
+    }
+
+    case "order": {
+      let orderPayload: any = null;
+      try {
+        orderPayload = JSON.parse(message.content_text || "{}");
+      } catch (e) { }
+
+      const itemCount = orderPayload?.product_items?.length || 0;
+      let total = 0;
+      let currency = 'USD';
+      if (orderPayload?.product_items) {
+        orderPayload.product_items.forEach((item: any) => {
+          total += parseFloat(item.item_price) * parseInt(item.quantity);
+          currency = item.currency || currency;
+        });
+      }
+
+      return (
+        <div className="flex flex-col gap-2 rounded-lg bg-background p-3 shadow-sm border border-border min-w-[220px]">
+          <div className="flex items-center gap-2 font-medium text-foreground pb-2 border-b border-border/50">
+            <ShoppingCart className="h-4 w-4 text-emerald-500" />
+            Shopping Cart Received
+          </div>
+          <div className="text-sm flex justify-between items-center">
+            <span className="text-muted-foreground">{itemCount} item(s)</span>
+            <span className="font-semibold text-foreground">
+              {new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(total)}
+            </span>
+          </div>
+          <p className="whitespace-pre-wrap break-words text-xs text-muted-foreground pt-1 italic">
+            {orderPayload?.text || 'No additional notes'}
           </p>
         </div>
       );

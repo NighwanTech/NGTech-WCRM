@@ -13,6 +13,7 @@ import { QuoteModal } from '@/components/inbox/quote-modal';
 import { DealForm } from '@/components/pipelines/deal-form';
 import { TaskModal } from '@/components/contacts/task-modal';
 import { TicketModal } from '@/components/contacts/ticket-modal';
+import { SequenceModal } from '@/components/contacts/sequence-modal';
 import type { Contact, Tag, Deal } from '@/types';
 import {
   ArrowLeft,
@@ -39,6 +40,8 @@ import {
   Plus,
   ChevronDown,
   Calendar,
+  Route,
+  Mic,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -75,6 +78,7 @@ export default function ContactProfilePage({ params }: { params: Promise<{ id: s
   const [dealFormOpen, setDealFormOpen] = useState(false);
   const [taskModalOpen, setTaskModalOpen] = useState(false);
   const [ticketModalOpen, setTicketModalOpen] = useState(false);
+  const [sequenceModalOpen, setSequenceModalOpen] = useState(false);
   
   const [pipelines, setPipelines] = useState<any[]>([]);
   const [pipelineStages, setPipelineStages] = useState<any[]>([]);
@@ -348,6 +352,35 @@ export default function ContactProfilePage({ params }: { params: Promise<{ id: s
                 <Button 
                   variant="outline" 
                   size="sm" 
+                  className="bg-background rounded-full hover:border-indigo-500/50 hover:bg-indigo-500/5 shadow-sm"
+                  onClick={async () => {
+                    if (!contact.phone) {
+                      toast.error("No phone number available");
+                      return;
+                    }
+                    try {
+                      toast.loading("Initiating AI Call...", { id: 'ai-call' });
+                      const res = await fetch('/api/retell/call', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contactId: contact.id })
+                      });
+                      const data = await res.json();
+                      if (res.ok) {
+                        toast.success("AI Call initiated successfully!", { id: 'ai-call' });
+                      } else {
+                        toast.error(data.error || "Failed to initiate AI call", { id: 'ai-call' });
+                      }
+                    } catch (e) {
+                      toast.error("Network error initiating call", { id: 'ai-call' });
+                    }
+                  }}
+                >
+                  <Mic className="size-3.5 mr-1.5 text-indigo-500" /> AI Call
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
                   className="bg-background rounded-full hover:border-emerald-500/50 hover:bg-emerald-500/5 shadow-sm"
                   onClick={async () => {
                     if (!contact) return;
@@ -401,6 +434,9 @@ export default function ContactProfilePage({ params }: { params: Promise<{ id: s
                   <Video className="size-3.5 mr-1.5 text-indigo-500" /> Meeting
                 </Button>
                 <div className="w-px h-6 bg-border mx-2"></div>
+                <Button variant="outline" size="sm" className="bg-background rounded-full shadow-sm hover:border-purple-500/50 hover:bg-purple-500/5" onClick={() => setSequenceModalOpen(true)}>
+                  <Route className="size-3.5 mr-1.5 text-purple-500" /> Sequence
+                </Button>
                 <Button variant="outline" size="sm" className="bg-background rounded-full shadow-sm" onClick={handleOpenDealForm}>
                   <DollarSign className="size-3.5 mr-1.5 text-amber-500" /> New Deal
                 </Button>
@@ -901,6 +937,12 @@ export default function ContactProfilePage({ params }: { params: Promise<{ id: s
         open={ticketModalOpen}
         onOpenChange={setTicketModalOpen}
         contactId={contactId}
+      />
+      <SequenceModal
+        open={sequenceModalOpen}
+        onOpenChange={setSequenceModalOpen}
+        contactId={contact.id}
+        accountId={account?.id || ''}
       />
     </div>
   );

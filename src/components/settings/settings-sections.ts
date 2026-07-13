@@ -10,6 +10,7 @@ import {
   User,
   UsersRound,
   Clock,
+  Mic,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -36,6 +37,7 @@ export const SETTINGS_SECTIONS = [
   'plan',
   'invoices',
   'business',
+  'retell'
 ] as const;
 
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
@@ -64,6 +66,7 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
   departments: { id: 'departments', label: 'Departments', icon: UsersRound, group: 'workspace', adminOnly: true },
   api: { id: 'api', label: 'API keys', icon: KeyRound, group: 'workspace', adminOnly: true },
   business: { id: 'business', label: 'Business hours', icon: Clock, group: 'workspace', adminOnly: true },
+  retell: { id: 'retell', label: 'AI Voice Calling', icon: Mic, group: 'workspace', adminOnly: true },
   plan: { id: 'plan', label: 'Plan & Usage', icon: LayoutGrid, group: 'workspace', adminOnly: true },
   invoices: { id: 'invoices', label: 'Billing Invoices', icon: FileText, group: 'workspace', adminOnly: true },
 };

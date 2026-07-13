@@ -186,6 +186,7 @@ export type ContentType =
   | 'template'
   /** Customer tapped a reply button or list row on a message we sent. */
   | 'interactive'
+  | 'order'
   | 'system_event';
 export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
 

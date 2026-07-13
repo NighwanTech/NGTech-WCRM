@@ -20,6 +20,7 @@ import { ApiKeysSettings } from '@/components/settings/api-keys-settings';
 import { BusinessHoursPanel } from '@/components/settings/business-hours-panel';
 import { PlanPanel } from '@/components/settings/plan-panel';
 import { InvoicesPanel } from '@/components/settings/invoices-panel';
+import { AiVoicePanel } from '@/components/settings/ai-voice-panel';
 import {
   resolveSection,
   SECTION_META,
@@ -72,6 +73,7 @@ export default function SettingsPage() {
     departments: <DepartmentsPanel />,
     api: <ApiKeysSettings />,
     business: <BusinessHoursPanel />,
+    retell: <AiVoicePanel />,
     plan: <PlanPanel />,
     invoices: <InvoicesPanel />,
   };

@@ -87,7 +87,7 @@ export async function GET() {
 
     const { data: config, error: configError } = await supabase
       .from('whatsapp_config')
-      .select('phone_number_id, access_token, status')
+      .select('phone_number_id, access_token, status, app_secret, catalog_id')
       .eq('account_id', accountId)
       .maybeSingle()
 
@@ -258,6 +258,8 @@ export async function POST(request: Request) {
       waba_id,
       access_token,
       verify_token,
+      catalog_id,
+      app_secret,
       pin,
       ai_auto_reply_enabled,
       ai_auto_reply_prompt,
@@ -334,9 +336,13 @@ export async function POST(request: Request) {
     // Encrypt sensitive tokens before storing
     let encryptedAccessToken: string
     let encryptedVerifyToken: string | null
+    let encryptedAppSecret: string | null = null
     try {
       encryptedAccessToken = encrypt(access_token)
       encryptedVerifyToken = verify_token ? encrypt(verify_token) : null
+      if (app_secret) {
+        encryptedAppSecret = encrypt(app_secret)
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown encryption error'
       console.error('Encryption failed:', message)
@@ -433,11 +439,12 @@ export async function POST(request: Request) {
     // Persist everything in one shot. If /register failed we still
     // store the credentials and the error so the UI can guide the
     // user through a retry.
-    const baseRow = {
+    const baseRow: Record<string, any> = {
       phone_number_id,
       waba_id: waba_id || null,
       access_token: encryptedAccessToken,
       verify_token: encryptedVerifyToken,
+      catalog_id: catalog_id || null,
       status: registrationError ? 'disconnected' : 'connected',
       connected_at: registrationError ? null : new Date().toISOString(),
       registered_at: registrationError ? null : registeredAt,
@@ -450,6 +457,10 @@ export async function POST(request: Request) {
       sla_first_reply_min: sla_first_reply_min ?? 5,
       sla_subsequent_reply_min: sla_subsequent_reply_min ?? 15,
       updated_at: new Date().toISOString(),
+    }
+
+    if (app_secret !== undefined) {
+      baseRow.app_secret = encryptedAppSecret
     }
 
     if (existing) {

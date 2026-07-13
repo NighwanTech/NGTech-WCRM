@@ -957,6 +957,74 @@ export async function sendInteractiveList(
   return { messageId: data.messages[0].id }
 }
 
+export interface SendInteractiveCommerceArgs {
+  phoneNumberId: string
+  accessToken: string
+  to: string
+  /** 'catalog' to send a catalog link, 'product' to send a single product */
+  commerceType: 'catalog' | 'product'
+  catalogId?: string
+  productId?: string
+  bodyText?: string
+  contextMessageId?: string
+}
+
+/**
+ * Send an interactive commerce message (catalog link or single product).
+ */
+export async function sendInteractiveCommerce(
+  args: SendInteractiveCommerceArgs
+): Promise<MetaSendResult> {
+  const {
+    phoneNumberId, accessToken, to,
+    commerceType, catalogId, productId, bodyText, contextMessageId,
+  } = args
+
+  if (commerceType === 'product') {
+    if (!catalogId || !productId) {
+      throw new Error('Sending a specific product requires both catalogId and productId.')
+    }
+  }
+
+  const interactive: Record<string, unknown> = {
+    type: commerceType === 'product' ? 'product' : 'catalog_message',
+    body: { text: bodyText || (commerceType === 'product' ? 'Check out this product' : 'View our catalog') },
+    action: commerceType === 'product'
+      ? {
+          catalog_id: catalogId,
+          product_retailer_id: productId,
+        }
+      : {
+          name: 'catalog_message',
+          // Optional parameters like thumbnail_product_retailer_id could go here
+        },
+  }
+
+  const body: Record<string, unknown> = {
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to,
+    type: 'interactive',
+    interactive,
+  }
+  if (contextMessageId) body.context = { message_id: contextMessageId }
+
+  const url = `${META_API_BASE}/${phoneNumberId}/messages`
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+  })
+  if (!response.ok) {
+    await throwMetaError(response, `Meta API error: ${response.status}`)
+  }
+  const data = await response.json()
+  return { messageId: data.messages[0].id }
+}
+
 function validateInteractiveBody(bodyText: string): void {
   if (!bodyText) throw new Error('Interactive message requires bodyText.')
   if (bodyText.length > INTERACTIVE_LIMITS.bodyMaxLength) {

@@ -57,6 +57,16 @@ interface WhatsAppMessage {
     button_reply?: { id: string; title: string }
     list_reply?: { id: string; title: string; description?: string }
   }
+  order?: {
+    catalog_id: string
+    text: string
+    product_items: Array<{
+      product_retailer_id: string
+      quantity: string
+      item_price: string
+      currency: string
+    }>
+  }
   /** Present when the customer swipe-replies to one of our messages. */
   context?: { id: string }
 }
@@ -175,19 +185,43 @@ export async function POST(request: Request) {
   const rawBody = await request.text()
   const signature = request.headers.get('x-hub-signature-256')
 
-  if (!verifyMetaWebhookSignature(rawBody, signature)) {
-    // 401 (not 200) — we want Meta's delivery dashboard to show failures
-    // loudly if a misconfiguration causes signatures to stop matching,
-    // rather than silently eating events.
-    console.warn('[webhook] rejected request with invalid signature')
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
-  }
-
   let body: { entry?: WhatsAppWebhookEntry[] }
   try {
     body = JSON.parse(rawBody)
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
+
+  // Find phone_number_id to lookup the tenant's app_secret for validation
+  let phoneNumberId = ''
+  if (body.entry?.[0]?.changes?.[0]?.value?.metadata?.phone_number_id) {
+    phoneNumberId = body.entry[0].changes[0].value.metadata.phone_number_id
+  }
+
+  let appSecret = process.env.META_APP_SECRET || ''
+
+  if (phoneNumberId) {
+    const { data: config } = await supabaseAdmin()
+      .from('whatsapp_config')
+      .select('app_secret')
+      .eq('phone_number_id', phoneNumberId)
+      .maybeSingle()
+
+    if (config?.app_secret) {
+      try {
+        appSecret = decrypt(config.app_secret)
+      } catch (e) {
+        console.error('[webhook] failed to decrypt app_secret for', phoneNumberId)
+      }
+    }
+  }
+
+  if (!verifyMetaWebhookSignature(rawBody, signature, appSecret)) {
+    // 401 (not 200) — we want Meta's delivery dashboard to show failures
+    // loudly if a misconfiguration causes signatures to stop matching,
+    // rather than silently eating events.
+    console.warn('[webhook] rejected request with invalid signature')
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
 
   // Await processing before returning the 200 OK so that serverless
@@ -560,6 +594,16 @@ async function processMessage(
   const conversation = conversationOutcome.conversation
 
   // ============================================================
+  // SEQUENCES: Cancel on Reply
+  // Stop automated drip sequences since the contact responded.
+  // ============================================================
+  await supabaseAdmin()
+    .from('sequence_enrollments')
+    .update({ status: 'cancelled_by_reply' })
+    .eq('contact_id', contactRecord.id)
+    .eq('status', 'active');
+
+  // ============================================================
   // Enterprise Routing Engine: Trigger AI Classification for NEW
   // ============================================================
   if (conversationOutcome.wasCreated) {
@@ -682,7 +726,7 @@ async function processMessage(
   // allowed value so the INSERT doesn't fail with a constraint error.
   const ALLOWED_CONTENT_TYPES = new Set([
     'text', 'image', 'document', 'audio', 'video',
-    'location', 'template', 'interactive',
+    'location', 'template', 'interactive', 'order'
   ])
   const contentType = ALLOWED_CONTENT_TYPES.has(message.type)
     ? message.type
@@ -720,6 +764,82 @@ async function processMessage(
   if (msgError) {
     console.error('Error inserting message:', msgError)
     return
+  }
+
+  // Handle WhatsApp Order logic
+  if (message.type === 'order' && message.order) {
+    let totalPrice = 0
+    let currency = 'USD'
+    
+    // Calculate total price
+    for (const item of message.order.product_items) {
+      totalPrice += (parseFloat(item.item_price) * parseInt(item.quantity))
+      currency = item.currency || currency
+    }
+
+    const { data: orderRow, error: orderErr } = await supabaseAdmin().from('whatsapp_orders').insert({
+      account_id: accountId,
+      contact_id: contactRecord.id,
+      conversation_id: conversation.id,
+      catalog_id: message.order.catalog_id,
+      total_price: totalPrice,
+      currency: currency,
+      status: 'pending'
+    }).select('id').single()
+
+    if (!orderErr && orderRow) {
+      // Insert items
+      const itemsToInsert = message.order.product_items.map(item => ({
+        order_id: orderRow.id,
+        product_retailer_id: item.product_retailer_id,
+        quantity: parseInt(item.quantity),
+        item_price: parseFloat(item.item_price),
+        currency: item.currency
+      }))
+      
+      await supabaseAdmin().from('whatsapp_order_items').insert(itemsToInsert)
+
+      // Dispatch Outbound ERP Sync Webhooks (Fire and forget)
+      void (async () => {
+        try {
+          const { data: webhooks } = await supabaseAdmin()
+            .from('tenant_webhooks')
+            .select('*')
+            .eq('account_id', accountId)
+            .eq('is_active', true)
+            .contains('events', ['whatsapp_order.created'])
+
+          if (webhooks && webhooks.length > 0) {
+            const payload = {
+              event: 'whatsapp_order.created',
+              order_id: orderRow.id,
+              account_id: accountId,
+              contact_phone: senderPhone,
+              contact_name: contactName,
+              total_price: totalPrice,
+              currency: currency,
+              items: itemsToInsert,
+              timestamp: new Date().toISOString()
+            }
+
+            for (const hook of webhooks) {
+              fetch(hook.url, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...(hook.secret ? { 'Authorization': `Bearer ${hook.secret}` } : {})
+                },
+                body: JSON.stringify(payload)
+              }).catch(e => console.error('[webhook-sync] Error dispatching to ERP:', e))
+            }
+          }
+        } catch (e) {
+          console.error('[webhook-sync] Error looking up webhooks:', e)
+        }
+      })()
+    } else {
+      console.error('[webhook] Order insert failed:', orderErr)
+    }
   }
 
   // Update conversation
@@ -1201,6 +1321,15 @@ async function parseMessageContent(
           ...empty,
           mediaUrl: await verifyAndBuildUrl(message.sticker.id),
           mediaType: message.sticker.mime_type,
+        }
+      }
+      return empty
+
+    case 'order':
+      if (message.order) {
+        return {
+          ...empty,
+          contentText: JSON.stringify(message.order),
         }
       }
       return empty
