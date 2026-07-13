@@ -30,7 +30,18 @@ export async function POST(request: Request) {
       .map((msg: any) => `${msg.role === 'user' ? 'Customer' : 'Assistant'}: ${msg.content}`)
       .join('\n');
 
-    const fullSystemPrompt = AIPromptService.buildSystemPrompt(config || {}, historyString);
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('account_id')
+      .eq('user_id', user.id)
+      .single();
+
+    const fullSystemPrompt = await AIPromptService.buildSystemPrompt(
+      config || {}, 
+      historyString,
+      message,
+      profile?.account_id
+    );
 
     const startTime = performance.now();
     let responseText = '';

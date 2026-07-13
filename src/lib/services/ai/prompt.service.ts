@@ -1,11 +1,18 @@
 import type { AIAssistantSettings } from '@/types';
+import { AIEmbeddingService } from './embedding.service';
+import { createClient } from '@/lib/supabase/server';
 
 export class AIPromptService {
   /**
    * Constructs the master system prompt dynamically based on configured rules,
-   * structured knowledge base, and base settings.
+   * structured knowledge base, base settings, and vector-search RAG context.
    */
-  static buildSystemPrompt(config: Partial<AIAssistantSettings>, history: string = ''): string {
+  static async buildSystemPrompt(
+    config: Partial<AIAssistantSettings>, 
+    history: string = '', 
+    query: string = '', 
+    accountId?: string
+  ): Promise<string> {
     const { 
       system_prompt = 'You are a helpful customer support assistant for this business.',
       personality,
@@ -97,6 +104,43 @@ export class AIPromptService {
           finalPrompt += `\n  Description: ${p.description}`;
           if (p.features) finalPrompt += `\n  Features: ${p.features}`;
         });
+      }
+    }
+    // Fetch and inject RAG Context from documents and websites
+    if (query && accountId) {
+      try {
+        const ragContext = await AIEmbeddingService.searchKnowledgeBase(accountId, query, 3);
+        if (ragContext && ragContext.length > 0) {
+          finalPrompt += `\n\n[Relevant Document Extracts]`;
+          ragContext.forEach((chunk, idx) => {
+            finalPrompt += `\n- Extract ${idx + 1} (Source: ${chunk.source_type}): ${chunk.content}`;
+          });
+        }
+      } catch (err) {
+        console.error('RAG context fetch failed:', err);
+      }
+    }
+
+    // Fetch and inject dynamic Product/Services Catalog
+    if (accountId) {
+      try {
+        const supabase = await createClient();
+        const { data: activeProducts } = await supabase
+          .from('products')
+          .select('*')
+          .eq('account_id', accountId)
+          .eq('is_active', true)
+          .limit(10);
+        
+        if (activeProducts && activeProducts.length > 0) {
+          finalPrompt += `\n\n[Active Offerings Catalog]`;
+          activeProducts.forEach(p => {
+            finalPrompt += `\n- ${p.type.toUpperCase()}: ${p.name} | Price: ${p.currency} ${p.price}`;
+            if (p.description) finalPrompt += `\n  Description: ${p.description}`;
+          });
+        }
+      } catch (err) {
+        console.error('Products fetch failed:', err);
       }
     }
     

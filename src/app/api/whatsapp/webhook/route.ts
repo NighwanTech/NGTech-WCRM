@@ -1075,9 +1075,12 @@ Message: "${inboundText}"`,
               .reverse()
               .map((m: { sender_type: string; content_text: string | null }) => 
                 `${m.sender_type === 'customer' ? 'Customer' : 'Assistant'}: ${m.content_text || ''}`
-              ).join('\n');
-              
-            const fullSystemPrompt = AIPromptService.buildSystemPrompt(aiConfig || {}, history);
+            const fullSystemPrompt = await AIPromptService.buildSystemPrompt(
+              aiConfig || {}, 
+              history,
+              inboundText,
+              accountId
+            );
             
             const provider = aiConfig?.provider || 'groq';
             const modelName = aiConfig?.model || (provider === 'gemini' ? 'gemini-1.5-pro' : 'llama-3.3-70b-versatile');

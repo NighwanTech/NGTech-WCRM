@@ -15,10 +15,13 @@ interface Props {
 export function KnowledgeBaseManager({ config, onChange }: Props) {
   const kb = config.knowledge_base_structured || {};
   const [documents, setDocuments] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [newProduct, setNewProduct] = useState({ name: '', description: '', price: '', currency: 'USD', type: 'product' });
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchDocuments();
+    fetchProducts();
   }, []);
 
   const fetchDocuments = async () => {
@@ -56,6 +59,43 @@ export function KnowledgeBaseManager({ config, onChange }: Props) {
     try {
       const res = await fetch(`/api/ai-assistant/documents?id=${id}`, { method: 'DELETE' });
       if (res.ok) fetchDocuments();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch('/api/products');
+      if (res.ok) {
+        const data = await res.json();
+        setProducts(data.products || []);
+      }
+    } catch (e) {
+      console.error('Failed to fetch products', e);
+    }
+  };
+
+  const handleAddProduct = async () => {
+    try {
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProduct)
+      });
+      if (res.ok) {
+        fetchProducts();
+        setNewProduct({ name: '', description: '', price: '', currency: 'USD', type: 'product' });
+      }
+    } catch (e) {
+      console.error('Failed to add product', e);
+    }
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      const res = await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
+      if (res.ok) fetchProducts();
     } catch (err) {
       console.error(err);
     }
@@ -145,10 +185,45 @@ export function KnowledgeBaseManager({ config, onChange }: Props) {
           </TabsContent>
 
           <TabsContent value="website" className="space-y-6">
-            <div className="text-center p-12 border border-dashed rounded-lg bg-zinc-50">
-              <LinkIcon className="w-8 h-8 text-zinc-400 mx-auto mb-3" />
-              <h3 className="text-lg font-medium">Website Crawling</h3>
-              <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">This feature will be available in a future release. You will be able to enter your URL and the AI will automatically learn your entire website.</p>
+            <div className="space-y-4 max-w-xl mx-auto p-6 border rounded-lg bg-card mt-4 shadow-sm">
+              <div className="text-center mb-6">
+                <LinkIcon className="w-8 h-8 text-blue-500 mx-auto mb-3" />
+                <h3 className="text-lg font-medium">Website Crawling</h3>
+                <p className="text-sm text-muted-foreground mt-1">Enter your website URL, and the AI will automatically extract the text to learn about your business.</p>
+              </div>
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="https://example.com" 
+                  value={kb.website_url || ''} 
+                  onChange={(e) => onChange('website_url', e.target.value, 'knowledge_base_structured')}
+                />
+                <Button 
+                  disabled={uploading || !kb.website_url} 
+                  onClick={async () => {
+                    setUploading(true);
+                    try {
+                      const res = await fetch('/api/ai-assistant/website', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: kb.website_url })
+                      });
+                      const data = await res.json();
+                      if (data.error) {
+                        alert(data.error);
+                      } else {
+                        alert('Website crawled successfully! Extracted ' + data.chars_extracted + ' characters.');
+                      }
+                    } catch (e) {
+                      console.error(e);
+                      alert('Failed to crawl website.');
+                    } finally {
+                      setUploading(false);
+                    }
+                  }}
+                >
+                  {uploading ? 'Crawling...' : 'Start Crawl'}
+                </Button>
+              </div>
             </div>
           </TabsContent>
 
@@ -171,9 +246,90 @@ export function KnowledgeBaseManager({ config, onChange }: Props) {
             {!(kb.faqs?.length) && <div className="text-sm text-muted-foreground text-center p-4">No FAQs added yet.</div>}
           </TabsContent>
 
-          <TabsContent value="products">
-            <div className="text-center p-8 border border-dashed rounded-lg text-muted-foreground">
-              Product catalog sync (Coming Soon)
+          <TabsContent value="products" className="space-y-4">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <Label>Products & Services Catalog</Label>
+                <p className="text-sm text-muted-foreground">Add your offerings so the AI can recommend them to customers.</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-zinc-50 p-4 border rounded-lg">
+              <div className="space-y-2">
+                <Label>Type</Label>
+                <select 
+                  className="w-full border-border bg-background text-foreground h-10 px-3 py-2 text-sm ring-offset-background border rounded-md"
+                  value={newProduct.type}
+                  onChange={(e) => setNewProduct({ ...newProduct, type: e.target.value as 'product' | 'service' })}
+                >
+                  <option value="product">Product</option>
+                  <option value="service">Service</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label>Name</Label>
+                <Input 
+                  placeholder="e.g. Premium Consulting" 
+                  value={newProduct.name}
+                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Description</Label>
+                <Textarea 
+                  placeholder="Describe the product/service features..."
+                  value={newProduct.description}
+                  onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Price</Label>
+                <Input 
+                  type="number"
+                  placeholder="99.00" 
+                  value={newProduct.price}
+                  onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Currency</Label>
+                <Input 
+                  placeholder="USD" 
+                  value={newProduct.currency}
+                  onChange={(e) => setNewProduct({ ...newProduct, currency: e.target.value })}
+                />
+              </div>
+              <div className="md:col-span-2 flex justify-end mt-2">
+                <Button onClick={handleAddProduct} disabled={!newProduct.name}>
+                  <Plus className="w-4 h-4 mr-2" /> Add {newProduct.type === 'service' ? 'Service' : 'Product'}
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2 mt-6">
+              {products.length === 0 ? (
+                <div className="text-center p-8 border border-dashed rounded-lg text-muted-foreground">
+                  No products or services added yet.
+                </div>
+              ) : (
+                products.map((p) => (
+                  <div key={p.id} className="flex justify-between items-start p-4 border rounded-lg bg-card">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold uppercase px-2 py-1 bg-primary/10 text-primary rounded">
+                          {p.type}
+                        </span>
+                        <h4 className="font-medium">{p.name}</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">{p.description}</p>
+                      <p className="text-sm font-medium mt-2">{p.currency} {p.price}</p>
+                    </div>
+                    <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDeleteProduct(p.id)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))
+              )}
             </div>
           </TabsContent>
 
