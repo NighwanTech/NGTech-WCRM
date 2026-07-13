@@ -29,6 +29,7 @@ import {
   UserPlus,
   Workflow,
   Clock,
+  Bot,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -51,6 +52,7 @@ export type NodeType =
   | "condition"
   | "set_tag"
   | "handoff"
+  | "ai_reply"
   | "delay"
   | "end";
 
@@ -127,6 +129,12 @@ export const NODE_META: Record<
     color: "text-amber-400",
     blurb: "Hands the conversation to a human",
   },
+  ai_reply: {
+    label: "AI Bot Reply",
+    icon: Bot,
+    color: "text-violet-500",
+    blurb: "Generates a reply using Knowledge Base",
+  },
   delay: {
     label: "Delay",
     icon: Clock,
@@ -163,6 +171,7 @@ const NODE_HUE: Record<NodeType, { l: number; c: number; h: number }> = {
   condition: { l: 0.72, c: 0.15, h: 65 }, // amber — a fork in the road
   set_tag: { l: 0.65, c: 0.15, h: 350 }, // pink
   handoff: { l: 0.65, c: 0.17, h: 16 }, // rose — hands off
+  ai_reply: { l: 0.55, c: 0.2, h: 280 }, // purple - AI
   delay: { l: 0.70, c: 0.15, h: 45 }, // orange
   end: { l: 0.55, c: 0.01, h: 260 }, // neutral grey — terminal
 };
@@ -364,6 +373,10 @@ export function summarizeNode(node: BuilderNode): string | null {
       // short prefix of the UUID so users can disambiguate between
       // multiple set_tag nodes at a glance.
       return tagId ? `${mode} tag ${tagId.slice(0, 8)}…` : `${mode} tag (none picked)`;
+    }
+    case "ai_reply": {
+      const prompt = typeof cfg.system_prompt === "string" ? cfg.system_prompt : "";
+      return prompt.length > 0 ? `AI Instruction: ${truncate(prompt, 50)}` : "Knowledge Base Auto-Reply";
     }
     case "handoff": {
       const note = typeof cfg.note === "string" ? cfg.note : "";

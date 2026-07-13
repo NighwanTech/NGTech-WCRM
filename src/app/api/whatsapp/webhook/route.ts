@@ -1075,6 +1075,7 @@ Message: "${inboundText}"`,
               .reverse()
               .map((m: { sender_type: string; content_text: string | null }) => 
                 `${m.sender_type === 'customer' ? 'Customer' : 'Assistant'}: ${m.content_text || ''}`
+              ).join('\n\n');
             const fullSystemPrompt = await AIPromptService.buildSystemPrompt(
               aiConfig || {}, 
               history,
@@ -1493,3 +1494,4 @@ async function findOrCreateConversation(
 
   return { conversation: newConv, wasCreated: true }
 }
+ 

@@ -764,6 +764,82 @@ async function advanceFromNodeKey(
       }
       return { outcome: "advanced" };
     }
+    if (node.node_type === "ai_reply") {
+      const cfg = node.config as unknown as { next_node_key: string, system_prompt?: string };
+      try {
+        // Fetch AI Settings for this account
+        const { data: aiSettings } = await db
+          .from("ai_settings")
+          .select("*")
+          .eq("account_id", run.account_id)
+          .maybeSingle();
+
+        // Find the last inbound message from this conversation
+        const { data: lastMsgs } = await db
+          .from("messages")
+          .select("content_text")
+          .eq("conversation_id", run.conversation_id!)
+          .eq("sender_type", "customer")
+          .order("created_at", { ascending: false })
+          .limit(15);
+          
+        const history = (lastMsgs || [])
+          .reverse()
+          .map((m: any) => `Customer: ${m.content_text || ''}`)
+          .join('\n\n');
+
+        const lastInbound = lastMsgs?.[0]?.content_text || "";
+
+        const { AIPromptService } = await import("@/lib/services/ai/prompt.service");
+        const { AIProviderService } = await import("@/lib/services/ai/provider.service");
+        const { generateText } = await import("ai");
+
+        const configOverride = {
+          ...aiSettings,
+          system_prompt: cfg.system_prompt || aiSettings?.system_prompt
+        };
+
+        const fullSystemPrompt = await AIPromptService.buildSystemPrompt(
+          configOverride, 
+          history,
+          lastInbound,
+          run.account_id
+        );
+        
+        const provider = aiSettings?.provider || 'groq';
+        const modelName = aiSettings?.model || (provider === 'gemini' ? 'gemini-1.5-pro' : 'llama-3.3-70b-versatile');
+        const model = AIProviderService.getModel(provider, modelName);
+
+        const result = await generateText({
+          model,
+          prompt: fullSystemPrompt,
+          maxTokens: aiSettings?.advanced_settings?.max_tokens || undefined,
+          temperature: aiSettings?.advanced_settings?.temperature || undefined,
+        });
+
+        if (result.text && result.text.trim()) {
+          const { whatsapp_message_id } = await engineSendText({
+            accountId: run.account_id,
+            userId: run.user_id,
+            conversationId: run.conversation_id!,
+            contactId: run.contact_id!,
+            text: result.text.trim(),
+          });
+          await logEvent(db, run.id, "message_sent", node.node_key, {
+            node_type: "ai_reply",
+            whatsapp_message_id,
+          });
+        }
+      } catch (err) {
+        await logEvent(db, run.id, "error", node.node_key, {
+          reason: "ai_reply_failed",
+          detail: err instanceof Error ? err.message : String(err),
+        });
+        // Non-fatal, just continue
+      }
+      currentKey = cfg.next_node_key;
+      continue;
+    }
     if (node.node_type === "handoff") {
       await executeHandoff(db, run, node);
       return { outcome: "handed_off" };

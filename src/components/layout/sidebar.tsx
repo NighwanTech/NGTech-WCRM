@@ -102,9 +102,9 @@ const navItems: NavItem[] = [
   { href: "/contacts", label: "Contacts", icon: Users },
   { href: "/pipelines", label: "Pipelines", icon: GitBranch },
   { href: "/broadcasts", label: "Broadcasts", icon: Radio },
-  { href: "/automations", label: "Automations", icon: Zap },
+  // { href: "/automations", label: "Automations", icon: Zap }, // Deprecated in favor of the Visual Builder
+  { href: "/flows", label: "Automations", icon: Zap },
   { href: "/ai-assistant", label: "AI Assistant", icon: Bot },
-  { href: "/flows", label: "Flows", icon: Workflow },
   { href: "/orders", label: "Orders", icon: ShoppingCart },
   { href: "/sequences", label: "Sequences", icon: Route },
   { href: "/analytics", label: "Advanced Analytics", icon: BarChart3 },

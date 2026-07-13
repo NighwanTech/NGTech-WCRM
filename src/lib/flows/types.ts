@@ -173,6 +173,13 @@ export interface SetTagNodeConfig {
   next_node_key: string;
 }
 
+export interface AIReplyNodeConfig {
+  /** Optional system instructions to override the default bot instructions for this specific node. */
+  system_prompt?: string;
+  /** Node to advance to after the AI has generated and sent a reply. */
+  next_node_key: string;
+}
+
 // Terminal nodes carry no config — they just stop the run.
 export type EndNodeConfig = Record<string, never>;
 
@@ -201,6 +208,7 @@ export type FlowNodeConfig =
   | { node_type: "condition"; config: ConditionNodeConfig }
   | { node_type: "set_tag"; config: SetTagNodeConfig }
   | { node_type: "handoff"; config: HandoffNodeConfig }
+  | { node_type: "ai_reply"; config: AIReplyNodeConfig }
   | { node_type: "delay"; config: DelayNodeConfig }
   | { node_type: "end"; config: EndNodeConfig };
 

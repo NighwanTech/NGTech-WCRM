@@ -198,6 +198,16 @@ export function NodeConfigForm({
         />
       );
 
+    case "ai_reply":
+      return (
+        <AIReplyForm
+          cfg={cfg as AIReplyCfg}
+          allNodes={allNodes}
+          currentKey={node.node_key}
+          onUpdateConfig={onUpdateConfig}
+        />
+      );
+
     case "delay":
       return (
         <DelayForm
@@ -216,6 +226,48 @@ export function NodeConfigForm({
         </p>
       );
   }
+}
+
+// ============================================================
+// ai_reply
+// ============================================================
+
+interface AIReplyCfg {
+  system_prompt?: string;
+  next_node_key?: string;
+}
+
+function AIReplyForm({
+  cfg,
+  allNodes,
+  currentKey,
+  onUpdateConfig,
+}: {
+  cfg: AIReplyCfg;
+  allNodes: BuilderNode[];
+  currentKey: string;
+  onUpdateConfig: (patch: Record<string, unknown>) => void;
+}) {
+  return (
+    <>
+      <TextRow
+        label="System Prompt Override (optional)"
+        value={cfg.system_prompt ?? ""}
+        onChange={(v) => onUpdateConfig({ system_prompt: v })}
+        rows={4}
+      />
+      <p className="mb-4 text-[10px] text-muted-foreground">
+        If left blank, the bot will use your global AI Settings. Add instructions here to override its persona or provide specific context for this step.
+      </p>
+      <NextNodeRow
+        value={cfg.next_node_key ?? ""}
+        allNodes={allNodes}
+        currentKey={currentKey}
+        onChange={(v) => onUpdateConfig({ next_node_key: v })}
+        label="After replying, advance to"
+      />
+    </>
+  );
 }
 
 // ============================================================

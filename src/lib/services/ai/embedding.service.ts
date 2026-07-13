@@ -1,6 +1,6 @@
 import { embed, embedMany } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 
 export class AIEmbeddingService {
   /**
@@ -69,7 +69,10 @@ export class AIEmbeddingService {
     try {
       const queryEmbedding = await this.generateEmbedding(query);
       
-      const supabase = await createClient();
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
       // Need to format array as Postgres vector string '[1, 2, 3]'
       const embeddingVector = `[${queryEmbedding.join(',')}]`;
 
@@ -108,7 +111,10 @@ export class AIEmbeddingService {
     try {
       const embeddings = await this.generateEmbeddings(chunks);
       
-      const supabase = await createClient();
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
       
       const insertData = chunks.map((chunk, index) => ({
         account_id: accountId,

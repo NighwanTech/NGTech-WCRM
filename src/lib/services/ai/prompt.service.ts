@@ -1,6 +1,6 @@
 import type { AIAssistantSettings } from '@/types';
 import { AIEmbeddingService } from './embedding.service';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 
 export class AIPromptService {
   /**
@@ -112,7 +112,7 @@ export class AIPromptService {
         const ragContext = await AIEmbeddingService.searchKnowledgeBase(accountId, query, 3);
         if (ragContext && ragContext.length > 0) {
           finalPrompt += `\n\n[Relevant Document Extracts]`;
-          ragContext.forEach((chunk, idx) => {
+          ragContext.forEach((chunk: any, idx: number) => {
             finalPrompt += `\n- Extract ${idx + 1} (Source: ${chunk.source_type}): ${chunk.content}`;
           });
         }
@@ -124,7 +124,10 @@ export class AIPromptService {
     // Fetch and inject dynamic Product/Services Catalog
     if (accountId) {
       try {
-        const supabase = await createClient();
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
         const { data: activeProducts } = await supabase
           .from('products')
           .select('*')
@@ -152,6 +155,9 @@ export class AIPromptService {
     
     finalPrompt += `\n\nAssistant:`;
 
+    console.log("BUILT PROMPT:\n", finalPrompt);
+
     return finalPrompt;
   }
 }
+ 
