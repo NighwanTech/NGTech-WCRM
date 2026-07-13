@@ -1115,28 +1115,21 @@ Message: "${inboundText}"`,
               try {
                 const result = await generateText({
                   model: model as any,
-                  prompt: fullSystemPrompt,
+                  system: fullSystemPrompt,
+                  prompt: inboundText,
                   abortSignal: controller.signal,
                   maxTokens: aiConfig?.advanced_settings?.max_tokens || undefined,
                   temperature: aiConfig?.advanced_settings?.temperature || undefined,
                   topP: aiConfig?.advanced_settings?.top_p || undefined,
                   frequencyPenalty: aiConfig?.advanced_settings?.frequency_penalty || undefined,
                   presencePenalty: aiConfig?.advanced_settings?.presence_penalty || undefined,
-                  tools: {
-                    requestHumanHandoff: tool({
-                      description: 'Call this tool when the customer is frustrated, explicitly asks for a human, matches escalation rules, or asks a question that you cannot answer.',
-                      parameters: z.object({
-                        reason: z.string().describe('The reason for handing off to a human.'),
-                      }),
-                    }),
-                  },
                 });
                 
-                const handoffCall = result.toolCalls.find(t => t.toolName === 'requestHumanHandoff');
+                const handoffMatch = result.text.match(/\[HANDOFF:\s*(.*?)\]/i);
                 
-                if (handoffCall) {
+                if (handoffMatch) {
                   isHandoff = true;
-                  const reason = (handoffCall.args as any).reason || 'Unknown';
+                  const reason = handoffMatch[1].trim() || 'Unknown';
                   console.log(`[ai-handoff] Triggered for conversation ${conversation.id}. Reason: ${reason}`);
                   
                   // Pause the bot and mark conversation as open (needs attention)

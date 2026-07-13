@@ -43,6 +43,12 @@ export async function POST(request: Request) {
       profile?.account_id
     );
 
+    // DEBUG: Write the prompt and accountId to a file
+    require('fs').writeFileSync(
+      require('path').join(process.cwd(), 'debug_last_prompt.txt'),
+      `AccountId: ${profile?.account_id}\n\n${fullSystemPrompt}`
+    );
+
     const startTime = performance.now();
     let responseText = '';
     let usage = undefined;
@@ -53,27 +59,20 @@ export async function POST(request: Request) {
       const model = AIProviderService.getModel(provider, modelName);
       
       const { text, usage: aiUsage, toolCalls } = await generateText({
-        model,
-        prompt: fullSystemPrompt + `\nCustomer: ${message}\nAssistant:`,
+        model: model as any,
+        system: fullSystemPrompt,
+        prompt: message,
         maxTokens: config?.advanced_settings?.max_tokens || undefined,
         temperature: config?.advanced_settings?.temperature || undefined,
         topP: config?.advanced_settings?.top_p || undefined,
         frequencyPenalty: config?.advanced_settings?.frequency_penalty || undefined,
         presencePenalty: config?.advanced_settings?.presence_penalty || undefined,
-        tools: {
-          requestHumanHandoff: tool({
-            description: 'Call this tool when the customer is frustrated, explicitly asks for a human, matches escalation rules, or asks a question that you cannot answer.',
-            parameters: z.object({
-              reason: z.string().describe('The reason for handing off to a human.'),
-            }),
-          }),
-        },
       });
 
-      const handoffCall = toolCalls.find((t: any) => t.toolName === 'requestHumanHandoff');
+      const handoffMatch = text.match(/\[HANDOFF:\s*(.*?)\]/i);
       
-      if (handoffCall) {
-        responseText = "[System: Bot paused and routed to human agent] Reason: " + (handoffCall.args as any).reason;
+      if (handoffMatch) {
+        responseText = "[System: Bot paused and routed to human agent] Reason: " + handoffMatch[1].trim();
       } else {
         responseText = text;
       }
@@ -100,3 +99,4 @@ export async function POST(request: Request) {
     )
   }
 }
+// Force Next.js hot-reload 3
