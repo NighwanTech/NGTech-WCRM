@@ -188,7 +188,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               "/contacts",
               "/pipelines",
               "/broadcasts",
-              "/ai-assistant"
+              "/ai-assistant",
+              "/analytics",
+              "/orders",
+              "/sequences",
+              "/flows",
+              "/automations",
+              "/settings"
             ];
             
             if (account.plan) {
@@ -200,6 +206,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 
               if (planData?.enabled_menus) {
                 fetchedMenus = planData.enabled_menus;
+                // Patch: Ensure new features are visible even if DB is outdated
+                const newFeatures = ['/analytics', '/orders', '/sequences', '/team-performance', '/flows'];
+                newFeatures.forEach(feature => {
+                  if (!fetchedMenus.includes(feature)) {
+                    fetchedMenus.push(feature);
+                  }
+                });
               }
             }
 
