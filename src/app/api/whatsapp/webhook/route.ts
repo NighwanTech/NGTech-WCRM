@@ -1050,18 +1050,21 @@ Message: "${inboundText}"`,
           console.error('[ai-analysis] failed:', err);
         }
       })();
+    } // End of GROQ-specific Background Analysis
 
       // 2. AI Auto-Responder & Human Handoff
-      if (aiAutoReplyEnabled && !conversation.is_bot_paused) {
-        // Enforce business hours
-        if (aiConfig?.respect_business_hours) {
-          const isWithinHours = await checkBusinessHours(accountId);
-          if (!isWithinHours) {
-            console.log(`[ai-auto-reply] Skipping for ${conversation.id}: Outside business hours`);
-            return;
-          }
-        }
+      let isWithinHours = true;
+      if (aiConfig?.respect_business_hours) {
+        isWithinHours = await checkBusinessHours(config.account_id);
+      }
 
+      // The bot should run if:
+      // 1. AI is enabled globally
+      // 2. AND either we are outside business hours (bot takes over to say we are closed)
+      //    OR we are inside business hours and the agent hasn't paused the bot.
+      const shouldRunAi = aiAutoReplyEnabled && (!isWithinHours || !conversation.is_bot_paused);
+
+      if (shouldRunAi) {
         // AI Rate limiting
         const aiRateKey = `ai:${accountId}`;
         const rl = checkRateLimit(aiRateKey, { limit: 100, windowMs: 60_000 });
@@ -1087,19 +1090,24 @@ Message: "${inboundText}"`,
                 
               let historyStr = '';
               const maxHistoryChars = 2000;
-              const reversedMsgs = (historyMsgs || []).reverse();
+              // historyMsgs is ordered latest first
+              const lines = [];
               
-              for (const m of reversedMsgs) {
+              for (const m of (historyMsgs || [])) {
                 const line = `${m.sender_type === 'customer' ? 'Customer' : 'Assistant'}: ${m.content_text || ''}`;
                 if ((historyStr.length + line.length) > maxHistoryChars) break;
-                historyStr += line + '\n\n';
+                historyStr += line + '\n\n'; // for length tracking
+                lines.push(line);
               }
+              // reverse to chronological order
+              historyStr = lines.reverse().join('\n\n') + '\n\n';
                 
               const fullSystemPrompt = await AIPromptService.buildSystemPrompt(
                 aiConfig || {}, 
                 historyStr,
                 inboundText,
-                accountId
+                accountId,
+                isWithinHours
               );
               
               const provider = aiConfig?.provider || 'groq';
@@ -1237,7 +1245,6 @@ Message: "${inboundText}"`,
 
         })();
       }
-    }
   }
   // new_contact_created fires only when the webhook just auto-created the
   // contact row. first_inbound_message fires whenever this is the contact's

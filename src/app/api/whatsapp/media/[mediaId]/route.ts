@@ -7,8 +7,11 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ mediaId: string }> }
 ) {
+  let mediaId: string | undefined;
+
   try {
-    const { mediaId } = await params
+    const paramsResult = await params;
+    mediaId = paramsResult.mediaId;
 
     if (!mediaId) {
       return NextResponse.json(
@@ -80,8 +83,18 @@ export async function GET(
         'Cache-Control': 'public, max-age=86400',
       },
     })
-  } catch (error) {
-    console.error('Error in WhatsApp media GET:', error)
+  } catch (error: any) {
+    const isMetaError = error?.message?.includes('Unsupported get request') || error?.message?.includes('does not exist');
+    
+    if (isMetaError) {
+      console.warn(`[whatsapp-media] Media ${mediaId} not found or expired on Meta.`);
+      return NextResponse.json(
+        { error: 'Media not found or expired' },
+        { status: 404 }
+      );
+    }
+
+    console.error(`[whatsapp-media] Error fetching media ${mediaId}:`, error?.message || error);
     return NextResponse.json(
       { error: 'Failed to fetch media' },
       { status: 500 }

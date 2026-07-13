@@ -11,7 +11,8 @@ export class AIPromptService {
     config: Partial<AIAssistantSettings>, 
     history: string = '', 
     query: string = '', 
-    accountId?: string
+    accountId?: string,
+    isWithinHours: boolean = true
   ): Promise<string> {
     const { 
       system_prompt = 'You are a helpful customer support assistant for this business.',
@@ -33,6 +34,11 @@ export class AIPromptService {
     // 1. Language constraint override
     if (advanced_settings?.response_language && advanced_settings.response_language !== 'auto') {
       finalPrompt += `\n6. EXCEPTION to Instruction 1: You must ONLY reply in ${advanced_settings.response_language}.`;
+    }
+
+    // 1b. Business Hours Override
+    if (!isWithinHours) {
+      finalPrompt += `\n\nCRITICAL BUSINESS HOURS RULE:\nThe business is currently CLOSED (outside working hours). You MUST STILL try to answer the customer's questions using the Knowledge Base. However, if the user explicitly asks for human assistance, or if a rule requires human handoff, DO NOT output [HANDOFF]. Instead, politely inform the customer that our human team is currently offline and will get back to them on the next working day.`;
     }
 
     // 2. Personality
