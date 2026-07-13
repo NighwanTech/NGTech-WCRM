@@ -513,3 +513,47 @@ html[data-theme="rose"] {
   border-radius: 0.25rem;
   color: var(--primary);
 }
+
+/* ─── PRINT STYLES FOR NATIVE PDF EXPORT ─── */
+@media print {
+  /* Hide navigation elements */
+  aside, 
+  header, 
+  nav,
+  .no-print,
+  button:not(.print-visible) {
+    display: none !important;
+  }
+  
+  /* Reset layout constraints */
+  body, 
+  main, 
+  #root,
+  .panel-scroll {
+    overflow: visible !important;
+    height: auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+  
+  /* Ensure background colors print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Prevent charts and cards from breaking across pages */
+  .recharts-wrapper, 
+  .card, 
+  [className*="rounded-xl"] {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* Reset specific widths to expand fully */
+  .max-w-7xl {
+    max-width: none !important;
+  }
+}

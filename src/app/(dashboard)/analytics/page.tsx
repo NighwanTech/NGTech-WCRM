@@ -39,23 +39,10 @@ export default function AnalyticsPage() {
     }
   };
 
-  const exportPDF = async () => {
-    if (typeof window === 'undefined' || !reportRef.current) return;
-    try {
-      const html2pdf = (await import('html2pdf.js')).default;
-      const opt = {
-        margin:       0.5,
-        filename:     `CRM_Analytics_Report_${new Date().toISOString().split('T')[0]}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-      };
-      
-      html2pdf().set(opt).from(reportRef.current).save();
-    } catch (error) {
-      console.error("PDF Export failed:", error);
-      alert("Failed to export PDF.");
-    }
+  const exportPDF = () => {
+    // html2canvas (used by html2pdf) crashes on modern CSS colors like lab() and oklch().
+    // The most robust way to export a dashboard to PDF in a modern app is via the browser's native print dialog.
+    window.print();
   };
 
   const exportCSV = () => {
