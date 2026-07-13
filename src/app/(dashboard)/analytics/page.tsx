@@ -48,18 +48,39 @@ export default function AnalyticsPage() {
   const exportCSV = () => {
     if (!data) return;
     
-    // Create CSV for Message Volume
+    // 1. Message Volume
     let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "--- MESSAGE VOLUME ---\n";
     csvContent += "Date,Inbound Messages,Outbound Messages\n";
-    
     data.messageVolume.forEach((row: any) => {
       csvContent += `${row.date},${row.inbound},${row.outbound}\n`;
     });
+    
+    // 2. AI Performance
+    csvContent += "\n--- AI VS HUMAN PERFORMANCE ---\n";
+    csvContent += "Category,Count\n";
+    data.aiPerformance.forEach((row: any) => {
+      csvContent += `${row.name},${row.value}\n`;
+    });
+    
+    // 3. Deal Metrics
+    csvContent += "\n--- DEAL METRICS ---\n";
+    csvContent += "Status,Count\n";
+    data.dealMetrics.forEach((row: any) => {
+      csvContent += `${row.name},${row.value}\n`;
+    });
+    
+    // 4. Summary
+    csvContent += "\n--- SUMMARY ---\n";
+    csvContent += "Metric,Value\n";
+    csvContent += `Total Messages,${data.summary.totalMessages}\n`;
+    csvContent += `AI Resolution Rate,${data.summary.aiResolutionRate}%\n`;
+    csvContent += `Total Deals,${data.summary.totalDeals}\n`;
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Message_Volume_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `Full_Analytics_Export_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
