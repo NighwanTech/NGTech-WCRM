@@ -1,19 +1,7 @@
 import { generateObject } from 'ai';
 import { z } from 'zod';
 import { AIProviderService } from './provider.service';
-import { createClient } from '@supabase/supabase-js';
-
-// Setup Supabase admin
-let _adminClient: any = null;
-function supabaseAdmin() {
-  if (!_adminClient) {
-    _adminClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-  }
-  return _adminClient;
-}
+import { supabaseAdmin } from '@/lib/flows/admin-client';
 
 const ClassificationSchema = z.object({
   intent: z.string().describe("The primary intent or purpose of the message."),
@@ -78,7 +66,7 @@ Instructions:
 
       // 3. Generate structured object
       const { object } = await generateObject({
-        model,
+        model: model as any,
         schema: ClassificationSchema,
         system: systemPrompt,
         prompt: `Message from customer:\n\n"${messageContent}"`,

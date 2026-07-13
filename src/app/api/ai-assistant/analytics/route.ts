@@ -70,8 +70,14 @@ export async function GET(req: Request) {
       if (e.model) modelUsage[e.model] = (modelUsage[e.model] || 0) + 1;
       
       // New Analytics
-      if (e.language) languageDistribution[e.language] = (languageDistribution[e.language] || 0) + 1;
-      if (e.intent_category) topQuestionsMap[e.intent_category] = (topQuestionsMap[e.intent_category] || 0) + 1;
+      if (e.language) {
+        const lang = e.language.trim().toLowerCase();
+        languageDistribution[lang] = (languageDistribution[lang] || 0) + 1;
+      }
+      if (e.intent_category) {
+        const intent = e.intent_category.trim().toLowerCase();
+        topQuestionsMap[intent] = (topQuestionsMap[intent] || 0) + 1;
+      }
       if (e.conversation_id) aiConversationIds.add(e.conversation_id);
       
       // Time series grouping
@@ -97,19 +103,100 @@ export async function GET(req: Request) {
       .slice(0, 5)
       .map(([intent, count]) => ({ intent, count }));
 
-    // Revenue Attribution
+    // Revenue Attribution & Enterprise Intelligence
     let revenueAttribution = 0;
+    
+    const enterpriseIntelligence = {
+      aiConfidenceScore: 0,
+      businessInsights: { primarySentiment: 'N/A', positivePercentage: 0 },
+      csat: { average: 0, count: 0 },
+      knowledgeBase: { documents: 0, chunks: 0 },
+      roi: { totalDeals: 0, wonDeals: 0, winRate: 0 },
+      agentPerformance: { avgResponseTime: 0 }
+    };
+
     if (aiConversationIds.size > 0) {
+      // 1. Deals / ROI
       const { data: dealsData } = await supabase
         .from('deals')
-        .select('value')
-        .eq('status', 'won')
+        .select('value, status')
         .in('conversation_id', Array.from(aiConversationIds));
         
-      if (dealsData) {
-        revenueAttribution = dealsData.reduce((sum, deal) => sum + (Number(deal.value) || 0), 0);
+      if (dealsData && dealsData.length > 0) {
+        revenueAttribution = dealsData
+          .filter(d => d.status === 'won')
+          .reduce((sum, deal) => sum + (Number(deal.value) || 0), 0);
+          
+        const won = dealsData.filter(d => d.status === 'won').length;
+        enterpriseIntelligence.roi = {
+          totalDeals: dealsData.length,
+          wonDeals: won,
+          winRate: Math.round((won / dealsData.length) * 100)
+        };
+      }
+
+      // 2. Conversations (Confidence & Sentiment)
+      const { data: convData } = await supabase
+        .from('conversations')
+        .select('ai_classification_confidence, ai_detected_sentiment')
+        .in('id', Array.from(aiConversationIds));
+
+      if (convData && convData.length > 0) {
+        const confidences = convData.map(c => c.ai_classification_confidence).filter(c => c !== null) as number[];
+        if (confidences.length > 0) {
+          enterpriseIntelligence.aiConfidenceScore = Math.round(
+            confidences.reduce((a, b) => a + b, 0) / confidences.length * 100
+          );
+        }
+
+        const sentiments = convData.map(c => c.ai_detected_sentiment).filter(Boolean) as string[];
+        if (sentiments.length > 0) {
+          const positive = sentiments.filter(s => s.toLowerCase() === 'positive').length;
+          enterpriseIntelligence.businessInsights.positivePercentage = Math.round((positive / sentiments.length) * 100);
+          enterpriseIntelligence.businessInsights.primarySentiment = 
+            enterpriseIntelligence.businessInsights.positivePercentage >= 50 ? 'Positive' : 'Mixed/Negative';
+        }
+      }
+
+      // 3. Conversation Metrics (CSAT & Agent Performance)
+      const { data: metricData } = await supabase
+        .from('conversation_metrics')
+        .select('csat_score, first_response_time_ms')
+        .in('conversation_id', Array.from(aiConversationIds));
+
+      if (metricData && metricData.length > 0) {
+        const csats = metricData.map(m => m.csat_score).filter(c => c !== null) as number[];
+        if (csats.length > 0) {
+          enterpriseIntelligence.csat = {
+            average: Number((csats.reduce((a, b) => a + b, 0) / csats.length).toFixed(1)),
+            count: csats.length
+          };
+        }
+
+        const agentTimes = metricData.map(m => m.first_response_time_ms).filter(t => t !== null) as number[];
+        if (agentTimes.length > 0) {
+          enterpriseIntelligence.agentPerformance.avgResponseTime = Math.round(
+            agentTimes.reduce((a, b) => a + b, 0) / agentTimes.length
+          );
+        }
       }
     }
+
+    // 4. Knowledge Base Stats
+    const { count: kbDocCount } = await supabase
+      .from('ai_knowledge_documents')
+      .select('*', { count: 'exact', head: true })
+      .eq('account_id', profile.account_id);
+
+    const { count: kbChunkCount } = await supabase
+      .from('ai_knowledge_chunks')
+      .select('*', { count: 'exact', head: true })
+      .eq('account_id', profile.account_id);
+
+    enterpriseIntelligence.knowledgeBase = {
+      documents: kbDocCount || 0,
+      chunks: kbChunkCount || 0
+    };
 
     return NextResponse.json({
       metrics: {
@@ -125,7 +212,8 @@ export async function GET(req: Request) {
         languageDistribution,
         topQuestions,
         revenueAttribution,
-        timeSeriesData
+        timeSeriesData,
+        enterpriseIntelligence
       }
     });
 

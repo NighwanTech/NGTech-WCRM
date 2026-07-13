@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/flows/admin-client';
 import type { AIAnalyticsEvent } from '@/types';
 
 export class AIAnalyticsService {
@@ -7,9 +7,7 @@ export class AIAnalyticsService {
    */
   static async logEvent(event: Omit<AIAnalyticsEvent, 'id' | 'created_at'> & { language?: string, intent_category?: string }) {
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-      const supabase = createClient(supabaseUrl, supabaseKey);
+      const supabase = supabaseAdmin();
       
       const { error } = await supabase
         .from('ai_analytics_events')
@@ -63,6 +61,22 @@ export class AIAnalyticsService {
       } else {
         costPer1kPrompt = 0.00024;
         costPer1kCompletion = 0.00024;
+      }
+    } else if (provider === 'openai') {
+      if (model.includes('4o-mini')) {
+        costPer1kPrompt = 0.00015;
+        costPer1kCompletion = 0.0006;
+      } else {
+        costPer1kPrompt = 0.005;
+        costPer1kCompletion = 0.015;
+      }
+    } else if (provider === 'claude') {
+      if (model.includes('haiku')) {
+        costPer1kPrompt = 0.00025;
+        costPer1kCompletion = 0.00125;
+      } else {
+        costPer1kPrompt = 0.003;
+        costPer1kCompletion = 0.015;
       }
     }
 

@@ -19,19 +19,10 @@ import { generateText, tool, generateObject } from 'ai'
 import { z } from 'zod'
 import { groq } from '@ai-sdk/groq'
 import { engineSendText } from '@/lib/automations/meta-send'
+import { checkRateLimit } from '@/lib/rate-limit'
+import { checkBusinessHours } from '@/lib/business-hours'
 
-// Lazy-initialized to avoid build-time crash when env vars are missing
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _adminClient: any = null
-function supabaseAdmin() {
-  if (!_adminClient) {
-    _adminClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
-  }
-  return _adminClient
-}
+import { supabaseAdmin } from '@/lib/flows/admin-client'
 
 interface WhatsAppMessage {
   id: string
@@ -1062,139 +1053,195 @@ Message: "${inboundText}"`,
 
       // 2. AI Auto-Responder & Human Handoff
       if (aiAutoReplyEnabled && !conversation.is_bot_paused) {
-        await (async () => {
-          try {
-            const { data: historyMsgs } = await supabaseAdmin()
-              .from('messages')
-              .select('content_text, sender_type')
-              .eq('conversation_id', conversation.id)
-              .order('created_at', { ascending: false })
-              .limit(15);
-              
-            const history = (historyMsgs || [])
-              .reverse()
-              .map((m: { sender_type: string; content_text: string | null }) => 
-                `${m.sender_type === 'customer' ? 'Customer' : 'Assistant'}: ${m.content_text || ''}`
-              ).join('\n\n');
-            const fullSystemPrompt = await AIPromptService.buildSystemPrompt(
-              aiConfig || {}, 
-              history,
-              inboundText,
-              accountId
-            );
-            
-            const provider = aiConfig?.provider || 'groq';
-            const modelName = aiConfig?.model || (provider === 'gemini' ? 'gemini-1.5-pro' : 'llama-3.3-70b-versatile');
-            const model = AIProviderService.getModel(provider, modelName);
-            
-            const startTime = performance.now();
-            let isHandoff = false;
-            let errorMessage = '';
+        // Enforce business hours
+        if (aiConfig?.respect_business_hours) {
+          const isWithinHours = await checkBusinessHours(accountId);
+          if (!isWithinHours) {
+            console.log(`[ai-auto-reply] Skipping for ${conversation.id}: Outside business hours`);
+            return;
+          }
+        }
 
-            const result = await generateText({
-              model,
-              prompt: fullSystemPrompt,
-              maxTokens: aiConfig?.advanced_settings?.max_tokens || undefined,
-              temperature: aiConfig?.advanced_settings?.temperature || undefined,
-              topP: aiConfig?.advanced_settings?.top_p || undefined,
-              frequencyPenalty: aiConfig?.advanced_settings?.frequency_penalty || undefined,
-              presencePenalty: aiConfig?.advanced_settings?.presence_penalty || undefined,
-              tools: {
-                requestHumanHandoff: tool({
-                  description: 'Call this tool when the customer is frustrated, explicitly asks for a human, matches escalation rules, or asks a question that you cannot answer.',
-                  parameters: z.object({
-                    reason: z.string().describe('The reason for handing off to a human.'),
-                  }),
-                }),
-              },
-            });
-            
-            const handoffCall = result.toolCalls.find(t => t.toolName === 'requestHumanHandoff');
-            
-            if (handoffCall) {
-              isHandoff = true;
-              const reason = (handoffCall.args as any).reason || 'Unknown';
-              console.log(`[ai-handoff] Triggered for conversation ${conversation.id}. Reason: ${reason}`);
+        // AI Rate limiting
+        const aiRateKey = `ai:${accountId}`;
+        const rl = checkRateLimit(aiRateKey, { limit: 100, windowMs: 60_000 });
+        if (!rl.success) {
+          console.warn(`[ai-rate-limit] Account ${accountId} exceeded 100 AI calls/min`);
+          return;
+        }
+
+        await (async () => {
+          let retryCount = 0;
+          let success = false;
+          let isHandoff = false;
+          let errorMessage = '';
+
+          while (retryCount <= 1 && !success) {
+            try {
+              const { data: historyMsgs } = await supabaseAdmin()
+                .from('messages')
+                .select('content_text, sender_type')
+                .eq('conversation_id', conversation.id)
+                .order('created_at', { ascending: false })
+                .limit(25); // Fetch a bit more to ensure we hit the char limit
+                
+              let historyStr = '';
+              const maxHistoryChars = 2000;
+              const reversedMsgs = (historyMsgs || []).reverse();
               
-              // Pause the bot and mark conversation as open (needs attention)
-              const assignTo = aiConfig?.handoff_rules?.assign_to;
-              const updateData: any = { 
-                is_bot_paused: true,
-                status: 'open' 
-              };
+              for (const m of reversedMsgs) {
+                const line = `${m.sender_type === 'customer' ? 'Customer' : 'Assistant'}: ${m.content_text || ''}`;
+                if ((historyStr.length + line.length) > maxHistoryChars) break;
+                historyStr += line + '\n\n';
+              }
+                
+              const fullSystemPrompt = await AIPromptService.buildSystemPrompt(
+                aiConfig || {}, 
+                historyStr,
+                inboundText,
+                accountId
+              );
               
-              if (assignTo && assignTo !== 'unassigned') {
-                updateData.department_id = assignTo;
+              const provider = aiConfig?.provider || 'groq';
+              const modelName = aiConfig?.model || (provider === 'gemini' ? 'gemini-1.5-pro' : 'llama-3.3-70b-versatile');
+              const model = AIProviderService.getModel(provider, modelName);
+              
+              const startTime = performance.now();
+
+              // Add timeout via AbortController
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+              try {
+                const result = await generateText({
+                  model: model as any,
+                  prompt: fullSystemPrompt,
+                  abortSignal: controller.signal,
+                  maxTokens: aiConfig?.advanced_settings?.max_tokens || undefined,
+                  temperature: aiConfig?.advanced_settings?.temperature || undefined,
+                  topP: aiConfig?.advanced_settings?.top_p || undefined,
+                  frequencyPenalty: aiConfig?.advanced_settings?.frequency_penalty || undefined,
+                  presencePenalty: aiConfig?.advanced_settings?.presence_penalty || undefined,
+                  tools: {
+                    requestHumanHandoff: tool({
+                      description: 'Call this tool when the customer is frustrated, explicitly asks for a human, matches escalation rules, or asks a question that you cannot answer.',
+                      parameters: z.object({
+                        reason: z.string().describe('The reason for handing off to a human.'),
+                      }),
+                    }),
+                  },
+                });
+                
+                const handoffCall = result.toolCalls.find(t => t.toolName === 'requestHumanHandoff');
+                
+                if (handoffCall) {
+                  isHandoff = true;
+                  const reason = (handoffCall.args as any).reason || 'Unknown';
+                  console.log(`[ai-handoff] Triggered for conversation ${conversation.id}. Reason: ${reason}`);
+                  
+                  // Pause the bot and mark conversation as open (needs attention)
+                  const assignTo = aiConfig?.handoff_rules?.assign_to;
+                  const updateData: any = { 
+                    is_bot_paused: true,
+                    status: 'open' 
+                  };
+                  
+                  if (assignTo && assignTo !== 'unassigned') {
+                    updateData.department_id = assignTo;
+                  }
+
+                  await supabaseAdmin()
+                    .from('conversations')
+                    .update(updateData)
+                    .eq('id', conversation.id);
+                    
+                  const transitionMessage = aiConfig?.handoff_rules?.fallback_message || "I am transferring you to a human agent now, they will be right with you.";
+                  
+                  await engineSendText({
+                    accountId,
+                    userId: configOwnerUserId,
+                    contactId: contactRecord.id,
+                    conversationId: conversation.id,
+                    text: transitionMessage,
+                  });
+                } else if (result.text && result.text.trim()) {
+                  await engineSendText({
+                    accountId,
+                    userId: configOwnerUserId,
+                    contactId: contactRecord.id,
+                    conversationId: conversation.id,
+                    text: result.text.trim(),
+                  });
+                }
+
+                success = true; // Mark as success so we don't retry
+
+                const endTime = performance.now();
+                
+                // Log Analytics
+                if (aiConfig) {
+                   const promptTokens = result.usage?.promptTokens || 0;
+                   const completionTokens = result.usage?.completionTokens || 0;
+                   await AIAnalyticsService.logEvent({
+                     account_id: accountId,
+                     conversation_id: conversation.id,
+                     provider,
+                     model: modelName,
+                     response_time_ms: Math.round(endTime - startTime),
+                     prompt_tokens: promptTokens,
+                     completion_tokens: completionTokens,
+                     total_tokens: result.usage?.totalTokens || (promptTokens + completionTokens),
+                     estimated_cost: AIAnalyticsService.estimateCost(provider, modelName, promptTokens, completionTokens),
+                     is_handoff: isHandoff,
+                     is_error: false,
+                     language: detectedLanguage,
+                     intent_category: detectedIntent
+                   });
+                }
+              } finally {
+                clearTimeout(timeoutId);
               }
 
-              await supabaseAdmin()
-                .from('conversations')
-                .update(updateData)
-                .eq('id', conversation.id);
-                
-              const transitionMessage = aiConfig?.handoff_rules?.fallback_message || "I am transferring you to a human agent now, they will be right with you.";
+            } catch (err: any) {
+              console.error(`[ai-auto-reply] failed on attempt ${retryCount + 1}:`, err);
+              retryCount++;
               
-              await engineSendText({
-                accountId,
-                userId: configOwnerUserId,
-                contactId: contactRecord.id,
-                conversationId: conversation.id,
-                text: transitionMessage,
-              });
-            } else if (result.text && result.text.trim()) {
-              await engineSendText({
-                accountId,
-                userId: configOwnerUserId,
-                contactId: contactRecord.id,
-                conversationId: conversation.id,
-                text: result.text.trim(),
-              });
-            }
+              if (retryCount <= 1) {
+                // Wait 1s before retrying
+                await new Promise(r => setTimeout(r, 1000));
+              } else {
+                // If it still fails, send a fallback and log error
+                const fallbackMessage = "Thanks for your message! We're experiencing a slight delay, but a team member will get back to you shortly.";
+                await engineSendText({
+                  accountId,
+                  userId: configOwnerUserId,
+                  contactId: contactRecord.id,
+                  conversationId: conversation.id,
+                  text: fallbackMessage,
+                }).catch(e => console.error('Failed to send fallback:', e));
 
-            const endTime = performance.now();
-            
-            // Log Analytics
-            if (aiConfig) {
-               const promptTokens = result.usage?.promptTokens || 0;
-               const completionTokens = result.usage?.completionTokens || 0;
-               await AIAnalyticsService.logEvent({
-                 account_id: accountId,
-                 conversation_id: conversation.id,
-                 provider,
-                 model: modelName,
-                 response_time_ms: Math.round(endTime - startTime),
-                 prompt_tokens: promptTokens,
-                 completion_tokens: completionTokens,
-                 total_tokens: result.usage?.totalTokens || (promptTokens + completionTokens),
-                 estimated_cost: AIAnalyticsService.estimateCost(provider, modelName, promptTokens, completionTokens),
-                 is_handoff: isHandoff,
-                 is_error: false,
-                 language: detectedLanguage,
-                 intent_category: detectedIntent
-               });
-            }
-
-          } catch (err: any) {
-            console.error('[ai-auto-reply] failed:', err);
-            if (aiConfig) {
-               await AIAnalyticsService.logEvent({
-                 account_id: accountId,
-                 conversation_id: conversation.id,
-                 provider: aiConfig?.provider || 'gemini',
-                 model: aiConfig?.model || 'gemini-1.5-pro',
-                 response_time_ms: 0,
-                 prompt_tokens: 0,
-                 completion_tokens: 0,
-                 total_tokens: 0,
-                 estimated_cost: 0,
-                 is_handoff: false,
-                 is_error: true,
-                 error_message: err.message,
-                 language: detectedLanguage,
-                 intent_category: detectedIntent
-               });
+                if (aiConfig) {
+                   await AIAnalyticsService.logEvent({
+                     account_id: accountId,
+                     conversation_id: conversation.id,
+                     provider: aiConfig?.provider || 'gemini',
+                     model: aiConfig?.model || 'gemini-1.5-pro',
+                     response_time_ms: 0,
+                     prompt_tokens: 0,
+                     completion_tokens: 0,
+                     total_tokens: 0,
+                     estimated_cost: 0,
+                     is_handoff: false,
+                     is_error: true,
+                     error_message: err.message || 'Unknown error',
+                     language: detectedLanguage,
+                     intent_category: detectedIntent
+                   });
+                }
+              }
             }
           }
+
         })();
       }
     }

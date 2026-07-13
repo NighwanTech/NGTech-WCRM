@@ -376,26 +376,107 @@ export function AnalyticsDashboard() {
           </div>
 
 
-          {/* Future Ready Section */}
+          {/* Enterprise Intelligence Section */}
           <div>
-            <h3 className="text-lg font-bold mb-4 tracking-tight">Enterprise Intelligence <Badge variant="outline" className="ml-2 text-[10px] uppercase font-normal text-muted-foreground border-zinc-700">Coming Soon</Badge></h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { title: "AI Confidence Score", icon: Target },
-                { title: "AI Business Insights", icon: HelpCircle },
-                { title: "Customer Satisfaction", icon: Sparkles },
-                { title: "Knowledge Base Analytics", icon: Activity },
-                { title: "ROI Analytics", icon: TrendingUp },
-                { title: "Agent Performance", icon: BarChart4 }
-              ].map((item, idx) => {
-                const Icon = item.icon;
-                return (
-                  <Card key={idx} className="bg-zinc-950/50 border-zinc-800/50 border-dashed opacity-70">
-                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Icon className="w-4 h-4" /> {item.title}</CardTitle></CardHeader>
-                    <CardContent><p className="text-xs text-muted-foreground">Collecting Data...</p></CardContent>
-                  </Card>
-                )
-              })}
+            <h3 className="text-lg font-bold mb-4 tracking-tight">Enterprise Intelligence</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              
+              <Card className="bg-card shadow-sm border-zinc-800/50 hover:border-zinc-700 transition-colors">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center justify-between text-muted-foreground font-semibold">
+                    <span className="flex items-center gap-2"><Target className="w-4 h-4 text-emerald-500" /> AI Confidence</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold tracking-tight">
+                    {metrics.enterpriseIntelligence?.aiConfidenceScore > 0 ? `${metrics.enterpriseIntelligence.aiConfidenceScore}%` : 'N/A'}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Average classification certainty</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card shadow-sm border-zinc-800/50 hover:border-zinc-700 transition-colors">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center justify-between text-muted-foreground font-semibold">
+                    <span className="flex items-center gap-2"><HelpCircle className="w-4 h-4 text-blue-500" /> Sentiment Insights</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold tracking-tight">
+                    {metrics.enterpriseIntelligence?.businessInsights?.primarySentiment || 'N/A'}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {metrics.enterpriseIntelligence?.businessInsights?.positivePercentage}% Positive Interactions
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card shadow-sm border-zinc-800/50 hover:border-zinc-700 transition-colors">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center justify-between text-muted-foreground font-semibold">
+                    <span className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-yellow-500" /> Customer Satisfaction</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold tracking-tight flex items-baseline gap-1">
+                    {metrics.enterpriseIntelligence?.csat?.average > 0 ? metrics.enterpriseIntelligence.csat.average : 'N/A'}
+                    <span className="text-sm font-normal text-muted-foreground">/ 5.0</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Based on {metrics.enterpriseIntelligence?.csat?.count || 0} ratings
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card shadow-sm border-zinc-800/50 hover:border-zinc-700 transition-colors">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center justify-between text-muted-foreground font-semibold">
+                    <span className="flex items-center gap-2"><Activity className="w-4 h-4 text-indigo-500" /> Knowledge Base</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold tracking-tight">
+                    {metrics.enterpriseIntelligence?.knowledgeBase?.documents || 0} <span className="text-sm font-normal text-muted-foreground">Docs</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {metrics.enterpriseIntelligence?.knowledgeBase?.chunks || 0} vectorized chunks
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card shadow-sm border-zinc-800/50 hover:border-zinc-700 transition-colors">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center justify-between text-muted-foreground font-semibold">
+                    <span className="flex items-center gap-2"><TrendingUp className="w-4 h-4 text-green-500" /> AI Influenced ROI</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold tracking-tight">
+                    {metrics.enterpriseIntelligence?.roi?.winRate || 0}% <span className="text-sm font-normal text-muted-foreground">Win Rate</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {metrics.enterpriseIntelligence?.roi?.wonDeals || 0} won / {metrics.enterpriseIntelligence?.roi?.totalDeals || 0} total deals
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card shadow-sm border-zinc-800/50 hover:border-zinc-700 transition-colors">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center justify-between text-muted-foreground font-semibold">
+                    <span className="flex items-center gap-2"><BarChart4 className="w-4 h-4 text-orange-500" /> Agent Performance</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold tracking-tight">
+                    {metrics.enterpriseIntelligence?.agentPerformance?.avgResponseTime 
+                      ? (metrics.enterpriseIntelligence.agentPerformance.avgResponseTime / 1000 / 60).toFixed(1) 
+                      : 'N/A'
+                    } <span className="text-sm font-normal text-muted-foreground">mins</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Avg human response time</p>
+                </CardContent>
+              </Card>
+
             </div>
           </div>
         </>

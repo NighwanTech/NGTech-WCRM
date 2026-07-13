@@ -11,21 +11,24 @@ export class AIStorageService {
     
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-    
-    // Create local directory
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'knowledge_base', accountId);
-    await fs.mkdir(uploadDir, { recursive: true });
-    
-    const filePath = path.join(uploadDir, fileName);
-    const dbPath = `/uploads/knowledge_base/${accountId}/${fileName}`;
+    const storagePath = `${accountId}/${fileName}`;
 
     try {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      await fs.writeFile(filePath, buffer);
+      const buffer = await file.arrayBuffer();
+      const { error: uploadError } = await supabase.storage
+        .from('knowledge-documents')
+        .upload(storagePath, buffer, {
+          contentType: file.type || 'application/octet-stream',
+          upsert: false
+        });
+        
+      if (uploadError) throw uploadError;
     } catch (uploadError) {
-      console.error('[AIStorageService] Local upload failed:', uploadError);
+      console.error('[AIStorageService] Supabase upload failed:', uploadError);
       throw new Error('Failed to save file to server');
     }
+
+    const dbPath = storagePath;
 
     // 2. Save metadata to database
     const { data: doc, error: dbError } = await supabase
@@ -43,7 +46,7 @@ export class AIStorageService {
     if (dbError) {
       console.error('[AIStorageService] DB insert failed:', dbError);
       // Attempt to clean up orphaned file
-      await fs.unlink(filePath).catch(() => {});
+      await supabase.storage.from('knowledge-documents').remove([storagePath]).catch(() => {});
       throw new Error('Failed to save document metadata');
     }
 
@@ -75,12 +78,11 @@ export class AIStorageService {
       
     if (!doc) throw new Error('Document not found');
 
-    // Remove from local storage
+    // Remove from storage
     try {
-       const absolutePath = path.join(process.cwd(), 'public', doc.file_path);
-       await fs.unlink(absolutePath);
+       await supabase.storage.from('knowledge-documents').remove([doc.file_path]);
     } catch (err) {
-       console.warn('[AIStorageService] Failed to delete local file (might already be missing):', err);
+       console.warn('[AIStorageService] Failed to delete storage file (might already be missing):', err);
     }
 
     // Remove from DB
