@@ -96,6 +96,22 @@ export async function GET(request: Request) {
       else active++;
     });
 
+    // 4. Contact Growth
+    const { count: totalContacts } = await supabase
+      .from('contacts')
+      .select('*', { count: 'exact', head: true })
+      .eq('account_id', profile.account_id)
+      .gte('created_at', startDate.toISOString())
+      .lte('created_at', endDate.toISOString());
+
+    // 5. Broadcasts
+    const { count: totalBroadcasts } = await supabase
+      .from('broadcasts')
+      .select('*', { count: 'exact', head: true })
+      .eq('account_id', profile.account_id)
+      .gte('created_at', startDate.toISOString())
+      .lte('created_at', endDate.toISOString());
+
     return NextResponse.json({
       messageVolume: Object.values(dailyVolume),
       aiPerformance: [
@@ -110,7 +126,9 @@ export async function GET(request: Request) {
       summary: {
         totalMessages: messages?.length || 0,
         totalDeals: deals?.length || 0,
-        aiResolutionRate: aiEvents?.length ? Math.round((aiHandled / aiEvents.length) * 100) : 0
+        aiResolutionRate: aiEvents?.length ? Math.round((aiHandled / aiEvents.length) * 100) : 0,
+        totalContacts: totalContacts || 0,
+        totalBroadcasts: totalBroadcasts || 0
       }
     });
   } catch (error: any) {
