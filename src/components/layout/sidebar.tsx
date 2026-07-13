@@ -29,7 +29,8 @@ import {
   Bot,
   ShoppingCart,
   Route,
-  FileText
+  FileText,
+  BarChart3
 } from "lucide-react";
 import type { AccountRole } from "@/lib/auth/roles";
 
@@ -106,6 +107,7 @@ const navItems: NavItem[] = [
   { href: "/flows", label: "Flows", icon: Workflow },
   { href: "/orders", label: "Orders", icon: ShoppingCart },
   { href: "/sequences", label: "Sequences", icon: Route },
+  { href: "/analytics", label: "Advanced Analytics", icon: BarChart3 },
 ];
 
 const bottomNavItems = [
