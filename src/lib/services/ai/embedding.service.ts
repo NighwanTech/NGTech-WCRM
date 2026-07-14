@@ -16,7 +16,9 @@ export class AIEmbeddingService {
     });
 
     const { embedding } = await embed({
-      model: google.textEmbeddingModel('text-embedding-004'),
+      model: google.textEmbeddingModel('gemini-embedding-2', {
+        outputDimensionality: 768,
+      }),
       value: text,
     });
     return embedding;
@@ -35,7 +37,9 @@ export class AIEmbeddingService {
     });
 
     const { embeddings } = await embedMany({
-      model: google.textEmbeddingModel('text-embedding-004'),
+      model: google.textEmbeddingModel('gemini-embedding-2', {
+        outputDimensionality: 768,
+      }),
       values: texts,
     });
     return embeddings;
