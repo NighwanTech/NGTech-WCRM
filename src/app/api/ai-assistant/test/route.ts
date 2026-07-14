@@ -44,10 +44,16 @@ export async function POST(request: Request) {
     );
 
     // DEBUG: Write the prompt and accountId to a file
-    require('fs').writeFileSync(
-      require('path').join(process.cwd(), 'debug_last_prompt.txt'),
-      `AccountId: ${profile?.account_id}\n\n${fullSystemPrompt}`
-    );
+    try {
+      if (process.env.NODE_ENV === 'development') {
+        require('fs').writeFileSync(
+          require('path').join(process.cwd(), 'debug_last_prompt.txt'),
+          `AccountId: ${profile?.account_id}\n\n${fullSystemPrompt}`
+        );
+      }
+    } catch (e) {
+      console.warn('Failed to write debug prompt file:', e);
+    }
 
     const startTime = performance.now();
     let responseText = '';
