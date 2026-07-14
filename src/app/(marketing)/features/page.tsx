@@ -203,7 +203,7 @@ export default function FeaturesPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
             <Link href="/free-trial" className="inline-flex h-12 items-center justify-center rounded-lg bg-background px-8 text-base font-semibold text-foreground transition-all hover:scale-105 shadow-xl">
-              Start Your 14-Day Free Trial
+              Start Your 7-Day Free Trial
             </Link>
             <Link href="/book-demo" className="inline-flex h-12 items-center justify-center rounded-lg border border-primary-foreground/30 bg-primary-foreground/10 px-8 text-base font-semibold text-primary-foreground transition-all hover:bg-primary-foreground/20 backdrop-blur-sm">
               Book a Demo

@@ -71,7 +71,7 @@ export default function FreeTrialPage() {
           
           {/* Left: Value Prop */}
           <div className="flex flex-col justify-center">
-            <h1 className="text-4xl lg:text-5xl font-extrabold text-foreground mb-6">Start your 14-day free trial</h1>
+            <h1 className="text-4xl lg:text-5xl font-extrabold text-foreground mb-6">Start your 7-day free trial</h1>
             <p className="text-lg text-muted-foreground mb-10">
               Join the smartest WhatsApp CRM built for growth. No credit card required. Cancel anytime.
             </p>

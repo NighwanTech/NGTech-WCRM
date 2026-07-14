@@ -78,14 +78,28 @@ const THEME_BOOT_SCRIPT = `
     var savedTheme = localStorage.getItem(THEME_KEY);
     d.dataset.theme = THEMES.indexOf(savedTheme) !== -1 ? savedTheme : THEME_DEFAULT;
 
-    var MODE_KEY = ${JSON.stringify(MODE_STORAGE_KEY)};
-    var MODE_DEFAULT = ${JSON.stringify(DEFAULT_MODE)};
-    var MODES = ${JSON.stringify(MODES)};
-    var savedMode = localStorage.getItem(MODE_KEY);
-    d.dataset.mode = MODES.indexOf(savedMode) !== -1 ? savedMode : MODE_DEFAULT;
+    var pathname = window.location.pathname;
+    var appPrefixes = ["/admin", "/inbox", "/dashboard", "/analytics", "/broadcasts", "/contacts", "/flows", "/orders", "/pipelines", "/sequences", "/settings", "/team-performance", "/ai-assistant"];
+    var isApp = false;
+    for (var i = 0; i < appPrefixes.length; i++) {
+      if (pathname === appPrefixes[i] || pathname.indexOf(appPrefixes[i] + "/") === 0) {
+        isApp = true;
+        break;
+      }
+    }
+
+    if (isApp) {
+      var MODE_KEY = ${JSON.stringify(MODE_STORAGE_KEY)};
+      var MODE_DEFAULT = ${JSON.stringify(DEFAULT_MODE)};
+      var MODES = ${JSON.stringify(MODES)};
+      var savedMode = localStorage.getItem(MODE_KEY);
+      d.dataset.mode = MODES.indexOf(savedMode) !== -1 ? savedMode : MODE_DEFAULT;
+    } else {
+      d.dataset.mode = "light";
+    }
   } catch (_e) {
     d.dataset.theme = ${JSON.stringify(DEFAULT_THEME)};
-    d.dataset.mode = ${JSON.stringify(DEFAULT_MODE)};
+    d.dataset.mode = "light";
   }
 })();
 `;

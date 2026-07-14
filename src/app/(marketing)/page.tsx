@@ -20,11 +20,11 @@ export default async function MarketingHomePage() {
   const clients = trustedClients && trustedClients.length > 0
     ? trustedClients
     : [
-        { id: '1', name: 'Acme Corp', url: null },
-        { id: '2', name: 'GlobalTech', url: null },
-        { id: '3', name: 'EduSmart', url: null },
-        { id: '4', name: 'RealEstate Co', url: null },
-        { id: '5', name: 'HealthPlus', url: null }
+        { id: '1', name: 'Acme Corp', url: null, testimonial_text: null, author_name: null, author_role: null },
+        { id: '2', name: 'GlobalTech', url: null, testimonial_text: null, author_name: null, author_role: null },
+        { id: '3', name: 'EduSmart', url: null, testimonial_text: null, author_name: null, author_role: null },
+        { id: '4', name: 'RealEstate Co', url: null, testimonial_text: null, author_name: null, author_role: null },
+        { id: '5', name: 'HealthPlus', url: null, testimonial_text: null, author_name: null, author_role: null }
       ];
 
   return (
@@ -65,7 +65,7 @@ export default async function MarketingHomePage() {
               href="/free-trial"
               className="flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-primary to-primary/80 px-8 text-sm font-semibold text-primary-foreground transition-all duration-300 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.03] w-full sm:w-auto"
             >
-              Start 14-Day Free Trial
+              Start 7-Day Free Trial
             </Link>
             <Link
               href="/book-demo"

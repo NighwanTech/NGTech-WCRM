@@ -59,7 +59,7 @@ export default function ContactPage() {
               Start Free Trial
             </a>
             <p className="text-xs text-center text-muted-foreground">
-              No credit card required. 14-day full access.
+              No credit card required. 7-day full access.
             </p>
           </div>
         </div>

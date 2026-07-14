@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { usePathname } from "next/navigation";
 
 import {
   DEFAULT_MODE,
@@ -47,6 +48,25 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+function isMarketingPath(pathname: string): boolean {
+  const appPrefixes = [
+    "/admin",
+    "/inbox",
+    "/dashboard",
+    "/analytics",
+    "/broadcasts",
+    "/contacts",
+    "/flows",
+    "/orders",
+    "/pipelines",
+    "/sequences",
+    "/settings",
+    "/team-performance",
+    "/ai-assistant"
+  ];
+  return !appPrefixes.some(prefix => pathname === prefix || pathname.startsWith(prefix + "/"));
+}
+
 function readInitialTheme(): ThemeId {
   if (typeof window === "undefined") return DEFAULT_THEME;
   // Whatever the boot script applied is the truth. Fall back to
@@ -65,20 +85,24 @@ function readInitialTheme(): ThemeId {
 
 function readInitialMode(): Mode {
   if (typeof window === "undefined") return DEFAULT_MODE;
-  const fromAttr = document.documentElement.dataset.mode;
-  if (isMode(fromAttr)) return fromAttr;
   try {
     const stored = localStorage.getItem(MODE_STORAGE_KEY);
     if (isMode(stored)) return stored;
   } catch {
     // localStorage can throw in private-browsing / sandboxed contexts.
   }
+  const fromAttr = document.documentElement.dataset.mode;
+  if (isMode(fromAttr)) return fromAttr;
   return DEFAULT_MODE;
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemeId>(readInitialTheme);
   const [mode, setModeState] = useState<Mode>(readInitialMode);
+
+  const pathname = usePathname();
+  const isMarketing = isMarketingPath(pathname);
+  const activeMode = isMarketing ? "light" : mode;
 
   const setTheme = useCallback((next: ThemeId) => {
     setThemeState(next);
@@ -95,9 +119,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setMode = useCallback((next: Mode) => {
     setModeState(next);
-    if (typeof document !== "undefined") {
-      document.documentElement.dataset.mode = next;
-    }
     try {
       localStorage.setItem(MODE_STORAGE_KEY, next);
     } catch {
@@ -108,6 +129,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const toggleMode = useCallback(() => {
     setMode(mode === "dark" ? "light" : "dark");
   }, [mode, setMode]);
+
+  // Sync activeMode to the <html> document attribute reactively
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.dataset.mode = activeMode;
+    }
+  }, [activeMode]);
 
   // Sync from other tabs — change theme or mode in tab A, tab B
   // catches up without a refresh.
@@ -123,7 +151,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       if (e.key === MODE_STORAGE_KEY) {
         if (isMode(e.newValue) && e.newValue !== mode) {
           setModeState(e.newValue);
-          document.documentElement.dataset.mode = e.newValue;
         }
       }
     }
@@ -132,7 +159,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme, mode]);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, mode, setMode, toggleMode }}>
+    <ThemeContext.Provider value={{ theme, setTheme, mode: activeMode, setMode, toggleMode }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -6,6 +6,15 @@ import { Bot, X, Send, Minimize2, Sparkles, User, AlertCircle } from 'lucide-rea
 
 export function AiChatbot() {
   const [isOpen, setIsOpen] = useState(false)
+  const [activeIcon, setActiveIcon] = useState<"ai" | "whatsapp">("ai")
+  const [showTooltip, setShowTooltip] = useState(true)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveIcon((prev) => (prev === "ai" ? "whatsapp" : "ai"))
+    }, 4500)
+    return () => clearInterval(interval)
+  }, [])
   
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
     api: '/api/chat',
@@ -28,19 +37,176 @@ export function AiChatbot() {
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes spin-clockwise {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes spin-counterclockwise {
+          0% { transform: rotate(360deg); }
+          100% { transform: rotate(0deg); }
+        }
+        @keyframes float-sparkle {
+          0% { transform: translateY(0) scale(0); opacity: 0; }
+          50% { opacity: 0.8; }
+          100% { transform: translateY(-30px) scale(1.2); opacity: 0; }
+        }
+        @keyframes tooltip-wiggle {
+          0%, 90%, 100% { transform: translateY(0) scale(1); }
+          92% { transform: translateY(-4px) rotate(-3deg) scale(1.02); }
+          94% { transform: translateY(-4px) rotate(3deg) scale(1.02); }
+          96% { transform: translateY(-2px) rotate(-1deg) scale(1.01); }
+        }
+        @keyframes eye-blink {
+          0%, 90%, 100% { transform: scaleY(1); }
+          95% { transform: scaleY(0.1); }
+        }
+        @keyframes icon-pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+        }
+        .spin-cw {
+          animation: spin-clockwise 10s linear infinite;
+        }
+        .spin-ccw {
+          animation: spin-counterclockwise 8s linear infinite;
+        }
+        .tooltip-wiggle-anim {
+          animation: tooltip-wiggle 7s infinite ease-in-out;
+        }
+        .blink-eye {
+          animation: eye-blink 4s infinite ease-in-out;
+          transform-origin: center;
+        }
+        .pulse-svg {
+          animation: icon-pulse 2.5s infinite ease-in-out;
+          transform-origin: center;
+        }
+        .fab-container:hover .sparkle-1 {
+          animation: float-sparkle 1.4s infinite ease-out;
+        }
+        .fab-container:hover .sparkle-2 {
+          animation: float-sparkle 1.4s infinite ease-out 0.3s;
+        }
+        .fab-container:hover .sparkle-3 {
+          animation: float-sparkle 1.4s infinite ease-out 0.6s;
+        }
+      `}} />
+
+      {/* ─── Attention Wiggle Tooltip ─── */}
+      {showTooltip && !isOpen && (
+        <div className="fixed bottom-24 right-6 z-50 flex items-center gap-2.5 rounded-xl bg-card border border-border/40 px-3.5 py-2.5 shadow-2xl backdrop-blur-xl tooltip-wiggle-anim max-w-[280px] animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="flex items-center gap-2">
+            <span className="flex h-2 w-2 shrink-0 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-semibold text-foreground whitespace-nowrap">
+              Grow your business on WhatsApp! 🚀
+            </span>
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowTooltip(false)
+            }}
+            className="ml-1 rounded-full p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            aria-label="Dismiss message"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+          {/* Tooltip pointer */}
+          <div className="absolute right-[22px] -bottom-[6px] h-3 w-3 rotate-45 border-r border-b border-border/40 bg-card" />
+        </div>
+      )}
+
       {/* ─── Floating Action Button ─── */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-primary to-blue-600 text-white shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-primary/40 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+        className={`fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-card to-background text-foreground shadow-2xl border border-border/20 transition-all duration-500 hover:scale-110 hover:shadow-primary/20 hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 fab-container cursor-pointer ${
           isOpen ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'
         }`}
         aria-label="Open AI Assistant"
       >
-        <Bot className="h-6 w-6" />
-        {/* Ambient ping */}
-        <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+        {/* Rotating orbits */}
+        <div className="absolute inset-0 -m-1 pointer-events-none rounded-full overflow-visible">
+          {/* Clockwise rotating ring (WhatsApp Green) */}
+          <svg className="absolute inset-0 w-full h-full spin-cw scale-[1.05]" viewBox="0 0 100 100">
+            <circle
+              cx="50"
+              cy="50"
+              r="47"
+              fill="none"
+              stroke="url(#whatsapp-gradient)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeDasharray="120 180"
+            />
+            <defs>
+              <linearGradient id="whatsapp-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#25D366" stopOpacity="1" />
+                <stop offset="50%" stopColor="#128C7E" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          {/* Counter-clockwise rotating ring (AI Blue/Purple) */}
+          <svg className="absolute inset-0 w-full h-full spin-ccw scale-[0.95]" viewBox="0 0 100 100">
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              fill="none"
+              stroke="url(#ai-gradient)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeDasharray="90 210"
+            />
+            <defs>
+              <linearGradient id="ai-gradient" x1="100%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stopColor="#3B82F6" stopOpacity="1" />
+                <stop offset="50%" stopColor="#8B5CF6" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        {/* Morphing Icons */}
+        <div className="relative h-6 w-6 flex items-center justify-center z-10">
+          <div className={`absolute transition-all duration-500 ease-in-out transform ${
+            activeIcon === "ai" ? "scale-100 opacity-100 rotate-0" : "scale-55 opacity-0 -rotate-90 pointer-events-none"
+          }`}>
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary">
+              <rect x="5" y="7" width="14" height="12" rx="3" stroke="currentColor" strokeWidth="2" fill="currentColor" fillOpacity="0.1" />
+              <path d="M9 7L8 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <path d="M15 7L16 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <circle cx="8" cy="4" r="1.5" fill="#3B82F6" />
+              <circle cx="16" cy="4" r="1.5" fill="#8B5CF6" />
+              <rect x="8" y="11" width="2" height="2" rx="0.5" fill="currentColor" className="blink-eye" />
+              <rect x="14" y="11" width="2" height="2" rx="0.5" fill="currentColor" className="blink-eye" />
+              <path d="M10 15C10.5 15.8 11.2 16 12 16C12.8 16 13.5 15.8 14 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </div>
+
+          <div className={`absolute transition-all duration-500 ease-in-out transform ${
+            activeIcon === "whatsapp" ? "scale-100 opacity-100 rotate-0" : "scale-55 opacity-0 rotate-90 pointer-events-none"
+          }`}>
+            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#25D366]">
+              <path className="pulse-svg" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+          </div>
+        </div>
+
+        {/* Hover Particles */}
+        <span className="absolute pointer-events-none inset-0 flex items-center justify-center overflow-visible">
+          <span className="absolute w-1.5 h-1.5 bg-[#25D366] rounded-full opacity-0 sparkle-1" style={{ left: '15%', bottom: '20%' }} />
+          <span className="absolute w-2 h-2 bg-[#3B82F6] rounded-full opacity-0 sparkle-2" style={{ left: '45%', bottom: '20%' }} />
+          <span className="absolute w-1 h-1 bg-[#8B5CF6] rounded-full opacity-0 sparkle-3" style={{ left: '75%', bottom: '20%' }} />
+        </span>
+
+        {/* Ambient pulse green dot */}
+        <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3 z-20">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-primary"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
         </span>
       </button>
 
@@ -56,8 +222,35 @@ export function AiChatbot() {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/30 bg-gradient-to-r from-primary/10 to-blue-500/10 px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary to-blue-600 text-white shadow-inner">
-              <Bot className="h-4 w-4" />
+            <div className={`relative flex h-8 w-8 items-center justify-center rounded-full text-white shadow-inner overflow-hidden transition-all duration-500 bg-gradient-to-br ${
+              activeIcon === "ai" ? "from-primary to-blue-600" : "from-[#25D366] to-[#128C7E]"
+            }`}>
+              <div className="relative h-4.5 w-4.5 flex items-center justify-center">
+                {/* AI Icon */}
+                <div className={`absolute transition-all duration-500 ease-in-out transform ${
+                  activeIcon === "ai" ? "scale-100 opacity-100 rotate-0" : "scale-55 opacity-0 -rotate-90 pointer-events-none"
+                }`}>
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5 text-white">
+                    <rect x="5" y="7" width="14" height="12" rx="3" stroke="currentColor" strokeWidth="2" fill="currentColor" fillOpacity="0.1" />
+                    <path d="M9 7L8 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M15 7L16 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    <circle cx="8" cy="4" r="1.5" fill="white" />
+                    <circle cx="16" cy="4" r="1.5" fill="white" />
+                    <rect x="8" y="11" width="2" height="2" rx="0.5" fill="white" className="blink-eye" />
+                    <rect x="14" y="11" width="2" height="2" rx="0.5" fill="white" className="blink-eye" />
+                    <path d="M10 15C10.5 15.8 11.2 16 12 16C12.8 16 13.5 15.8 14 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </div>
+
+                {/* WhatsApp Icon */}
+                <div className={`absolute transition-all duration-500 ease-in-out transform ${
+                  activeIcon === "whatsapp" ? "scale-100 opacity-100 rotate-0" : "scale-55 opacity-0 rotate-90 pointer-events-none"
+                }`}>
+                  <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5 text-white">
+                    <path className="pulse-svg" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
+                </div>
+              </div>
             </div>
             <div>
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5">

@@ -48,7 +48,7 @@ export default function PricingPage() {
   const faqs = [
     { q: "Are there any hidden charges?", a: "No. Unlike other platforms, we do not add any markup to your Meta WhatsApp API messaging costs. You pay exactly what Meta charges." },
     { q: "Can I upgrade or downgrade my plan?", a: "Yes, you can upgrade, downgrade, or cancel your plan at any time right from your billing dashboard." },
-    { q: "Do you offer refunds?", a: "We offer a 14-day free trial so you can test the platform completely risk-free. After upgrading, you can cancel at any time but we do not offer refunds for partial months." },
+    { q: "Do you offer refunds?", a: "We offer a 7-day free trial so you can test the platform completely risk-free. After upgrading, you can cancel at any time but we do not offer refunds for partial months." },
     { q: "What payment methods are accepted?", a: "We accept all major credit/debit cards, UPI, net banking, and wallets through our secure Razorpay payment gateway." },
     { q: "Can I use my own WhatsApp number?", a: "Yes! You can connect your existing business phone number or get a new one through Meta's WhatsApp Business Platform." },
   ]
@@ -178,7 +178,9 @@ export default function PricingPage() {
                       {/* Plan name */}
                       <div className="mb-5">
                         <h3 className="text-lg font-bold text-foreground mb-1.5">{plan.name}</h3>
-                        <p className="text-xs text-muted-foreground/60 min-h-[32px] leading-relaxed">{plan.description}</p>
+                        <p className="text-xs text-muted-foreground/60 min-h-[32px] leading-relaxed">
+                          {plan.slug === 'free' ? '7-day free trial with basic limits.' : plan.description}
+                        </p>
                       </div>
 
                       {/* Price */}
@@ -196,7 +198,11 @@ export default function PricingPage() {
                               <span className="text-3xl font-extrabold">
                                 {isFree ? 'Free' : `₹${discountedPrice.toLocaleString()}`}
                               </span>
-                              {!isFree && <span className="text-muted-foreground/50 ml-1.5 text-xs font-medium">/{isAnnual ? 'year' : 'month'}</span>}
+                              {isFree ? (
+                                <span className="text-muted-foreground/50 ml-1.5 text-xs font-medium">/7-day trial</span>
+                              ) : (
+                                <span className="text-muted-foreground/50 ml-1.5 text-xs font-medium">/{isAnnual ? 'year' : 'month'}</span>
+                              )}
                             </div>
                           </div>
                         )}

@@ -29,7 +29,7 @@ export default function ReturnRefundPage() {
 
           <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">2. Refund Policy</h2>
           <p>
-            We offer a comprehensive 14-day free trial so that you can thoroughly evaluate our platform before making a commitment. Because of this:
+            We offer a comprehensive 7-day free trial so that you can thoroughly evaluate our platform before making a commitment. Because of this:
           </p>
           <ul className="list-disc pl-6 space-y-2 mt-4">
             <li><strong>Monthly Subscriptions:</strong> Payments for monthly subscriptions are non-refundable. If you cancel, you will retain access for the remainder of the paid month.</li>
