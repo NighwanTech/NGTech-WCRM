@@ -57,6 +57,7 @@ import {
   type StartNodeConfig,
   type KeywordTriggerConfig,
   type DelayNodeConfig,
+  type HttpFetchNodeConfig,
 } from "./types";
 
 // ============================================================
@@ -117,7 +118,8 @@ export function isAutoAdvancing(node_type: string): boolean {
     node_type === "send_message" ||
     node_type === "send_media" ||
     node_type === "condition" ||
-    node_type === "set_tag"
+    node_type === "set_tag" ||
+    node_type === "http_fetch"
   );
 }
 
@@ -257,7 +259,9 @@ async function logEvent(
     | "handoff"
     | "timeout"
     | "error"
-    | "completed",
+    | "completed"
+    | "http_fetch_success"
+    | "http_fetch_failed",
   node_key: string | null,
   payload: Record<string, unknown> = {},
 ): Promise<void> {
@@ -520,6 +524,100 @@ function interpolateVars(template: string, vars: Record<string, unknown>): strin
     const v = vars[key];
     return v === undefined || v === null ? "" : String(v);
   });
+}
+
+export async function executeHttpFetchNode(
+  db: AdminClient,
+  run: FlowRunRow,
+  node: FlowNodeRow,
+): Promise<{ nextKey: string; updatedVars: Record<string, unknown> }> {
+  const cfg = node.config as unknown as HttpFetchNodeConfig;
+  const timeoutMs = cfg.timeout_ms && cfg.timeout_ms > 0 ? cfg.timeout_ms : 5000;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  const url = interpolateVars(cfg.url || "", run.vars);
+  const method = (cfg.method || "POST").toUpperCase();
+
+  const headers: Record<string, string> = {};
+  if (Array.isArray(cfg.headers)) {
+    for (const item of cfg.headers) {
+      if (item.key && item.key.trim()) {
+        headers[item.key.trim()] = interpolateVars(item.value || "", run.vars);
+      }
+    }
+  } else if (cfg.headers && typeof cfg.headers === "object") {
+    for (const [k, v] of Object.entries(cfg.headers)) {
+      if (k.trim()) {
+        headers[k.trim()] = interpolateVars(String(v || ""), run.vars);
+      }
+    }
+  }
+
+  let body: string | undefined = undefined;
+  if (method !== "GET" && cfg.body) {
+    body = interpolateVars(cfg.body, run.vars);
+  }
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers,
+      body,
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+
+    let responseData: unknown;
+    const contentType = res.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      try {
+        responseData = await res.json();
+      } catch {
+        responseData = await res.text();
+      }
+    } else {
+      responseData = await res.text();
+    }
+
+    const isSuccess = res.ok;
+    const updatedVars = { ...run.vars };
+
+    if (cfg.response_var_key && cfg.response_var_key.trim()) {
+      updatedVars[cfg.response_var_key.trim()] = responseData;
+    }
+
+    await logEvent(db, run.id, isSuccess ? "http_fetch_success" : "http_fetch_failed", node.node_key, {
+      url,
+      method,
+      status: res.status,
+      ok: res.ok,
+      response_var_key: cfg.response_var_key ?? null,
+    });
+
+    if (cfg.response_var_key && cfg.response_var_key.trim()) {
+      await db
+        .from("flow_runs")
+        .update({ vars: updatedVars })
+        .eq("id", run.id);
+    }
+
+    const nextKey = isSuccess
+      ? cfg.next_node_key
+      : (cfg.error_next_node_key || cfg.next_node_key);
+
+    return { nextKey, updatedVars };
+  } catch (err) {
+    clearTimeout(timer);
+    await logEvent(db, run.id, "http_fetch_failed", node.node_key, {
+      url,
+      method,
+      reason: err instanceof Error ? err.message : String(err),
+    });
+
+    const nextKey = cfg.error_next_node_key || cfg.next_node_key;
+    return { nextKey, updatedVars: run.vars };
+  }
 }
 
 async function endRun(
@@ -811,7 +909,7 @@ async function advanceFromNodeKey(
         const model = AIProviderService.getModel(provider, modelName);
 
         const result = await generateText({
-          model,
+          model: model as any,
           prompt: fullSystemPrompt,
           maxTokens: aiSettings?.advanced_settings?.max_tokens || undefined,
           temperature: aiSettings?.advanced_settings?.temperature || undefined,
@@ -838,6 +936,12 @@ async function advanceFromNodeKey(
         // Non-fatal, just continue
       }
       currentKey = cfg.next_node_key;
+      continue;
+    }
+    if (node.node_type === "http_fetch") {
+      const { nextKey, updatedVars } = await executeHttpFetchNode(db, run, node);
+      run.vars = updatedVars;
+      currentKey = nextKey;
       continue;
     }
     if (node.node_type === "handoff") {

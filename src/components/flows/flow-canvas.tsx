@@ -685,6 +685,9 @@ const ADD_NODE_TYPES: NodeType[] = [
   "condition",
   "set_tag",
   "handoff",
+  "ai_reply",
+  "delay",
+  "http_fetch",
   "end",
 ];
 

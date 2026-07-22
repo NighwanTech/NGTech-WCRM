@@ -757,6 +757,61 @@ function validateNode(
       break;
     }
 
+    case "http_fetch": {
+      const cfg = node.config as {
+        url?: string;
+        method?: string;
+        response_var_key?: string;
+        next_node_key?: string;
+        error_next_node_key?: string;
+      };
+      if (!cfg.url?.trim()) {
+        issues.push({
+          severity: "error",
+          scope: "node",
+          node_key: node.node_key,
+          field: "url",
+          message: "HTTP Webhook needs a target URL.",
+        });
+      }
+      if (cfg.response_var_key?.trim() && !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(cfg.response_var_key.trim())) {
+        issues.push({
+          severity: "error",
+          scope: "node",
+          node_key: node.node_key,
+          field: "response_var_key",
+          message: `response_var_key "${cfg.response_var_key}" must be alphanumeric+underscore and start with a letter or underscore.`,
+        });
+      }
+      if (!cfg.next_node_key) {
+        issues.push({
+          severity: "error",
+          scope: "node",
+          node_key: node.node_key,
+          field: "next_node_key",
+          message: "HTTP Webhook must point to a next node.",
+        });
+      } else if (!knownKeys.has(cfg.next_node_key)) {
+        issues.push({
+          severity: "error",
+          scope: "node",
+          node_key: node.node_key,
+          field: "next_node_key",
+          message: `HTTP Webhook points to non-existent node "${cfg.next_node_key}".`,
+        });
+      }
+      if (cfg.error_next_node_key && !knownKeys.has(cfg.error_next_node_key)) {
+        issues.push({
+          severity: "error",
+          scope: "node",
+          node_key: node.node_key,
+          field: "error_next_node_key",
+          message: `HTTP Webhook error branch points to non-existent node "${cfg.error_next_node_key}".`,
+        });
+      }
+      break;
+    }
+
     case "handoff":
     case "end":
       // Terminal nodes have no outgoing edges; nothing to validate
@@ -821,6 +876,16 @@ function outgoingEdges(node: NodeInput): string[] {
       const out: string[] = [];
       if (cfg.true_next) out.push(cfg.true_next);
       if (cfg.false_next) out.push(cfg.false_next);
+      return out;
+    }
+    case "http_fetch": {
+      const cfg = node.config as {
+        next_node_key?: string;
+        error_next_node_key?: string;
+      };
+      const out: string[] = [];
+      if (cfg.next_node_key) out.push(cfg.next_node_key);
+      if (cfg.error_next_node_key) out.push(cfg.error_next_node_key);
       return out;
     }
     case "send_buttons": {

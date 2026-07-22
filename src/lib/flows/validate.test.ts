@@ -516,6 +516,70 @@ describe("validateFlowForActivation — send_media", () => {
   });
 });
 
+describe("validateFlowForActivation — http_fetch node", () => {
+  const baseFlow = {
+    name: "HTTP Webhook Flow",
+    trigger_type: "manual" as const,
+    trigger_config: {},
+    entry_node_id: "s",
+  };
+
+  const nodesWith = (cfg: Record<string, unknown>) => [
+    { node_key: "s", node_type: "start", config: { next_node_key: "w" } },
+    { node_key: "w", node_type: "http_fetch", config: cfg },
+    { node_key: "h", node_type: "handoff", config: {} },
+    { node_key: "err", node_type: "end", config: {} },
+  ];
+
+  it("passes validation when http_fetch is well-formed", () => {
+    const issues = validateFlowForActivation(
+      baseFlow,
+      nodesWith({
+        url: "https://api.example.com/webhook",
+        method: "POST",
+        response_var_key: "res",
+        next_node_key: "h",
+        error_next_node_key: "err",
+      }),
+    );
+    expect(issues).toEqual([]);
+  });
+
+  it("flags missing url", () => {
+    const issues = validateFlowForActivation(
+      baseFlow,
+      nodesWith({
+        url: "",
+        next_node_key: "h",
+      }),
+    );
+    expect(issues.some((i) => i.node_key === "w" && i.field === "url")).toBe(true);
+  });
+
+  it("flags missing next_node_key", () => {
+    const issues = validateFlowForActivation(
+      baseFlow,
+      nodesWith({
+        url: "https://api.example.com/webhook",
+        next_node_key: "",
+      }),
+    );
+    expect(issues.some((i) => i.node_key === "w" && i.field === "next_node_key")).toBe(true);
+  });
+
+  it("flags invalid response_var_key format", () => {
+    const issues = validateFlowForActivation(
+      baseFlow,
+      nodesWith({
+        url: "https://api.example.com/webhook",
+        response_var_key: "123-invalid!",
+        next_node_key: "h",
+      }),
+    );
+    expect(issues.some((i) => i.node_key === "w" && i.field === "response_var_key")).toBe(true);
+  });
+});
+
 describe("reachableFromEntry", () => {
   it("walks the graph from the entry", () => {
     const set = reachableFromEntry("start", validNodes);

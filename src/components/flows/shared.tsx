@@ -30,6 +30,7 @@ import {
   Workflow,
   Clock,
   Bot,
+  Globe,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -54,6 +55,7 @@ export type NodeType =
   | "handoff"
   | "ai_reply"
   | "delay"
+  | "http_fetch"
   | "end";
 
 export interface BuilderNode {
@@ -141,6 +143,12 @@ export const NODE_META: Record<
     color: "text-orange-400",
     blurb: "Waits before continuing",
   },
+  http_fetch: {
+    label: "HTTP Webhook",
+    icon: Globe,
+    color: "text-blue-400",
+    blurb: "Sends HTTP GET/POST to external API",
+  },
   end: {
     label: "End",
     icon: Flag,
@@ -173,6 +181,7 @@ const NODE_HUE: Record<NodeType, { l: number; c: number; h: number }> = {
   handoff: { l: 0.65, c: 0.17, h: 16 }, // rose — hands off
   ai_reply: { l: 0.55, c: 0.2, h: 280 }, // purple - AI
   delay: { l: 0.70, c: 0.15, h: 45 }, // orange
+  http_fetch: { l: 0.60, c: 0.16, h: 230 }, // blue - HTTP API
   end: { l: 0.55, c: 0.01, h: 260 }, // neutral grey — terminal
 };
 
@@ -385,6 +394,11 @@ export function summarizeNode(node: BuilderNode): string | null {
     case "delay": {
       const hours = typeof cfg.delay_hours === "number" ? cfg.delay_hours : 0;
       return hours > 0 ? `Wait ${hours}h` : null;
+    }
+    case "http_fetch": {
+      const method = typeof cfg.method === "string" ? cfg.method.toUpperCase() : "POST";
+      const url = typeof cfg.url === "string" ? cfg.url : "";
+      return url ? `${method} ${truncate(url, 45)}` : `${method} Webhook`;
     }
   }
 }

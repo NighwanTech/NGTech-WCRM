@@ -190,13 +190,29 @@ export interface DelayNodeConfig {
   next_node_key: string;
 }
 
+export interface HttpFetchNodeConfig {
+  /** Target URL to send the HTTP request to (supports {{vars.X}}). */
+  url: string;
+  /** HTTP method to use. Defaults to "POST". */
+  method: "GET" | "POST" | "PUT" | "DELETE";
+  /** Optional HTTP headers (key-value dictionary or array of key/value objects). */
+  headers?: Record<string, string> | Array<{ key: string; value: string }>;
+  /** Optional request body payload (supports {{vars.X}}). */
+  body?: string;
+  /** Optional key under which to store the response (JSON or text) in `flow_runs.vars`. */
+  response_var_key?: string;
+  /** Timeout in milliseconds (default 5000ms). */
+  timeout_ms?: number;
+  /** Node to advance to on successful HTTP response (2xx). */
+  next_node_key: string;
+  /** Optional node to advance to on HTTP error (>=400) or network failure. */
+  error_next_node_key?: string;
+}
+
 /**
  * Total union — every concrete node_type the v1 engine understands.
  * Add new node types here and the engine's switch will flag missing
  * cases via TypeScript's exhaustiveness check.
- *
- * v1.5+ additions (collect_input, condition, set_tag, http_fetch) will
- * extend this union — out-of-scope for the v1 engine PR.
  */
 export type FlowNodeConfig =
   | { node_type: "start"; config: StartNodeConfig }
@@ -210,6 +226,7 @@ export type FlowNodeConfig =
   | { node_type: "handoff"; config: HandoffNodeConfig }
   | { node_type: "ai_reply"; config: AIReplyNodeConfig }
   | { node_type: "delay"; config: DelayNodeConfig }
+  | { node_type: "http_fetch"; config: HttpFetchNodeConfig }
   | { node_type: "end"; config: EndNodeConfig };
 
 export type FlowNodeType = FlowNodeConfig["node_type"];

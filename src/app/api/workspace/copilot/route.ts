@@ -66,7 +66,7 @@ export async function POST(request: Request) {
     switch (action) {
       case 'draft_reply':
         const { text: replyText } = await generateText({
-          model: aiModel,
+          model: aiModel as any,
           system: `You are an expert customer support agent. Draft a professional, empathetic, and concise reply to the customer based on the conversation history. Do not include placeholders. Additional instructions: ${query || 'None'}`,
           prompt: `Conversation:\n${transcript}`,
         });
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
 
       case 'summarize':
         const { text: summaryText } = await generateText({
-          model: aiModel,
+          model: aiModel as any,
           system: `Summarize the following customer service conversation in 3-4 bullet points. Focus on the core issue and current status.`,
           prompt: `Conversation:\n${transcript}`,
         });
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
 
       case 'extract_intent':
         const { object: intentObj } = await generateObject({
-          model: aiModel,
+          model: aiModel as any,
           system: `Analyze the latest messages in the conversation and extract the customer's intent, sentiment, and escalation risk.`,
           prompt: `Conversation:\n${transcript}`,
           schema: z.object({
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
         
       case 'recommend_action':
          const { object: actionObj } = await generateObject({
-          model: aiModel,
+          model: aiModel as any,
           system: `Analyze the conversation and recommend the "Next Best Action" the agent should take in the CRM workspace (e.g., Create Quote, Send Payment Link, Close Ticket, Schedule Call).`,
           prompt: `Conversation:\n${transcript}\n\nCRM Context:\n${JSON.stringify(context || {})}`,
           schema: z.object({

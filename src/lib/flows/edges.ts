@@ -61,6 +61,30 @@ export function deriveCanvasEdges(nodes: BuilderNode[]): CanvasEdge[] {
         break;
       }
 
+      case "http_fetch": {
+        const next = (cfg as { next_node_key?: string }).next_node_key;
+        const errNext = (cfg as { error_next_node_key?: string }).error_next_node_key;
+        if (next && knownKeys.has(next)) {
+          edges.push({
+            id: `${node.node_key}--next--${next}`,
+            source: node.node_key,
+            target: next,
+            sourceHandle: "next",
+            label: "success",
+          });
+        }
+        if (errNext && knownKeys.has(errNext)) {
+          edges.push({
+            id: `${node.node_key}--error--${errNext}`,
+            source: node.node_key,
+            target: errNext,
+            sourceHandle: "error",
+            label: "error",
+          });
+        }
+        break;
+      }
+
       case "condition": {
         const trueNext = (cfg as { true_next?: string }).true_next;
         const falseNext = (cfg as { false_next?: string }).false_next;
@@ -181,6 +205,12 @@ export function outgoingSlots(node: BuilderNode): OutgoingSlot[] {
     case "set_tag":
       return [{ id: "next", label: "Next" }];
 
+    case "http_fetch":
+      return [
+        { id: "next", label: "success" },
+        { id: "error", label: "error" },
+      ];
+
     case "condition":
       return [
         { id: "true", label: "true" },
@@ -256,6 +286,11 @@ export function applyEdgeConnection(
     case "collect_input":
     case "set_tag":
       if (sourceHandle === "next") return { next_node_key: targetKey };
+      return null;
+
+    case "http_fetch":
+      if (sourceHandle === "next") return { next_node_key: targetKey };
+      if (sourceHandle === "error") return { error_next_node_key: targetKey };
       return null;
 
     case "condition":
@@ -354,6 +389,18 @@ function patchedConfigWithoutKey(
       const next = (cfg as { next_node_key?: string }).next_node_key;
       if (next !== deletedKey) return null;
       return { ...cfg, next_node_key: "" };
+    }
+
+    case "http_fetch": {
+      const c = cfg as { next_node_key?: string; error_next_node_key?: string };
+      const nextMatch = c.next_node_key === deletedKey;
+      const errorMatch = c.error_next_node_key === deletedKey;
+      if (!nextMatch && !errorMatch) return null;
+      return {
+        ...cfg,
+        ...(nextMatch ? { next_node_key: "" } : {}),
+        ...(errorMatch ? { error_next_node_key: "" } : {}),
+      };
     }
 
     case "condition": {

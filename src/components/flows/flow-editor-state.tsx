@@ -186,7 +186,19 @@ export function defaultConfigFor(type: NodeType): Record<string, unknown> {
       return { note: "" };
     case "delay":
       return { delay_hours: 1, next_node_key: "" };
+    case "http_fetch":
+      return {
+        url: "",
+        method: "POST",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+        body: "",
+        response_var_key: "api_response",
+        timeout_ms: 5000,
+        next_node_key: "",
+        error_next_node_key: "",
+      };
     case "end":
+    default:
       return {};
   }
 }

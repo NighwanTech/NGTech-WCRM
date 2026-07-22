@@ -581,6 +581,7 @@ function AddNodeButton({ onAdd }: { onAdd: (type: NodeType) => void }) {
     "handoff",
     "ai_reply",
     "delay",
+    "http_fetch",
     "end",
   ];
   return (

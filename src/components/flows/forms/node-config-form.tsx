@@ -218,6 +218,16 @@ export function NodeConfigForm({
         />
       );
 
+    case "http_fetch":
+      return (
+        <HttpFetchForm
+          cfg={cfg as HttpFetchCfg}
+          allNodes={allNodes}
+          currentKey={node.node_key}
+          onUpdateConfig={onUpdateConfig}
+        />
+      );
+
     case "end":
       return (
         <p className="text-xs text-muted-foreground">
@@ -1155,5 +1165,172 @@ function DelayForm({
         />
       </div>
     </>
+  );
+}
+
+// ============================================================
+// http_fetch
+// ============================================================
+
+interface HttpFetchCfg {
+  url?: string;
+  method?: "GET" | "POST" | "PUT" | "DELETE";
+  headers?: Array<{ key: string; value: string }>;
+  body?: string;
+  response_var_key?: string;
+  timeout_ms?: number;
+  next_node_key?: string;
+  error_next_node_key?: string;
+}
+
+function HttpFetchForm({
+  cfg,
+  allNodes,
+  currentKey,
+  onUpdateConfig,
+}: {
+  cfg: HttpFetchCfg;
+  allNodes: BuilderNode[];
+  currentKey: string;
+  onUpdateConfig: (patch: Record<string, unknown>) => void;
+}) {
+  const method = cfg.method || "POST";
+  const headers = Array.isArray(cfg.headers) ? cfg.headers : [{ key: "", value: "" }];
+
+  const updateHeader = (index: number, key: string, value: string) => {
+    const next = [...headers];
+    next[index] = { key, value };
+    onUpdateConfig({ headers: next });
+  };
+
+  const addHeader = () => {
+    onUpdateConfig({ headers: [...headers, { key: "", value: "" }] });
+  };
+
+  const removeHeader = (index: number) => {
+    const next = headers.filter((_, i) => i !== index);
+    onUpdateConfig({ headers: next.length > 0 ? next : [{ key: "", value: "" }] });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <div className="w-28">
+          <label className="mb-1 block text-xs text-muted-foreground">Method</label>
+          <Select
+            value={method}
+            onValueChange={(v) => onUpdateConfig({ method: v })}
+          >
+            <SelectTrigger className="bg-muted text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="GET">GET</SelectItem>
+              <SelectItem value="POST">POST</SelectItem>
+              <SelectItem value="PUT">PUT</SelectItem>
+              <SelectItem value="DELETE">DELETE</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex-1">
+          <label className="mb-1 block text-xs text-muted-foreground">URL</label>
+          <Input
+            value={cfg.url ?? ""}
+            onChange={(e) => onUpdateConfig({ url: e.target.value })}
+            placeholder="https://api.example.com/webhook"
+            className="bg-muted text-xs font-mono"
+          />
+        </div>
+      </div>
+      <p className="text-[10px] text-muted-foreground">
+        Use <code className="rounded bg-muted px-1">{"{{vars.name}}"}</code> to interpolate flow variables into URL, headers, or body.
+      </p>
+
+      {/* Headers */}
+      <div>
+        <div className="mb-1.5 flex items-center justify-between">
+          <label className="text-xs font-medium text-muted-foreground">HTTP Headers</label>
+          <Button type="button" variant="ghost" size="xs" onClick={addHeader} className="h-6 text-xs">
+            <Plus className="mr-1 h-3 w-3" /> Add Header
+          </Button>
+        </div>
+        <div className="space-y-1.5">
+          {headers.map((h, idx) => (
+            <div key={idx} className="flex items-center gap-1.5">
+              <Input
+                value={h.key}
+                onChange={(e) => updateHeader(idx, e.target.value, h.value)}
+                placeholder="Header Name"
+                className="bg-muted text-xs font-mono"
+              />
+              <Input
+                value={h.value}
+                onChange={(e) => updateHeader(idx, h.key, e.target.value)}
+                placeholder="Value"
+                className="bg-muted text-xs font-mono"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                onClick={() => removeHeader(idx)}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Body (for POST/PUT/DELETE) */}
+      {method !== "GET" && (
+        <TextRow
+          label="Request Body (JSON / text payload)"
+          value={cfg.body ?? ""}
+          onChange={(v) => onUpdateConfig({ body: v })}
+          rows={3}
+          placeholder='{"customer_name": "{{vars.name}}", "email": "{{vars.email}}"}'
+        />
+      )}
+
+      {/* Response Var Key */}
+      <div>
+        <label className="mb-1 block text-xs text-muted-foreground">
+          Store Response in Variable (stored in flow_runs.vars)
+        </label>
+        <Input
+          value={cfg.response_var_key ?? ""}
+          onChange={(e) =>
+            onUpdateConfig({
+              response_var_key: e.target.value.replace(/[^a-zA-Z0-9_]/g, ""),
+            })
+          }
+          placeholder="e.g. api_response"
+          className="bg-muted font-mono text-xs"
+        />
+        <p className="mt-1 text-[10px] text-muted-foreground">
+          Access response in downstream nodes via <code className="rounded bg-muted px-1">{"{{vars." + (cfg.response_var_key || "api_response") + "}}"}</code>
+        </p>
+      </div>
+
+      {/* Routing */}
+      <div className="space-y-2 border-t border-border pt-3">
+        <NextNodeRow
+          value={cfg.next_node_key ?? ""}
+          allNodes={allNodes}
+          currentKey={currentKey}
+          onChange={(v) => onUpdateConfig({ next_node_key: v })}
+          label="On Success (HTTP 2xx), advance to"
+        />
+        <NextNodeRow
+          value={cfg.error_next_node_key ?? ""}
+          allNodes={allNodes}
+          currentKey={currentKey}
+          onChange={(v) => onUpdateConfig({ error_next_node_key: v })}
+          label="On Failure / Error (HTTP >= 400), advance to"
+        />
+      </div>
+    </div>
   );
 }
