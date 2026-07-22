@@ -910,16 +910,27 @@ async function processMessage(
   // message — see the comment block above.
   let detectedLanguage = 'English';
   let detectedIntent = 'General';
+  let aiAutoReplied = false; // Track if AI bot successfully replied
 
   if (!flowConsumed) {
     automationTriggers.push('new_message_received', 'keyword_match')
 
-    if (process.env.GROQ_API_KEY) {
-      // 1. Background Sentiment, Lead Score, Topic, & Auto-Tag Analysis
+    // 1. Background Sentiment, Lead Score, Topic, & Auto-Tag Analysis
+    // Uses the selected AI provider from the AI Assistant settings panel.
+    const analysisProvider = aiConfig?.provider || 'groq';
+    const analysisModelName = analysisProvider === 'groq' 
+      ? 'llama-3.1-8b-instant'
+      : (analysisProvider === 'gemini' ? 'gemini-1.5-flash' : (aiConfig?.model || 'llama-3.1-8b-instant'));
+    const hasAnalysisKey = analysisProvider === 'groq' ? !!process.env.GROQ_API_KEY
+      : analysisProvider === 'gemini' ? !!process.env.GOOGLE_GENERATIVE_AI_API_KEY
+      : !!process.env.GROQ_API_KEY; // fallback
+
+    if (hasAnalysisKey) {
       await (async () => {
         try {
+          const analysisModel = AIProviderService.getModel(analysisProvider, analysisModelName);
           const { object } = await generateObject({
-            model: groq('llama-3.3-70b-versatile'),
+            model: analysisModel as any,
             schema: z.object({
               sentiment: z.enum(['positive', 'neutral', 'negative']),
               lead_score: z.enum(['cold', 'warm', 'hot']),
@@ -1190,6 +1201,7 @@ Message: "${inboundText}"`,
                 }
 
                 success = true; // Mark as success so we don't retry
+                aiAutoReplied = true; // Signal to suppress automations
 
                 const endTime = performance.now();
                 
@@ -1266,6 +1278,19 @@ Message: "${inboundText}"`,
   // manually-imported contacts sending for the first time. We dispatch both
   // so users can pick whichever semantic they want; an automation that
   // listens to only one trigger runs only when that trigger matches.
+  //
+  // When the AI auto-responder already replied, suppress content-level
+  // triggers (new_message_received, keyword_match) to prevent duplicate
+  // messages from automations (e.g. a "Welcome" automation firing after
+  // the AI bot already answered).
+  if (aiAutoReplied) {
+    const suppressedTriggers = ['new_message_received', 'keyword_match'] as const;
+    for (const t of suppressedTriggers) {
+      const idx = automationTriggers.indexOf(t);
+      if (idx !== -1) automationTriggers.splice(idx, 1);
+    }
+    console.log(`[ai-auto-reply] Suppressed automation triggers for conversation ${conversation.id} because AI already replied.`);
+  }
   if (contactOutcome.wasCreated) automationTriggers.unshift('new_contact_created')
   if (isFirstInboundMessage) automationTriggers.unshift('first_inbound_message')
   for (const triggerType of automationTriggers) {
