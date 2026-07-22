@@ -65,9 +65,9 @@ function LoginPageInner() {
     console.log("Login successful! Redirecting...");
 
     if (inviteToken) {
-      router.push(`/join/${encodeURIComponent(inviteToken)}`);
+      window.location.href = `/join/${encodeURIComponent(inviteToken)}`;
     } else {
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     }
   };
 
