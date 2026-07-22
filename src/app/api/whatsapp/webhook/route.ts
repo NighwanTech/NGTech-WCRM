@@ -1055,14 +1055,28 @@ Message: "${inboundText}"`,
       // 2. AI Auto-Responder & Human Handoff
       let isWithinHours = true;
       if (aiConfig?.respect_business_hours) {
-        isWithinHours = await checkBusinessHours(config.account_id);
+        isWithinHours = await checkBusinessHours(accountId);
       }
+
+      // Debug logging for AI auto-reply decision
+      console.log(`[ai-auto-reply] Decision for conversation ${conversation.id}:`, {
+        aiAutoReplyEnabled,
+        isBotPaused: conversation.is_bot_paused,
+        isWithinHours,
+        respectBusinessHours: aiConfig?.respect_business_hours ?? false,
+        provider: aiConfig?.provider || 'groq',
+        model: aiConfig?.model || 'default',
+        hasAiConfig: !!aiConfig,
+        aiConfigEnabled: aiConfig?.enabled,
+      });
 
       // The bot should run if:
       // 1. AI is enabled globally
       // 2. AND either we are outside business hours (bot takes over to say we are closed)
       //    OR we are inside business hours and the agent hasn't paused the bot.
       const shouldRunAi = aiAutoReplyEnabled && (!isWithinHours || !conversation.is_bot_paused);
+
+      console.log(`[ai-auto-reply] shouldRunAi = ${shouldRunAi} for conversation ${conversation.id}`);
 
       if (shouldRunAi) {
         // AI Rate limiting
