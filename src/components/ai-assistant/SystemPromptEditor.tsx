@@ -1,8 +1,10 @@
+import { useState } from "react"
+import { toast } from "sonner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { Expand, RotateCcw, Sparkles } from "lucide-react"
+import { Expand, RotateCcw, Sparkles, Loader2 } from "lucide-react"
 
 interface Props {
   config: any;
@@ -12,10 +14,34 @@ interface Props {
 const DEFAULT_PROMPT = 'You are a helpful customer support assistant for this business.';
 
 export function SystemPromptEditor({ config, onChange }: Props) {
+  const [isImproving, setIsImproving] = useState(false);
   const prompt = config.system_prompt || DEFAULT_PROMPT;
   const wordCount = prompt.trim().split(/\s+/).filter(Boolean).length;
   // very rough estimate: 1 word ~ 1.3 tokens
   const estimatedTokens = Math.ceil(wordCount * 1.3);
+
+  const handleImprove = async () => {
+    try {
+      setIsImproving(true);
+      const res = await fetch('/api/ai/improve-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+      const data = await res.json();
+      if (data.improvedPrompt) {
+        onChange('system_prompt', data.improvedPrompt);
+        toast.success('Prompt improved successfully!');
+      } else if (data.error) {
+        toast.error(data.error);
+      }
+    } catch (error) {
+      toast.error('Failed to improve prompt');
+      console.error('Error improving prompt:', error);
+    } finally {
+      setIsImproving(false);
+    }
+  };
 
   return (
     <Card>
@@ -26,13 +52,13 @@ export function SystemPromptEditor({ config, onChange }: Props) {
             <CardDescription>The core instructions that govern the AI's behavior.</CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => onChange('system_prompt', DEFAULT_PROMPT)}>
+            <Button variant="outline" size="sm" onClick={() => onChange('system_prompt', DEFAULT_PROMPT)} disabled={isImproving}>
               <RotateCcw className="w-4 h-4 mr-2" />
               Restore Default
             </Button>
-            <Button variant="secondary" size="sm">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Improve (AI)
+            <Button variant="secondary" size="sm" onClick={handleImprove} disabled={isImproving || !prompt}>
+              {isImproving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+              {isImproving ? 'Improving...' : 'Improve (AI)'}
             </Button>
           </div>
         </div>
