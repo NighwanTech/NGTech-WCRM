@@ -49,7 +49,7 @@ export function ProfileForm() {
     if (!profile || !user) return;
     setFullName(profile.full_name ?? '');
     setEmail(profile.email ?? '');
-    
+
     async function fetchDepartments() {
       const { data, error } = await supabase
         .from('department_members')
@@ -58,7 +58,7 @@ export function ProfileForm() {
           departments:department_id (name)
         `)
         .eq('user_id', user!.id);
-        
+
       if (data) {
         const deptNames = data
           .map(d => (d.departments as any)?.name)
@@ -217,10 +217,10 @@ export function ProfileForm() {
 
   const joined = user?.created_at
     ? new Date(user.created_at).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
     : '—';
 
   return (
@@ -232,140 +232,140 @@ export function ProfileForm() {
       <form onSubmit={onSubmit} className="space-y-4">
         <Card>
           <CardContent className="space-y-6">
-          {/* Avatar row */}
-          <div className="flex flex-wrap items-center gap-5">
-            <Avatar size="lg" className="size-16">
-              {currentAvatar ? (
-                <AvatarImage src={currentAvatar} alt={fullName || 'Avatar'} />
-              ) : null}
-              <AvatarFallback className="bg-primary/10 text-base text-primary">
-                {initial}
-              </AvatarFallback>
-            </Avatar>
+            {/* Avatar row */}
+            <div className="flex flex-wrap items-center gap-5">
+              <Avatar size="lg" className="size-16">
+                {currentAvatar ? (
+                  <AvatarImage src={currentAvatar} alt={fullName || 'Avatar'} />
+                ) : null}
+                <AvatarFallback className="bg-primary/10 text-base text-primary">
+                  {initial}
+                </AvatarFallback>
+              </Avatar>
 
-            <div className="flex flex-wrap gap-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                className="hidden"
-                onChange={onPickFile}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={saving}
-              >
-                <Upload className="size-4" />
-                {currentAvatar ? 'Change photo' : 'Upload photo'}
-              </Button>
-              {currentAvatar && (
+              <div className="flex flex-wrap gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  className="hidden"
+                  onChange={onPickFile}
+                />
                 <Button
                   type="button"
-                  variant="ghost"
-                  onClick={onRemoveAvatar}
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
                   disabled={saving}
-                  className="text-muted-foreground hover:text-foreground"
                 >
-                  <Trash2 className="size-4" />
-                  Remove
+                  <Upload className="size-4" />
+                  {currentAvatar ? 'Change photo' : 'Upload photo'}
                 </Button>
-              )}
-              <p className="w-full text-xs text-muted-foreground">
-                PNG, JPG, WebP, or GIF. Up to 2 MB.
-              </p>
+                {currentAvatar && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={onRemoveAvatar}
+                    disabled={saving}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <Trash2 className="size-4" />
+                    Remove
+                  </Button>
+                )}
+                <p className="w-full text-xs text-muted-foreground">
+                  PNG, JPG, WebP, or GIF. Up to 2 MB.
+                </p>
+              </div>
             </div>
-          </div>
 
-          {/* Name */}
-          <div className="space-y-2">
-            <Label htmlFor="profile-full-name" className="text-foreground">
-              Display name
-            </Label>
-            <Input
-              id="profile-full-name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Ada Lovelace"
-              maxLength={120}
-              disabled={saving}
-              required
-            />
-          </div>
+            {/* Name */}
+            <div className="space-y-2">
+              <Label htmlFor="profile-full-name" className="text-foreground">
+                Display name
+              </Label>
+              <Input
+                id="profile-full-name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Ada Lovelace"
+                maxLength={120}
+                disabled={saving}
+                required
+              />
+            </div>
 
-          {/* Email */}
-          <div className="space-y-2">
-            <Label htmlFor="profile-email" className="text-foreground">
-              Email
-            </Label>
-            <Input
-              id="profile-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={saving}
-              required
-            />
-            {emailChangePending && (
-              <p className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
-                <Mail className="mt-0.5 size-3.5 shrink-0" />
-                <span>
-                  Check the inbox for <strong>{profile?.email}</strong> and{' '}
-                  <strong>{email}</strong> — both need to confirm before the
-                  change takes effect.
-                </span>
+            {/* Email */}
+            <div className="space-y-2">
+              <Label htmlFor="profile-email" className="text-foreground">
+                Email
+              </Label>
+              <Input
+                id="profile-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={saving}
+                required
+              />
+              {emailChangePending && (
+                <p className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+                  <Mail className="mt-0.5 size-3.5 shrink-0" />
+                  <span>
+                    Check the inbox for <strong>{profile?.email}</strong> and{' '}
+                    <strong>{email}</strong> — both need to confirm before the
+                    change takes effect.
+                  </span>
+                </p>
+              )}
+            </div>
+
+            {/* Read-only block */}
+            <div className="rounded-lg border border-border bg-muted p-4">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Account details
               </p>
-            )}
-          </div>
-
-          {/* Read-only block */}
-          <div className="rounded-lg border border-border bg-muted p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Account details
-            </p>
-            <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-              <div>
-                <dt className="text-muted-foreground">Role</dt>
-                <dd className="mt-0.5 font-mono text-foreground">
-                  {profile?.role ?? 'user'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">Joined</dt>
-                <dd className="mt-0.5 text-foreground">{joined}</dd>
-              </div>
-              {departments.length > 0 && (
-                <div className="sm:col-span-2">
-                  <dt className="text-muted-foreground">Departments</dt>
-                  <dd className="mt-0.5 text-foreground">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {departments.map((dept, i) => (
-                        <span key={i} className="text-[10px] uppercase font-semibold h-5 px-2 whitespace-nowrap bg-primary/10 text-primary border border-primary/20 rounded-full inline-flex items-center">
-                          {dept}
-                        </span>
-                      ))}
-                    </div>
+              <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+                <div>
+                  <dt className="text-muted-foreground">Role</dt>
+                  <dd className="mt-0.5 font-mono text-foreground">
+                    {profile?.role ?? 'user'}
                   </dd>
                 </div>
-              )}
-              <div className="sm:col-span-2">
-                <dt className="text-muted-foreground">User ID</dt>
-                <dd className="mt-0.5 break-all font-mono text-xs text-muted-foreground">
-                  {user?.id ?? '—'}
-                </dd>
-              </div>
-            </dl>
-          </div>
+                <div>
+                  <dt className="text-muted-foreground">Joined</dt>
+                  <dd className="mt-0.5 text-foreground">{joined}</dd>
+                </div>
+                {departments.length > 0 && (
+                  <div className="sm:col-span-2">
+                    <dt className="text-muted-foreground">Departments</dt>
+                    <dd className="mt-0.5 text-foreground">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {departments.map((dept, i) => (
+                          <span key={i} className="text-[10px] uppercase font-semibold h-5 px-2 whitespace-nowrap bg-primary/10 text-primary border border-primary/20 rounded-full inline-flex items-center">
+                            {dept}
+                          </span>
+                        ))}
+                      </div>
+                    </dd>
+                  </div>
+                )}
+                <div className="sm:col-span-2">
+                  <dt className="text-muted-foreground">User ID</dt>
+                  <dd className="mt-0.5 break-all font-mono text-xs text-muted-foreground">
+                    {user?.id ?? '—'}
+                  </dd>
+                </div>
+              </dl>
+            </div>
 
-          {!profile && (
-            <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CircleAlert className="size-4" />
-              Loading your profile…
-            </p>
-          )}
+            {!profile && (
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                <CircleAlert className="size-4" />
+                Loading your profile…
+              </p>
+            )}
 
-        </CardContent>
+          </CardContent>
         </Card>
 
         <div className="flex justify-end">

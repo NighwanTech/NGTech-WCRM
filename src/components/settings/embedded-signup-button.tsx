@@ -39,7 +39,7 @@ export function EmbeddedSignupButton({ onSuccess }: EmbeddedSignupButtonProps) {
     const loadFbSdk = () => {
       window.fbAsyncInit = function () {
         window.FB.init({
-          appId: process.env.NEXT_PUBLIC_META_APP_ID || '', // Needs to be configured
+          appId: process.env.NEXT_PUBLIC_META_APP_ID || '843808418636023',
           autoLogAppEvents: true,
           xfbml: true,
           version: 'v19.0',
@@ -58,7 +58,10 @@ export function EmbeddedSignupButton({ onSuccess }: EmbeddedSignupButtonProps) {
   }, [])
 
   const handleConnect = () => {
-    if (!process.env.NEXT_PUBLIC_META_APP_ID) {
+    const appId = process.env.NEXT_PUBLIC_META_APP_ID || '843808418636023'
+    const configId = process.env.NEXT_PUBLIC_META_CONFIG_ID || '2064566014414258'
+
+    if (!appId) {
       toast.error('Meta App ID is missing in environment variables (.env.local)')
       return
     }
@@ -110,7 +113,7 @@ export function EmbeddedSignupButton({ onSuccess }: EmbeddedSignupButtonProps) {
         }
       },
       {
-        config_id: process.env.NEXT_PUBLIC_META_CONFIG_ID, // Optional: Facebook Configuration ID
+        config_id: configId,
         response_type: 'code',    // 'code' for Embedded Signup flow
         override_default_response_type: true,
         extras: {
