@@ -299,15 +299,38 @@ export default function PipelinesPage() {
     toast.success("Pipeline created");
   }
 
+  const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
+
+  // Load all team member profiles for the Agent filter dropdown
+  useEffect(() => {
+    async function fetchProfiles() {
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("full_name");
+      if (data) setAllProfiles(data as Profile[]);
+    }
+    fetchProfiles();
+  }, [supabase]);
+
   const selectedPipeline = pipelines.find((p) => p.id === selectedPipelineId);
 
   const agents = useMemo(() => {
     const map = new Map<string, string>();
-    deals.forEach(d => {
-      if (d.assignee) map.set(d.assignee.id, d.assignee.full_name || 'Unknown Agent');
+    allProfiles.forEach((p) => {
+      const name = p.full_name || p.email || "Unnamed Agent";
+      map.set(p.id, name);
+      if (p.user_id) map.set(p.user_id, name);
+    });
+    deals.forEach((d) => {
+      if (d.assignee) {
+        const name = d.assignee.full_name || d.assignee.email || "Unknown Agent";
+        if (d.assignee.id) map.set(d.assignee.id, name);
+        if (d.assignee.user_id) map.set(d.assignee.user_id, name);
+      }
     });
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
-  }, [deals]);
+  }, [allProfiles, deals]);
 
   const filteredDeals = useMemo(() => {
     return deals.filter(d => {
@@ -324,7 +347,11 @@ export default function PipelinesPage() {
          if (new Date(d.created_at) > new Date(toDate + 'T23:59:59')) return false;
       }
       if (agentFilter !== "all") {
-         if (d.assigned_to !== agentFilter) return false;
+         if (
+           d.assigned_to !== agentFilter &&
+           d.assignee?.id !== agentFilter &&
+           d.assignee?.user_id !== agentFilter
+         ) return false;
       }
       return true;
     });
