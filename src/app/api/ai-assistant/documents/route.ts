@@ -55,9 +55,68 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'text/markdown', 'text/csv'];
-    if (!allowedTypes.includes(file.type) && !file.name.endsWith('.md') && !file.name.endsWith('.csv')) {
-       return NextResponse.json({ error: 'Unsupported file type. Use PDF, DOCX, TXT, MD, or CSV.' }, { status: 400 });
+    const isZip = file.name.endsWith('.zip') || file.type.includes('zip');
+    const allowedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+      'text/markdown',
+      'text/csv',
+      'application/zip',
+      'application/x-zip-compressed'
+    ];
+    if (!allowedTypes.includes(file.type) && !file.name.endsWith('.md') && !file.name.endsWith('.csv') && !isZip) {
+       return NextResponse.json({ error: 'Unsupported file type. Use PDF, DOCX, TXT, MD, CSV, or ZIP archives.' }, { status: 400 });
+    }
+
+    if (isZip) {
+      const AdmZip = (await import('adm-zip')).default;
+      const arrayBuffer = await file.arrayBuffer();
+      const zip = new AdmZip(Buffer.from(arrayBuffer));
+      const zipEntries = zip.getEntries();
+
+      const uploadedDocs = [];
+
+      for (const entry of zipEntries) {
+        if (entry.isDirectory) continue;
+        const entryName = entry.entryName.split('/').pop() || entry.entryName;
+        if (entryName.startsWith('.') || entry.entryName.includes('__MACOSX')) continue;
+
+        const ext = entryName.split('.').pop()?.toLowerCase();
+        if (!['txt', 'md', 'pdf', 'docx', 'csv'].includes(ext || '')) continue;
+
+        const entryBuffer = entry.getData();
+        const fileType = ext === 'pdf' ? 'application/pdf' : ext === 'docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'text/plain';
+        const mockFile = new File([entryBuffer], entryName, { type: fileType });
+
+        try {
+          const doc = await AIStorageService.uploadKnowledgeDocument(profile.account_id, mockFile);
+
+          let extractedText = '';
+          if (ext === 'pdf') {
+            const pdfParse = require('pdf-parse');
+            const pdfData = await pdfParse(entryBuffer);
+            extractedText = pdfData.text;
+          } else {
+            extractedText = entryBuffer.toString('utf-8');
+          }
+
+          if (extractedText && extractedText.trim().length > 0) {
+            const { AIEmbeddingService } = await import('@/lib/services/ai/embedding.service');
+            await AIEmbeddingService.processAndStoreDocument(
+              profile.account_id,
+              doc.id,
+              extractedText,
+              'document'
+            );
+          }
+          uploadedDocs.push(doc);
+        } catch (e) {
+          console.error(`Failed processing zip entry ${entryName}:`, e);
+        }
+      }
+
+      return NextResponse.json({ success: true, count: uploadedDocs.length, documents: uploadedDocs });
     }
 
     const doc = await AIStorageService.uploadKnowledgeDocument(profile.account_id, file);
@@ -88,7 +147,6 @@ export async function POST(request: Request) {
       }
     } catch (parseError) {
       console.error('Failed to parse or embed document, but file was uploaded:', parseError);
-      // We don't fail the request if just embedding fails, but we should log it
     }
 
     return NextResponse.json({ document: doc });

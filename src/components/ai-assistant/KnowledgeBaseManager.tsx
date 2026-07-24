@@ -149,11 +149,11 @@ export function KnowledgeBaseManager({ config, onChange }: Props) {
             <div className="flex items-center justify-between">
               <div>
                 <Label>Uploaded Documents</Label>
-                <p className="text-sm text-muted-foreground">Supported: PDF, DOCX, TXT, MD, CSV.</p>
+                <p className="text-sm text-muted-foreground">Supported: PDF, DOCX, TXT, MD, CSV, ZIP.</p>
               </div>
               <label className={`cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 shadow-sm transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                {uploading ? 'Uploading...' : 'Upload File'}
-                <input type="file" className="hidden" accept=".pdf,.docx,.txt,.md,.csv" onChange={handleFileUpload} disabled={uploading} />
+                {uploading ? 'Uploading & Extracting...' : 'Upload File / ZIP'}
+                <input type="file" className="hidden" accept=".pdf,.docx,.txt,.md,.csv,.zip" onChange={handleFileUpload} disabled={uploading} />
               </label>
             </div>
             
