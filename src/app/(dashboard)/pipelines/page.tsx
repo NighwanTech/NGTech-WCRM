@@ -316,20 +316,24 @@ export default function PipelinesPage() {
   const selectedPipeline = pipelines.find((p) => p.id === selectedPipelineId);
 
   const agents = useMemo(() => {
-    const map = new Map<string, string>();
+    const map = new Map<string, { id: string; name: string }>();
     allProfiles.forEach((p) => {
       const name = p.full_name || p.email || "Unnamed Agent";
-      map.set(p.id, name);
-      if (p.user_id) map.set(p.user_id, name);
+      const primaryId = p.user_id || p.id;
+      if (!map.has(name)) {
+        map.set(name, { id: primaryId, name });
+      }
     });
     deals.forEach((d) => {
       if (d.assignee) {
         const name = d.assignee.full_name || d.assignee.email || "Unknown Agent";
-        if (d.assignee.id) map.set(d.assignee.id, name);
-        if (d.assignee.user_id) map.set(d.assignee.user_id, name);
+        const primaryId = d.assignee.user_id || d.assignee.id;
+        if (!map.has(name) && primaryId) {
+          map.set(name, { id: primaryId, name });
+        }
       }
     });
-    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+    return Array.from(map.values());
   }, [allProfiles, deals]);
 
   const filteredDeals = useMemo(() => {
