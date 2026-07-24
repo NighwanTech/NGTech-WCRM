@@ -87,7 +87,7 @@ export async function POST(request: Request) {
 
         const entryBuffer = entry.getData();
         const fileType = ext === 'pdf' ? 'application/pdf' : ext === 'docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'text/plain';
-        const mockFile = new File([entryBuffer], entryName, { type: fileType });
+        const mockFile = new File([new Uint8Array(entryBuffer)], entryName, { type: fileType });
 
         try {
           const doc = await AIStorageService.uploadKnowledgeDocument(profile.account_id, mockFile);
