@@ -21,6 +21,7 @@ interface Step1Props {
 
 export function Step1ChooseTemplate({ selectedTemplate, onSelect, onNext, onBack }: Step1Props) {
   const [templates, setTemplates] = useState<MessageTemplate[]>([]);
+  const [pendingCount, setPendingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,17 +29,26 @@ export function Step1ChooseTemplate({ selectedTemplate, onSelect, onNext, onBack
     async function fetchTemplates() {
       try {
         const supabase = createClient();
-        // Only APPROVED templates can be sent via Meta — anything else
-        // would 400 at broadcast time. Hide them rather than letting
-        // the user pick a template that will fail.
+        // Query templates with status APPROVED / approved
         const { data, error: fetchError } = await supabase
           .from('message_templates')
           .select('*')
-          .eq('status', 'APPROVED')
+          .or('status.eq.APPROVED,status.eq.approved')
           .order('created_at', { ascending: false });
 
         if (fetchError) throw fetchError;
-        setTemplates(data ?? []);
+        
+        const approvedList = data ?? [];
+        setTemplates(approvedList);
+
+        if (approvedList.length === 0) {
+          // Check if there are any pending templates
+          const { count } = await supabase
+            .from('message_templates')
+            .select('*', { count: 'exact', head: true })
+            .or('status.eq.PENDING,status.eq.pending');
+          setPendingCount(count ?? 0);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load templates');
       } finally {
@@ -75,10 +85,24 @@ export function Step1ChooseTemplate({ selectedTemplate, onSelect, onNext, onBack
       </div>
 
       {templates.length === 0 ? (
-        <div className="flex h-48 flex-col items-center justify-center rounded-xl border border-border bg-card/50">
-          <FileText className="mb-2 h-8 w-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">No templates available.</p>
-          <p className="mt-1 text-xs text-muted-foreground">Create a template in Settings first.</p>
+        <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card/50 p-8 text-center">
+          <FileText className="mb-3 h-10 w-10 text-muted-foreground/60" />
+          {pendingCount > 0 ? (
+            <>
+              <p className="text-sm font-medium text-amber-400">Template Pending Approval</p>
+              <p className="mt-1 max-w-md text-xs text-muted-foreground">
+                You have {pendingCount} template(s) currently awaiting approval from Meta. WhatsApp only allows sending broadcasts with Meta-Approved templates.
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground/80">
+                Go to <strong>Settings → Templates</strong> and click <strong>&quot;Sync from Meta&quot;</strong> once Meta approves your template!
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">No approved templates available.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Create a template in Settings first, or sync existing ones from Meta.</p>
+            </>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
