@@ -41,16 +41,14 @@ export async function POST(req: NextRequest) {
     // or just leave it null if contacts table allows null phone. Wait, contact phone might be unique per account.
     // So we'll try to insert phone as email, or just null. Let's use null. If it fails, we handle it.
     
-    // We will save newsletter subscribers into contacts with lead_source = 'Newsletter'
+    // We will save newsletter subscribers into leads with lead_source = 'Newsletter'
     const { error } = await supabase
-      .from('contacts')
+      .from('leads')
       .insert({
-        user_id: adminProfile.user_id,
-        account_id: adminProfile.account_id,
         email: email,
-        phone: `news_${Date.now()}_${Math.floor(Math.random() * 1000)}`, // Temporary fallback if phone is required & unique
         name: email.split('@')[0],
         lead_source: 'Newsletter',
+        status: 'new'
       })
 
     if (error) {

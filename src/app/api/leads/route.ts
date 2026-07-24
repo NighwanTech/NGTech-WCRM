@@ -51,19 +51,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 })
     }
 
-    // 2. Insert Lead into CRM Contacts table
+    // 2. Insert Lead into leads table
     const { data, error } = await supabase
-      .from('contacts')
+      .from('leads')
       .insert({
-        user_id: adminUserId, // Assign to NGTech Admin
-        account_id: adminAccountId,
         name: name,
         email: email,
         phone: phone,
-        company: company,
-        industry: body.industry || null,
+        company_name: company,
         team_size: teamSize,
-        monthly_message_volume: volume,
+        message_volume: volume,
         
         // UTMs & Tracking
         lead_source: body.leadSource || 'Website',
@@ -73,9 +70,7 @@ export async function POST(req: NextRequest) {
         utm_campaign: body.utm_campaign || null,
         utm_term: body.utm_term || null,
         utm_content: body.utm_content || null,
-        
-        // Let's add a default tag or note if we can't do it here easily, 
-        // we'll just rely on the contact record.
+        status: 'new'
       })
       .select()
       .single()
