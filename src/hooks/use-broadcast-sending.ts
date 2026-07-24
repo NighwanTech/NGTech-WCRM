@@ -20,6 +20,8 @@ export interface AudienceConfig {
   csvContacts?: { phone: string; name?: string }[];
   /** Contacts carrying any of these tags are subtracted from the result. */
   excludeTagIds?: string[];
+  /** Specific contact IDs subtracted from the result. */
+  excludeContactIds?: string[];
 }
 
 /**
@@ -202,6 +204,11 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
       contacts = contacts.filter((c) => !excludedIds.has(c.id));
     }
 
+    if (audience.excludeContactIds && audience.excludeContactIds.length > 0) {
+      const excludedContactSet = new Set(audience.excludeContactIds);
+      contacts = contacts.filter((c) => !excludedContactSet.has(c.id));
+    }
+
     return contacts;
   }
 
@@ -367,6 +374,7 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
             tagIds: payload.audience.tagIds,
             customField: payload.audience.customField,
             excludeTagIds: payload.audience.excludeTagIds,
+            excludeContactIds: payload.audience.excludeContactIds,
           },
           status: 'sending',
           total_recipients: contacts.length,

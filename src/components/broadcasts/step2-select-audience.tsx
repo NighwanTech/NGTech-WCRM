@@ -13,6 +13,9 @@ import {
   ArrowRight,
   ArrowLeft,
   X,
+  UserX,
+  Search,
+  Plus,
 } from 'lucide-react';
 
 type AudienceType = 'all' | 'tags' | 'custom_field' | 'csv';
@@ -89,6 +92,71 @@ export function Step2SelectAudience({
   const [loadingFields, setLoadingFields] = useState(false);
   const [estimatedCount, setEstimatedCount] = useState<number | null>(null);
   const [loadingCount, setLoadingCount] = useState(false);
+
+  // Individual contact exclusion state
+  const [contactSearchQuery, setContactSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<{ id: string; name: string | null; phone: string | null; email: string | null }[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [excludedContactsInfo, setExcludedContactsInfo] = useState<{ id: string; name: string | null; phone: string | null; email: string | null }[]>([]);
+
+  // Fetch info for individual excluded contacts when excludeContactIds changes
+  useEffect(() => {
+    const ids = audience.excludeContactIds ?? [];
+    if (ids.length === 0) {
+      setExcludedContactsInfo([]);
+      return;
+    }
+    async function fetchExcludedInfo() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('contacts')
+        .select('id, name, phone, email')
+        .in('id', ids);
+      setExcludedContactsInfo(data ?? []);
+    }
+    fetchExcludedInfo();
+  }, [audience.excludeContactIds]);
+
+  // Search contacts for exclusion
+  useEffect(() => {
+    if (!contactSearchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const supabase = createClient();
+        const term = `%${contactSearchQuery.trim()}%`;
+        const { data } = await supabase
+          .from('contacts')
+          .select('id, name, phone, email')
+          .or(`name.ilike.${term},phone.ilike.${term},email.ilike.${term}`)
+          .limit(6);
+        setSearchResults(data ?? []);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [contactSearchQuery]);
+
+  function addExcludeContact(contact: { id: string; name: string | null; phone: string | null; email: string | null }) {
+    const current = audience.excludeContactIds ?? [];
+    if (!current.includes(contact.id)) {
+      onUpdate({ ...audience, excludeContactIds: [...current, contact.id] });
+    }
+    setContactSearchQuery('');
+    setSearchResults([]);
+  }
+
+  function removeExcludeContact(contactId: string) {
+    const current = audience.excludeContactIds ?? [];
+    onUpdate({
+      ...audience,
+      excludeContactIds: current.filter((id) => id !== contactId),
+    });
+  }
 
   // Tags are used both by the primary "Filter by Tags" audience type
   // AND by the exclude-list below — so always load once on mount.
@@ -173,7 +241,7 @@ export function Step2SelectAudience({
         return;
       }
 
-      // Apply exclude tags
+      // Apply exclude tags & individual contacts
       let excludeSet: Set<string> | null = null;
       if (audience.excludeTagIds && audience.excludeTagIds.length > 0) {
         const { data: excludeRows } = await supabase
@@ -181,6 +249,13 @@ export function Step2SelectAudience({
           .select('contact_id')
           .in('tag_id', audience.excludeTagIds);
         excludeSet = new Set((excludeRows ?? []).map((r) => r.contact_id));
+      }
+
+      if (audience.excludeContactIds && audience.excludeContactIds.length > 0) {
+        if (!excludeSet) excludeSet = new Set();
+        for (const cid of audience.excludeContactIds) {
+          excludeSet.add(cid);
+        }
       }
 
       if (baseIds) {
@@ -205,6 +280,7 @@ export function Step2SelectAudience({
     audience.customField,
     audience.csvContacts,
     audience.excludeTagIds,
+    audience.excludeContactIds,
   ]);
 
   useEffect(() => {
@@ -423,6 +499,97 @@ export function Step2SelectAudience({
               );
             })}
           </div>
+        )}
+      </div>
+
+      {/* Exclude specific individual contacts */}
+      <div className="rounded-xl border border-border bg-card/50 p-4">
+        <div className="mb-3 flex items-center gap-2">
+          <UserX className="h-4 w-4 text-red-400" />
+          <p className="text-sm font-medium text-foreground">
+            Exclude specific contacts
+          </p>
+          <span className="text-xs text-muted-foreground">(optional)</span>
+        </div>
+
+        {/* Search input */}
+        <div className="relative mb-3">
+          <div className="relative flex items-center">
+            <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={contactSearchQuery}
+              onChange={(e) => setContactSearchQuery(e.target.value)}
+              placeholder="Search contact by name or phone to exclude..."
+              className="h-9 w-full rounded-lg border border-border bg-muted pl-9 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
+            />
+            {isSearching && (
+              <Loader2 className="absolute right-3 h-4 w-4 animate-spin text-muted-foreground" />
+            )}
+          </div>
+
+          {/* Search Dropdown */}
+          {searchResults.length > 0 && (
+            <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-border bg-popover p-1 shadow-lg">
+              {searchResults.map((contact) => {
+                const isExcluded = audience.excludeContactIds?.includes(contact.id);
+                return (
+                  <button
+                    key={contact.id}
+                    type="button"
+                    onClick={() => addExcludeContact(contact)}
+                    disabled={isExcluded}
+                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs transition-colors hover:bg-muted disabled:opacity-50"
+                  >
+                    <div>
+                      <p className="font-medium text-popover-foreground">
+                        {contact.name || 'Unnamed Contact'}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {contact.phone || contact.email || 'No phone'}
+                      </p>
+                    </div>
+                    {isExcluded ? (
+                      <span className="text-[11px] text-red-400">Already excluded</span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-primary">
+                        <Plus className="h-3 w-3" /> Exclude
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Excluded contacts chips */}
+        {excludedContactsInfo.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {excludedContactsInfo.map((contact) => (
+              <div
+                key={contact.id}
+                className="inline-flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400"
+              >
+                <span>
+                  {contact.name || contact.phone || 'Unnamed Contact'}
+                  {contact.phone && contact.name ? ` (${contact.phone})` : ''}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeExcludeContact(contact.id)}
+                  className="rounded-full p-0.5 hover:bg-red-500/20 text-red-400"
+                  aria-label="Remove contact from exclusion list"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            No individual contacts excluded. Use the search bar above to exclude specific people.
+          </p>
         )}
       </div>
 
