@@ -142,19 +142,24 @@ export function ThreePanel({
 
         {/* ── LEFT PANEL ─────────────────────────────────────── */}
         {isMobileOrTablet ? (
-          /* Tablet/Mobile: Drawer */
-          <DrawerPanel
-            open={leftOpen}
-            onClose={() => setLeftOpen(false)}
-            side="left"
-            width="var(--sidebar-mobile-width)"
-          >
-            {leftPanel}
-          </DrawerPanel>
+          hasActiveCenter ? (
+            /* Tablet/Mobile with active thread: Drawer */
+            <DrawerPanel
+              open={leftOpen}
+              onClose={() => setLeftOpen(false)}
+              side="left"
+              width="min(var(--sidebar-mobile-width), 90vw)"
+            >
+              {leftPanel}
+            </DrawerPanel>
+          ) : (
+            /* Tablet/Mobile without active thread: Main view */
+            <div className="flex flex-col h-full w-full flex-1 min-w-0 overflow-hidden">
+              {leftPanel}
+            </div>
+          )
         ) : (
-          /* Desktop: Fixed column — show list OR hide it when a conv is active
-             to give the thread more space on narrow laptops? No — we always
-             show the list on desktop. The user approved 320/280px columns. */
+          /* Desktop: Fixed column */
           <div
             className="hidden lg:flex lg:flex-col h-full shrink-0 border-r border-border overflow-hidden"
             style={{
@@ -169,8 +174,7 @@ export function ThreePanel({
         <div
           className={cn(
             "flex flex-col min-w-0 min-h-0 h-full flex-1",
-            // Mobile: hide left list when conv not selected (show conv list drawer instead)
-            isMobile && !hasActiveCenter && "hidden"
+            isMobileOrTablet && !hasActiveCenter && "hidden"
           )}
         >
           {centerPanel}
