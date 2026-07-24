@@ -54,6 +54,9 @@ export function ContactForm({
   const [company, setCompany] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+
   // Duplicate-phone detection for NEW contacts. `exact` (same digits)
   // hard-blocks the save; a fuzzy trunk-variant match only warns. The
   // DB unique index (migration 022) is the real backstop — this is the
@@ -75,16 +78,46 @@ export function ContactForm({
       setCompany(contact?.company ?? '');
       setSelectedTagIds(contactTags.map((ct) => ct.tag_id));
       setDupMatch(null);
+      setPhoneError(null);
+      setEmailError(null);
       fetchTags();
     }
   }, [open, contact]);
+
+  function validatePhone(value: string): string | null {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return 'Phone number is required';
+    }
+    if (/[a-zA-Z]/.test(value)) {
+      return 'Phone number cannot contain letters';
+    }
+    const digitsOnly = value.replace(/\D/g, '');
+    if (digitsOnly.length < 7) {
+      return 'Phone number must have at least 7 digits';
+    }
+    if (digitsOnly.length > 15) {
+      return 'Phone number cannot exceed 15 digits';
+    }
+    return null;
+  }
+
+  function validateEmail(value: string): string | null {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmed)) {
+      return 'Please enter a valid email address (e.g. name@domain.com)';
+    }
+    return null;
+  }
 
   // Look up an existing contact with this number (new contacts only).
   // Runs on blur so we don't query on every keystroke.
   async function checkDuplicate() {
     if (isEdit || !accountId) return;
     const value = phone.trim();
-    if (!value) {
+    if (!value || validatePhone(value)) {
       setDupMatch(null);
       return;
     }
@@ -122,8 +155,14 @@ export function ContactForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!phone.trim()) {
-      toast.error('Phone number is required');
+    const pErr = validatePhone(phone);
+    const eErr = validateEmail(email);
+
+    setPhoneError(pErr);
+    setEmailError(eErr);
+
+    if (pErr || eErr) {
+      toast.error(pErr || eErr || 'Please fix validation errors');
       return;
     }
 
@@ -274,14 +313,20 @@ export function ContactForm({
               id="cf-phone"
               value={phone}
               onChange={(e) => {
-                setPhone(e.target.value);
+                const val = e.target.value;
+                setPhone(val);
                 if (dupMatch) setDupMatch(null);
+                setPhoneError(validatePhone(val));
               }}
               onBlur={checkDuplicate}
               placeholder="+1 234 567 8900"
-              className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
+              className={`bg-muted text-foreground placeholder:text-muted-foreground ${
+                phoneError ? 'border-red-500/80 focus-visible:ring-red-500' : 'border-border'
+              }`}
             />
-            {dupMatch ? (
+            {phoneError ? (
+              <p className="text-xs font-medium text-red-400">{phoneError}</p>
+            ) : dupMatch ? (
               <div
                 className={`flex items-start gap-2 rounded-md border px-2.5 py-2 text-xs ${
                   dupMatch.exact
@@ -322,10 +367,19 @@ export function ContactForm({
               id="cf-email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                setEmail(val);
+                setEmailError(validateEmail(val));
+              }}
               placeholder="john@example.com"
-              className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
+              className={`bg-muted text-foreground placeholder:text-muted-foreground ${
+                emailError ? 'border-red-500/80 focus-visible:ring-red-500' : 'border-border'
+              }`}
             />
+            {emailError && (
+              <p className="text-xs font-medium text-red-400">{emailError}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -391,10 +445,16 @@ export function ContactForm({
             </Button>
             <Button
               type="submit"
-              disabled={saving || checkingDup || (!isEdit && !!dupMatch?.exact)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              disabled={
+                saving ||
+                checkingDup ||
+                (!isEdit && !!dupMatch?.exact) ||
+                !!phoneError ||
+                !!emailError
+              }
+              className="bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50"
             >
-              {saving && <Loader2 className="size-4 animate-spin" />}
+              {saving && <Loader2 className="size-4 animate-spin mr-1.5" />}
               {isEdit ? 'Update' : 'Create'}
             </Button>
           </DialogFooter>

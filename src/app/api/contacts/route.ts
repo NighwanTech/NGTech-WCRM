@@ -64,6 +64,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Phone number is required.' }, { status: 400 })
     }
 
+    if (/[a-zA-Z]/.test(phone)) {
+      return NextResponse.json({ error: 'Phone number cannot contain letters.' }, { status: 400 })
+    }
+
+    const digitsOnly = phone.replace(/\D/g, '')
+    if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+      return NextResponse.json({ error: 'Phone number must have between 7 and 15 digits.' }, { status: 400 })
+    }
+
+    if (email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 })
+    }
+
     // Insert contact
     const { data: contact, error: insertErr } = await supabase
       .from('contacts')
