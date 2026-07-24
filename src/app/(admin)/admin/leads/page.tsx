@@ -10,7 +10,7 @@ interface Lead {
   name: string
   email: string
   phone: string
-  company_name: string
+  company: string
   lead_source: string
   status: string // 'new', 'contacted', 'demo_scheduled', 'converted', 'lost'
   created_at: string
@@ -70,7 +70,7 @@ export default function AdminLeadsPage() {
                 <tr key={lead.id} className="hover:bg-muted/20">
                   <td className="px-6 py-4">
                     <p className="font-medium text-foreground">{lead.name}</p>
-                    <p className="text-xs text-muted-foreground">{lead.company_name}</p>
+                    <p className="text-xs text-muted-foreground">{lead.company}</p>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-muted-foreground">
@@ -111,7 +111,7 @@ export default function AdminLeadsPage() {
                         <ExternalLink className="h-4 w-4" />
                       </button>
                       <Link 
-                        href={`/admin/create-client?name=${encodeURIComponent(lead.company_name || lead.name)}&email=${encodeURIComponent(lead.email)}`}
+                        href={`/admin/create-client?name=${encodeURIComponent(lead.company || lead.name)}&email=${encodeURIComponent(lead.email)}`}
                         className="rounded-md p-2 text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-500" 
                         title="Convert to Account"
                       >

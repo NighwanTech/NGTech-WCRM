@@ -21,10 +21,11 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // 2. Fetch leads
+    // 2. Fetch leads from contacts table (marketing/public forms set lead_source)
     const { data: leads, error } = await supabase
-      .from('leads')
+      .from('contacts')
       .select('*')
+      .not('lead_source', 'is', null)
       .order('created_at', { ascending: false })
 
     if (error) {

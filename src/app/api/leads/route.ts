@@ -14,29 +14,42 @@ export async function POST(req: NextRequest) {
     // 1. Find the Platform Admin User (NGTech internal account)
     const { data: adminProfile, error: adminError } = await supabase
       .from('profiles')
-      .select('user_id')
+      .select('user_id, account_id')
       .eq('is_platform_admin', true)
       .limit(1)
-      .single()
+      .maybeSingle()
       
     if (adminError || !adminProfile) {
       console.error("Platform Admin not found:", adminError)
-      return NextResponse.json({ error: 'System configuration error' }, { status: 500 })
+      // Do not crash, fallback to inserting without user_id/account_id if possible, or use a system fallback.
+      // But actually, we MUST have an account_id for contacts.
+      // Let's return 500 if we truly can't find it.
+      return NextResponse.json({ error: 'System configuration error: Platform Admin missing' }, { status: 500 })
     }
 
     const adminUserId = adminProfile.user_id
+    const adminAccountId = adminProfile.account_id
+
+    const name = body.name || body.fullName || null
+    const email = body.email || null
+    const phone = body.phone || body.mobileNumber || null
+    const company = body.company || body.companyName || null
+    const volume = body.volume || body.messageVolume || null
+    const teamSize = body.teamSize || null
 
     // 2. Insert Lead into CRM Contacts table
     const { data, error } = await supabase
       .from('contacts')
       .insert({
         user_id: adminUserId, // Assign to NGTech Admin
-        name: body.name || null,
-        email: body.email || null,
-        phone: body.phone || null,
-        company: body.company || null,
+        account_id: adminAccountId,
+        name: name,
+        email: email,
+        phone: phone,
+        company: company,
         industry: body.industry || null,
-        monthly_message_volume: body.volume || null,
+        team_size: teamSize,
+        monthly_message_volume: volume,
         
         // UTMs & Tracking
         lead_source: body.leadSource || 'Website',
