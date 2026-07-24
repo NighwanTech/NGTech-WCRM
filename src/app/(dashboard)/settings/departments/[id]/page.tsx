@@ -8,6 +8,9 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { UserPlus } from "lucide-react";
 
 export default function DepartmentDetailsPage() {
   const params = useParams();
@@ -18,6 +21,10 @@ export default function DepartmentDetailsPage() {
   const [allMembers, setAllMembers] = useState<any[]>([]);
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [isSavingMembers, setIsSavingMembers] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -88,6 +95,45 @@ export default function DepartmentDetailsPage() {
       toast.success("AI Settings updated successfully");
       setDepartment({ ...department, ai_configuration: aiConfig });
     }
+  }
+
+  async function handleSaveMembers() {
+    setIsSavingMembers(true);
+    const supabase = createClient();
+    
+    // First, delete all existing mappings for this department
+    await supabase.from("department_members").delete().eq("department_id", id);
+    
+    // Then, insert the new ones
+    if (selectedUserIds.size > 0) {
+      const inserts = Array.from(selectedUserIds).map(userId => ({
+        department_id: id,
+        user_id: userId,
+        role: "agent" // Default role
+      }));
+      await supabase.from("department_members").insert(inserts);
+    }
+    
+    // Re-fetch members to update UI
+    const dmMres = await supabase.from("department_members").select("user_id, role").eq("department_id", id);
+    const dmList = dmMres.data || [];
+    const assigned = dmList.map(dm => {
+      const profile = allMembers.find((m: any) => m.user_id === dm.user_id);
+      return {
+        ...profile,
+        dept_role: dm.role || 'agent'
+      };
+    }).filter(m => m.user_id);
+    setMembers(assigned);
+    
+    setIsSavingMembers(false);
+    setAssignDialogOpen(false);
+    toast.success("Department members updated");
+  }
+
+  function openAssignDialog() {
+    setSelectedUserIds(new Set(members.map(m => m.user_id)));
+    setAssignDialogOpen(true);
   }
 
   if (loading) {
@@ -166,9 +212,15 @@ export default function DepartmentDetailsPage() {
 
         <TabsContent value="members" className="animate-in fade-in-50 duration-300">
           <Card>
-            <CardHeader>
-              <CardTitle>Enterprise Members</CardTitle>
-              <CardDescription>Manage who belongs to this department and their workloads.</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Enterprise Members</CardTitle>
+                <CardDescription>Manage who belongs to this department and their workloads.</CardDescription>
+              </div>
+              <Button onClick={openAssignDialog} size="sm">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Assign Members
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="rounded-md border border-border">
@@ -359,6 +411,51 @@ export default function DepartmentDetailsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      
+      <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-popover border-border text-popover-foreground">
+          <DialogHeader>
+            <DialogTitle>Assign Members</DialogTitle>
+            <DialogDescription>
+              Select the team members you want to assign to this department.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+            {allMembers.length === 0 ? (
+               <p className="text-sm text-muted-foreground text-center py-4">No team members found.</p>
+            ) : (
+               allMembers.map(member => (
+                 <div key={member.user_id} className="flex items-center space-x-3 space-y-0 p-2 rounded-lg hover:bg-muted/50 border border-transparent hover:border-border transition-all cursor-pointer" onClick={() => {
+                   const next = new Set(selectedUserIds);
+                   if (next.has(member.user_id)) next.delete(member.user_id);
+                   else next.add(member.user_id);
+                   setSelectedUserIds(next);
+                 }}>
+                   <Checkbox 
+                     checked={selectedUserIds.has(member.user_id)} 
+                     onCheckedChange={(checked) => {
+                       const next = new Set(selectedUserIds);
+                       if (checked) next.add(member.user_id);
+                       else next.delete(member.user_id);
+                       setSelectedUserIds(next);
+                     }}
+                   />
+                   <div className="flex flex-col flex-1">
+                     <span className="text-sm font-medium">{member.full_name || "Unknown"}</span>
+                     <span className="text-xs text-muted-foreground">{member.email}</span>
+                   </div>
+                 </div>
+               ))
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAssignDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveMembers} disabled={isSavingMembers}>
+              {isSavingMembers ? "Saving..." : "Save Assignments"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
