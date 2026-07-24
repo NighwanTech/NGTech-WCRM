@@ -37,6 +37,20 @@ export async function POST(req: NextRequest) {
     const volume = body.volume || body.messageVolume || null
     const teamSize = body.teamSize || null
 
+    if (phone) {
+      if (/[a-zA-Z]/.test(phone)) {
+        return NextResponse.json({ error: 'Phone number cannot contain letters.' }, { status: 400 })
+      }
+      const digitsOnly = phone.replace(/\D/g, '')
+      if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+        return NextResponse.json({ error: 'Phone number must have between 7 and 15 digits.' }, { status: 400 })
+      }
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 })
+    }
+
     // 2. Insert Lead into CRM Contacts table
     const { data, error } = await supabase
       .from('contacts')

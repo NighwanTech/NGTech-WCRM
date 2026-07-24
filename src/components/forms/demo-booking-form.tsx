@@ -61,11 +61,12 @@ export function DemoBookingForm() {
         // Optionally redirect to a thank you page or scheduler
         // router.push("/book-demo/success")
       } else {
-        alert("Something went wrong. Please try again.")
+        const errData = await response.json().catch(() => null)
+        alert(errData?.error || "Something went wrong. Please try again.")
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
-      alert("Failed to submit form.")
+      alert(error.message || "Failed to submit form.")
     } finally {
       setIsSubmitting(false)
     }

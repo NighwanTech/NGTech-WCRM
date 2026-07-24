@@ -34,7 +34,8 @@ export default function FreeTrialPage() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to submit. Please try again.')
+        const errData = await response.json().catch(() => null)
+        throw new Error(errData?.error || 'Failed to submit. Please try again.')
       }
 
       setSuccess(true)
