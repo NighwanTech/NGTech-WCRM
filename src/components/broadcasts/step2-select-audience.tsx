@@ -552,6 +552,123 @@ export function Step2SelectAudience({
         </div>
       )}
 
+      {audience.type === 'csv' && (
+        <div className="space-y-4 rounded-xl border border-border bg-card/50 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Upload className="h-4 w-4 text-primary" />
+              <p className="text-sm font-medium text-foreground">Upload Contact CSV File</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const sampleCsv = "Name,Phone\nSandeep Kumar,+919934005543\nSunil Kumar,+919876543210\nNiraj Kumar,+919123456789";
+                const blob = new Blob([sampleCsv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'sample_broadcast_contacts.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+              className="text-xs text-primary underline hover:text-primary/80"
+            >
+              Download Sample CSV
+            </button>
+          </div>
+
+          {(!audience.csvContacts || audience.csvContacts.length === 0) ? (
+            <label className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/30 p-6 text-center cursor-pointer transition-colors hover:border-primary/50 hover:bg-muted/50">
+              <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+              <p className="text-sm font-semibold text-foreground">Click to upload or drag & drop CSV</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Must include <code className="font-mono text-primary">Phone</code> column (and optional <code className="font-mono text-primary">Name</code> column)
+              </p>
+              <input
+                type="file"
+                accept=".csv"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    const text = event.target?.result as string;
+                    if (!text) return;
+                    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+                    if (lines.length === 0) return;
+                    const headers = lines[0].split(',').map((h) => h.trim().replace(/^["']|["']$/g, '').toLowerCase());
+                    let phoneIdx = headers.findIndex((h) => h.includes('phone') || h.includes('mobile') || h.includes('whatsapp') || h.includes('number') || h.includes('contact'));
+                    let nameIdx = headers.findIndex((h) => h.includes('name') || h.includes('client') || h.includes('user'));
+                    const startRow = (phoneIdx !== -1 || nameIdx !== -1) ? 1 : 0;
+                    if (phoneIdx === -1) phoneIdx = 0;
+                    if (nameIdx === -1 && phoneIdx !== 1) nameIdx = 1;
+
+                    const parsed: { phone: string; name?: string }[] = [];
+                    const seen = new Set<string>();
+
+                    for (let i = startRow; i < lines.length; i++) {
+                      const cols = lines[i].split(',').map((c) => c.trim().replace(/^["']|["']$/g, ''));
+                      let rawPhone = cols[phoneIdx] || '';
+                      let phone = rawPhone.replace(/[^\d+]/g, '');
+                      if (!phone) continue;
+                      const name = nameIdx !== -1 && cols[nameIdx] ? cols[nameIdx] : undefined;
+                      if (!seen.has(phone)) {
+                        seen.add(phone);
+                        parsed.push({ phone, name });
+                      }
+                    }
+                    onUpdate({ ...audience, csvContacts: parsed });
+                  };
+                  reader.readAsText(file);
+                }}
+              />
+            </label>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  <div>
+                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                      CSV Uploaded Successfully!
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {audience.csvContacts.length} valid unique phone number{audience.csvContacts.length > 1 ? 's' : ''} parsed.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onUpdate({ ...audience, csvContacts: [] })}
+                  className="text-xs text-red-500 hover:bg-red-500/10 hover:text-red-600"
+                >
+                  Remove CSV
+                </Button>
+              </div>
+
+              {/* CSV Contacts Preview Table */}
+              <div className="max-h-40 overflow-y-auto rounded-lg border border-border bg-card p-2 text-xs space-y-1">
+                <p className="font-semibold text-muted-foreground mb-1.5 px-2">Parsed Contacts Preview:</p>
+                {audience.csvContacts.slice(0, 10).map((c, idx) => (
+                  <div key={idx} className="flex items-center justify-between px-2 py-1 rounded hover:bg-muted font-mono">
+                    <span className="truncate font-sans font-medium text-foreground">{c.name || 'Unnamed'}</span>
+                    <span className="text-muted-foreground">{c.phone}</span>
+                  </div>
+                ))}
+                {audience.csvContacts.length > 10 && (
+                  <p className="text-[11px] text-center text-muted-foreground pt-1">
+                    + {audience.csvContacts.length - 10} more contacts in CSV
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Include specific individual contacts — works standalone or combined with filters */}
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
         <div className="mb-3 flex items-center justify-between">
