@@ -9,12 +9,17 @@ export async function POST(request: Request) {
   try {
     const supabase = await createClient();
 
-    const {
+    let {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    if (!user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      user = session?.user || null;
+    }
+
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -58,23 +63,68 @@ export async function POST(request: Request) {
     const startTime = performance.now();
     let responseText = '';
     let usage = undefined;
-    const provider = config?.provider || 'groq';
-    const modelName = config?.model || (provider === 'gemini' ? 'gemini-1.5-pro' : 'llama-3.3-70b-versatile');
+    const provider = config?.provider || 'gemini';
+    const targetModel = config?.model === 'custom-model' ? config?.custom_model_name : config?.model;
+    const modelName = targetModel || (provider === 'gemini' ? 'gemini-2.0-flash' : 'llama-3.3-70b-versatile');
+
+    let apiKey = config?.use_custom_keys ? config?.custom_api_key : undefined;
+
+    // Decrypt if it's masked (starts with bullet point)
+    if (apiKey && apiKey.includes('•')) {
+      const { data: dbSettings } = await supabase
+        .from('ai_assistant_settings')
+        .select('custom_api_key_encrypted')
+        .eq('account_id', profile?.account_id)
+        .maybeSingle();
+
+      if (dbSettings?.custom_api_key_encrypted) {
+        const { decrypt } = await import('@/lib/whatsapp/encryption');
+        apiKey = decrypt(dbSettings.custom_api_key_encrypted);
+      }
+    }
 
     try {
-      const model = AIProviderService.getModel(provider, modelName);
-      
-      const { text, usage: aiUsage, toolCalls } = await generateText({
-        model: model as any,
-        system: fullSystemPrompt,
-        prompt: message,
-        maxTokens: config?.advanced_settings?.max_tokens || undefined,
-        temperature: config?.advanced_settings?.temperature || undefined,
-        topP: config?.advanced_settings?.top_p || undefined,
-        frequencyPenalty: config?.advanced_settings?.frequency_penalty || undefined,
-        presencePenalty: config?.advanced_settings?.presence_penalty || undefined,
+      let model = AIProviderService.getModel(provider, modelName, {
+        apiKey: apiKey?.trim(),
+        baseUrl: config?.custom_api_base_url,
       });
+      
+      let aiResult;
+      try {
+        aiResult = await generateText({
+          model: model as any,
+          system: fullSystemPrompt,
+          prompt: message,
+          maxTokens: config?.advanced_settings?.max_tokens || undefined,
+          temperature: config?.advanced_settings?.temperature || undefined,
+          topP: config?.advanced_settings?.top_p || undefined,
+          frequencyPenalty: config?.advanced_settings?.frequency_penalty || undefined,
+          presencePenalty: config?.advanced_settings?.presence_penalty || undefined,
+        });
+      } catch (err: any) {
+        const errMsg = err?.message || '';
+        if (provider === 'gemini' && (errMsg.includes('limit: 0') || errMsg.includes('Quota exceeded') || errMsg.includes('quota'))) {
+          console.log('[AI test] Gemini 2.0 quota limit hit. Retrying with Gemini 1.5 Flash latest...');
+          model = AIProviderService.getModel(provider, 'gemini-1.5-flash-latest', {
+            apiKey: apiKey?.trim(),
+            baseUrl: config?.custom_api_base_url,
+          });
+          aiResult = await generateText({
+            model: model as any,
+            system: fullSystemPrompt,
+            prompt: message,
+            maxTokens: config?.advanced_settings?.max_tokens || undefined,
+            temperature: config?.advanced_settings?.temperature || undefined,
+            topP: config?.advanced_settings?.top_p || undefined,
+            frequencyPenalty: config?.advanced_settings?.frequency_penalty || undefined,
+            presencePenalty: config?.advanced_settings?.presence_penalty || undefined,
+          });
+        } else {
+          throw err;
+        }
+      }
 
+      const { text, usage: aiUsage } = aiResult;
       const handoffMatch = text.match(/\[HANDOFF:\s*(.*?)\]/i);
       
       if (handoffMatch) {
@@ -95,7 +145,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ 
       text: responseText,
       usage,
-      responseTimeMs
+      responseTimeMs,
+      provider,
+      model: modelName
     })
   } catch (error) {
     console.error('Error in AI Assistant test API:', error)

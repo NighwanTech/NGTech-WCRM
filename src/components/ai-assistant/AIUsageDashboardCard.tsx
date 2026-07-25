@@ -38,12 +38,15 @@ export function AIUsageDashboardCard() {
     try {
       setLoading(true);
       const res = await fetch('/api/ai-assistant/usage');
-      if (!res.ok) throw new Error('Failed to load usage data');
+      if (!res.ok) {
+        console.warn('AI Usage API warning:', res.statusText);
+        setLoading(false);
+        return;
+      }
       const json = await res.json();
       setData(json);
     } catch (err: any) {
-      console.error(err);
-      toast.error('Could not load AI usage statistics');
+      console.error('Fetch usage error:', err);
     } finally {
       setLoading(false);
     }

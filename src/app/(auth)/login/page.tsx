@@ -46,30 +46,37 @@ function LoginPageInner() {
 
   const handleLogin = async (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault();
-    console.log("handleLogin clicked! Email:", email);
     setError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (error) {
-      console.log("Login error from Supabase:", error.message);
-      setError(error.message);
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        setError(data?.error || "Sign in failed. Please check credentials.");
+        setLoading(false);
+        return;
+      }
+
+      // Redirect after successful login
+      if (inviteToken) {
+        window.location.href = `/join/${encodeURIComponent(inviteToken)}`;
+      } else {
+        window.location.href = "/dashboard";
+      }
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setError("Connection failed. Please check your network and try again.");
       setLoading(false);
-      return;
-    }
-
-    console.log("Login successful! Redirecting...");
-
-    if (inviteToken) {
-      window.location.href = `/join/${encodeURIComponent(inviteToken)}`;
-    } else {
-      window.location.href = "/dashboard";
     }
   };
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">

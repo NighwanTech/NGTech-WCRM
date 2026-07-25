@@ -78,7 +78,7 @@ export function GeneralSettingsCard({ config, onChange }: Props) {
                 onChange('provider', v);
                 // Set sensible default model when switching provider
                 if (v === 'openai') onChange('model', 'gpt-4o');
-                else if (v === 'gemini') onChange('model', 'gemini-1.5-flash');
+                else if (v === 'gemini') onChange('model', 'gemini-3.6-flash');
                 else if (v === 'claude') onChange('model', 'claude-3-5-sonnet-latest');
                 else if (v === 'groq') onChange('model', 'llama-3.3-70b-versatile');
                 else if (v === 'deepseek') onChange('model', 'deepseek-chat');
@@ -101,56 +101,80 @@ export function GeneralSettingsCard({ config, onChange }: Props) {
 
           <div className="space-y-2">
             <Label>Model</Label>
-            <Select value={config.model || 'gemini-1.5-flash'} onValueChange={(v) => onChange('model', v)}>
-              <SelectTrigger>
+            <Select value={config.model || 'gemini-2.0-flash'} onValueChange={(v) => onChange('model', v)}>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select model" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="w-full min-w-[340px] max-w-[90vw]">
                 {provider === 'openai' && (
                   <>
                     <SelectItem value="gpt-4o">GPT-4o (Flagship Multimodal)</SelectItem>
                     <SelectItem value="gpt-4o-mini">GPT-4o Mini (Fast & Cost-Efficient)</SelectItem>
-                    <SelectItem value="o1-mini">o1-Mini (Reasoning Model)</SelectItem>
-                    <SelectItem value="o3-mini">o3-Mini (Advanced Reasoning)</SelectItem>
-                    <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
+                    <SelectItem value="o3-mini">o3-Mini (Latest Reasoning SOTA)</SelectItem>
+                    <SelectItem value="o1">o1 (Advanced Reasoning)</SelectItem>
+                    <SelectItem value="o1-mini">o1-Mini (Fast Reasoning)</SelectItem>
+                    <SelectItem value="custom-model">Custom Model Identifier...</SelectItem>
                   </>
                 )}
                 {provider === 'gemini' && (
                   <>
-                    <SelectItem value="gemini-1.5-flash">Gemini 1.5 Flash (Recommended - Works on Free & Paid Keys)</SelectItem>
-                    <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro (High Intelligence)</SelectItem>
-                    <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash (Experimental - Billing Required)</SelectItem>
+                    <SelectItem value="gemini-3.6-flash">Gemini 3.6 Flash (Default Choice - Fast & Multimodal)</SelectItem>
+                    <SelectItem value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (High-Volume Workhorse)</SelectItem>
+                    <SelectItem value="gemini-3.1-pro">Gemini 3.1 Pro (Deep Reasoning)</SelectItem>
+                    <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro (Long Context)</SelectItem>
+                    <SelectItem value="gemini-1.5-flash">Gemini 1.5 Flash (Universal - Free Tier Compatible)</SelectItem>
+                    <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro</SelectItem>
+                    <SelectItem value="custom-model">Custom Model Identifier...</SelectItem>
                   </>
                 )}
                 {provider === 'claude' && (
                   <>
-                    <SelectItem value="claude-3-5-sonnet-latest">Claude 3.5 Sonnet</SelectItem>
-                    <SelectItem value="claude-3-5-haiku-latest">Claude 3.5 Haiku</SelectItem>
-                    <SelectItem value="claude-3-opus-latest">Claude 3 Opus</SelectItem>
+                    <SelectItem value="claude-3-5-sonnet-latest">Claude 3.5 Sonnet (Latest Flagship)</SelectItem>
+                    <SelectItem value="claude-3-5-haiku-latest">Claude 3.5 Haiku (Latest High Speed)</SelectItem>
+                    <SelectItem value="claude-3-opus-latest">Claude 3 Opus (Deep Intelligence)</SelectItem>
+                    <SelectItem value="custom-model">Custom Model Identifier...</SelectItem>
                   </>
                 )}
                 {provider === 'groq' && (
                   <>
-                    <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</SelectItem>
-                    <SelectItem value="llama-3.1-8b-instant">Llama 3.1 8B Instant</SelectItem>
+                    <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile (Meta SOTA)</SelectItem>
+                    <SelectItem value="deepseek-r1-distill-llama-70b">DeepSeek R1 Distill 70B (Fast Reasoning)</SelectItem>
+                    <SelectItem value="llama-3.1-8b-instant">Llama 3.1 8B Instant (Ultra Fast)</SelectItem>
                     <SelectItem value="mixtral-8x7b-32768">Mixtral 8x7B</SelectItem>
-                    <SelectItem value="deepseek-r1-distill-llama-70b">DeepSeek R1 Distill 70B</SelectItem>
+                    <SelectItem value="custom-model">Custom Model Identifier...</SelectItem>
                   </>
                 )}
                 {provider === 'deepseek' && (
                   <>
-                    <SelectItem value="deepseek-chat">DeepSeek-V3 (Chat)</SelectItem>
-                    <SelectItem value="deepseek-reasoner">DeepSeek-R1 (Reasoning)</SelectItem>
+                    <SelectItem value="deepseek-chat">DeepSeek-V3 (Chat Flagship)</SelectItem>
+                    <SelectItem value="deepseek-reasoner">DeepSeek-R1 (Reasoning SOTA)</SelectItem>
+                    <SelectItem value="custom-model">Custom Model Identifier...</SelectItem>
                   </>
                 )}
                 {provider === 'custom' && (
                   <>
-                    <SelectItem value="llama3">Llama 3 Local</SelectItem>
-                    <SelectItem value="custom-model">Custom Fine-Tuned Model</SelectItem>
+                    <SelectItem value="llama3.3">Llama 3.3 (Local / Self-Hosted)</SelectItem>
+                    <SelectItem value="deepseek-r1">DeepSeek R1 Local</SelectItem>
+                    <SelectItem value="custom-model">Custom Endpoint Model...</SelectItem>
                   </>
                 )}
               </SelectContent>
             </Select>
+
+            {config.model === 'custom-model' && (
+              <div className="pt-2">
+                <Input
+                  type="text"
+                  placeholder="Enter exact model string (e.g. gemini-3.6-flash, gpt-4.5-preview)"
+                  value={config.custom_model_name || ''}
+                  onChange={(e) => onChange('custom_model_name', e.target.value)}
+                  className="font-mono text-xs"
+                />
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Type any custom or unlisted model name supported by your API key.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

@@ -49,3 +49,9 @@ CREATE POLICY ai_usage_logs_insert ON ai_usage_logs FOR INSERT WITH CHECK (is_ac
 
 -- 4. Create index for fast account analytics queries
 CREATE INDEX IF NOT EXISTS idx_ai_usage_logs_account_date ON ai_usage_logs (account_id, created_at DESC);
+
+-- 5. Auto-migrate all existing client account settings to gemini-1.5-flash for universal compatibility
+UPDATE ai_assistant_settings 
+SET model = 'gemini-1.5-flash' 
+WHERE model = 'gemini-2.0-flash' OR model IS NULL;
+

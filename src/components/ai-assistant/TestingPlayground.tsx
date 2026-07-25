@@ -67,9 +67,9 @@ export function TestingPlayground({ config }: { config: any }) {
       
       setMessages([...newHistory, { role: 'assistant', content: data.text }] as any);
       
-      if (data.usage || data.timeMs) {
+      if (data.usage || data.responseTimeMs) {
         setStats({
-          timeMs: data.timeMs,
+          timeMs: data.responseTimeMs,
           tokens: data.usage?.totalTokens,
           provider: data.provider,
           model: data.model

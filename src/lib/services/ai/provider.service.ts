@@ -31,13 +31,13 @@ export class AIProviderService {
       if (!apiKey) throw new Error('Google Gemini API Key is missing');
       const google = createGoogleGenerativeAI({ apiKey });
       
-      let targetModel = modelName || 'gemini-1.5-flash';
-      // Normalize model names for Google AI Studio API compatibility
-      if (targetModel === 'gemini-1.5-pro') {
-        targetModel = 'gemini-1.5-pro-latest';
-      } else if (targetModel === 'gemini-1.5-flash') {
+      let targetModel = modelName || 'gemini-3.6-flash';
+      if (targetModel === 'gemini-1.5-flash') {
         targetModel = 'gemini-1.5-flash-latest';
+      } else if (targetModel === 'gemini-1.5-pro') {
+        targetModel = 'gemini-1.5-pro-latest';
       }
+      
       return google(targetModel);
     }
 
