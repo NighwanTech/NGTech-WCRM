@@ -14,10 +14,12 @@ export interface CustomFieldFilter {
 }
 
 export interface AudienceConfig {
-  type: 'all' | 'tags' | 'custom_field' | 'csv';
+  type: 'all' | 'tags' | 'custom_field' | 'csv' | 'specific_contacts';
   tagIds?: string[];
   customField?: CustomFieldFilter;
   csvContacts?: { phone: string; name?: string }[];
+  /** Specific contact IDs included in the result. */
+  includeContactIds?: string[];
   /** Contacts carrying any of these tags are subtracted from the result. */
   excludeTagIds?: string[];
   /** Specific contact IDs subtracted from the result. */
@@ -191,6 +193,30 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
       contacts = await resolveCustomFieldAudience(supabase, audience.customField);
     } else if (audience.type === 'csv' && audience.csvContacts) {
       contacts = await upsertCsvContacts(supabase, audience.csvContacts);
+    } else if (audience.type === 'specific_contacts') {
+      if (audience.includeContactIds && audience.includeContactIds.length > 0) {
+        const { data, error } = await supabase
+          .from('contacts')
+          .select('*')
+          .in('id', audience.includeContactIds);
+        if (error) throw new Error(`Failed to fetch specific contacts: ${error.message}`);
+        contacts = data ?? [];
+      }
+    }
+
+    // Apply includeContactIds if specified alongside other filters
+    if (audience.type !== 'specific_contacts' && audience.includeContactIds && audience.includeContactIds.length > 0) {
+      const existingIds = new Set(contacts.map((c) => c.id));
+      const missingIds = audience.includeContactIds.filter((id) => !existingIds.has(id));
+      if (missingIds.length > 0) {
+        const { data: addData } = await supabase
+          .from('contacts')
+          .select('*')
+          .in('id', missingIds);
+        if (addData && addData.length > 0) {
+          contacts = [...contacts, ...addData];
+        }
+      }
     }
 
     // Apply exclude tags (works across all contact-derived audience

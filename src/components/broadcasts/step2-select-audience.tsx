@@ -14,11 +14,13 @@ import {
   ArrowLeft,
   X,
   UserX,
+  UserCheck,
   Search,
   Plus,
+  CheckCircle2,
 } from 'lucide-react';
 
-type AudienceType = 'all' | 'tags' | 'custom_field' | 'csv';
+type AudienceType = 'all' | 'tags' | 'custom_field' | 'csv' | 'specific_contacts';
 type CustomFieldOperator = 'is' | 'is_not' | 'contains';
 
 interface CustomFieldFilter {
@@ -32,7 +34,9 @@ interface AudienceConfig {
   tagIds?: string[];
   customField?: CustomFieldFilter;
   csvContacts?: { phone: string; name?: string }[];
+  includeContactIds?: string[];
   excludeTagIds?: string[];
+  excludeContactIds?: string[];
 }
 
 interface Step2Props {
@@ -59,6 +63,12 @@ const audienceOptions: {
     label: 'Filter by Tags',
     description: 'Target contacts with specific tags',
     icon: Tags,
+  },
+  {
+    type: 'specific_contacts',
+    label: 'Specific Contacts',
+    description: 'Select individual contacts by Name or Phone',
+    icon: UserCheck,
   },
   {
     type: 'custom_field',
@@ -93,11 +103,76 @@ export function Step2SelectAudience({
   const [estimatedCount, setEstimatedCount] = useState<number | null>(null);
   const [loadingCount, setLoadingCount] = useState(false);
 
-  // Individual contact exclusion state
+  // Individual contact INCLUSION state
+  const [includeSearchQuery, setIncludeSearchQuery] = useState('');
+  const [includeSearchResults, setIncludeSearchResults] = useState<{ id: string; name: string | null; phone: string | null; email: string | null }[]>([]);
+  const [isIncludeSearching, setIsIncludeSearching] = useState(false);
+  const [includedContactsInfo, setIncludedContactsInfo] = useState<{ id: string; name: string | null; phone: string | null; email: string | null }[]>([]);
+
+  // Individual contact EXCLUSION state
   const [contactSearchQuery, setContactSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{ id: string; name: string | null; phone: string | null; email: string | null }[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [excludedContactsInfo, setExcludedContactsInfo] = useState<{ id: string; name: string | null; phone: string | null; email: string | null }[]>([]);
+
+  // Fetch info for included contacts
+  useEffect(() => {
+    const ids = audience.includeContactIds ?? [];
+    if (ids.length === 0) {
+      setIncludedContactsInfo([]);
+      return;
+    }
+    async function fetchIncludedInfo() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('contacts')
+        .select('id, name, phone, email')
+        .in('id', ids);
+      setIncludedContactsInfo(data ?? []);
+    }
+    fetchIncludedInfo();
+  }, [audience.includeContactIds]);
+
+  // Search contacts for INCLUSION
+  useEffect(() => {
+    if (!includeSearchQuery.trim()) {
+      setIncludeSearchResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsIncludeSearching(true);
+      try {
+        const supabase = createClient();
+        const term = `%${includeSearchQuery.trim()}%`;
+        const { data } = await supabase
+          .from('contacts')
+          .select('id, name, phone, email')
+          .or(`name.ilike.${term},phone.ilike.${term},email.ilike.${term}`)
+          .limit(6);
+        setIncludeSearchResults(data ?? []);
+      } finally {
+        setIsIncludeSearching(false);
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [includeSearchQuery]);
+
+  function addIncludeContact(contact: { id: string; name: string | null; phone: string | null; email: string | null }) {
+    const current = audience.includeContactIds ?? [];
+    if (!current.includes(contact.id)) {
+      onUpdate({ ...audience, includeContactIds: [...current, contact.id] });
+    }
+    setIncludeSearchQuery('');
+    setIncludeSearchResults([]);
+  }
+
+  function removeIncludeContact(contactId: string) {
+    const current = audience.includeContactIds ?? [];
+    onUpdate({
+      ...audience,
+      includeContactIds: current.filter((id) => id !== contactId),
+    });
+  }
 
   // Fetch info for individual excluded contacts when excludeContactIds changes
   useEffect(() => {
@@ -117,7 +192,7 @@ export function Step2SelectAudience({
     fetchExcludedInfo();
   }, [audience.excludeContactIds]);
 
-  // Search contacts for exclusion
+  // Search contacts for EXCLUSION
   useEffect(() => {
     if (!contactSearchQuery.trim()) {
       setSearchResults([]);
@@ -203,6 +278,8 @@ export function Step2SelectAudience({
 
       if (audience.type === 'all') {
         // Handled below — full-table count adjusted by excludes.
+      } else if (audience.type === 'specific_contacts') {
+        baseIds = new Set(audience.includeContactIds ?? []);
       } else if (
         audience.type === 'tags' &&
         audience.tagIds &&
@@ -235,10 +312,19 @@ export function Step2SelectAudience({
       ) {
         setEstimatedCount(audience.csvContacts.length);
         return;
+      } else if (audience.includeContactIds && audience.includeContactIds.length > 0) {
+        baseIds = new Set(audience.includeContactIds);
       } else {
         // Partially-configured audience — wait for the user to finish.
         setEstimatedCount(null);
         return;
+      }
+
+      // Merge any additional includeContactIds into baseIds
+      if (baseIds && audience.includeContactIds && audience.includeContactIds.length > 0) {
+        for (const incId of audience.includeContactIds) {
+          baseIds.add(incId);
+        }
       }
 
       // Apply exclude tags & individual contacts
@@ -279,6 +365,7 @@ export function Step2SelectAudience({
     audience.tagIds,
     audience.customField,
     audience.csvContacts,
+    audience.includeContactIds,
     audience.excludeTagIds,
     audience.excludeContactIds,
   ]);
@@ -464,6 +551,97 @@ export function Step2SelectAudience({
           )}
         </div>
       )}
+
+      {/* Include specific individual contacts — works standalone or combined with filters */}
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <UserCheck className="h-4 w-4 text-primary" />
+            <p className="text-sm font-medium text-foreground">
+              Include specific contacts (by Name or Phone)
+            </p>
+            <span className="text-xs text-muted-foreground">(optional / targeted)</span>
+          </div>
+          {includedContactsInfo.length > 0 && (
+            <span className="text-xs font-semibold text-primary">
+              {includedContactsInfo.length} contact{includedContactsInfo.length > 1 ? 's' : ''} targeted
+            </span>
+          )}
+        </div>
+
+        {/* Search input for inclusion */}
+        <div className="relative mb-3">
+          <div className="relative flex items-center">
+            <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={includeSearchQuery}
+              onChange={(e) => setIncludeSearchQuery(e.target.value)}
+              placeholder="Search contact by name or phone to include..."
+              className="h-9 w-full rounded-lg border border-border bg-card pl-9 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
+            />
+            {isIncludeSearching && (
+              <Loader2 className="absolute right-3 h-4 w-4 animate-spin text-muted-foreground" />
+            )}
+          </div>
+
+          {/* Search Dropdown Results */}
+          {includeSearchResults.length > 0 && (
+            <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-border bg-popover p-1 shadow-lg">
+              {includeSearchResults.map((contact) => {
+                const isIncluded = audience.includeContactIds?.includes(contact.id);
+                return (
+                  <button
+                    key={contact.id}
+                    type="button"
+                    onClick={() => addIncludeContact(contact)}
+                    disabled={isIncluded}
+                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs transition-colors hover:bg-muted disabled:opacity-50"
+                  >
+                    <div>
+                      <p className="font-medium text-popover-foreground">
+                        {contact.name || 'Unnamed Contact'}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {contact.phone || contact.email || 'No phone'}
+                      </p>
+                    </div>
+                    {isIncluded ? (
+                      <span className="text-[11px] text-muted-foreground">Included</span>
+                    ) : (
+                      <Plus className="h-3.5 w-3.5 text-primary" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Selected Included Chips */}
+        {includedContactsInfo.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {includedContactsInfo.map((contact) => (
+              <span
+                key={contact.id}
+                className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary"
+              >
+                <span>{contact.name || contact.phone || 'Contact'}</span>
+                {contact.phone && (
+                  <span className="text-[10px] text-primary/80">({contact.phone})</span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeIncludeContact(contact.id)}
+                  className="rounded-full p-0.5 hover:bg-primary/20"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Exclude list — applies regardless of audience type */}
       <div className="rounded-xl border border-border bg-card/50 p-4">
