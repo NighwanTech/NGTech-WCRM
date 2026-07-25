@@ -4,9 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { IndianRupee, ShieldAlert, Zap, Layers, AlertTriangle } from 'lucide-react';
-import { toast } from 'sonner';
+import { IndianRupee, Zap, Calendar, AlertTriangle } from 'lucide-react';
 
 interface Props {
   config: any;
@@ -16,6 +14,7 @@ interface Props {
 export function AIBudgetAndFallbackCard({ config, onChange }: Props) {
   const budgetInr = config.monthly_budget_inr || 2500;
   const currentMonthSpendInr = config.current_month_spend_inr || 0;
+  const triggerPercent = config.budget_alert_threshold_percent || 90;
   const spendPercent = Math.min(100, Math.round((currentMonthSpendInr / budgetInr) * 100));
 
   return (
@@ -28,7 +27,7 @@ export function AIBudgetAndFallbackCard({ config, onChange }: Props) {
               Monthly Budget Limits (INR ₹) & Auto-Failover
             </CardTitle>
             <CardDescription>
-              Set monthly spending caps in Indian Rupees (₹) and configure secondary backup AI engines.
+              Set monthly spending caps in Indian Rupees (₹), alert thresholds, budget reset dates, and backup AI engines.
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -43,11 +42,12 @@ export function AIBudgetAndFallbackCard({ config, onChange }: Props) {
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* Monthly Budget Setting & Progress Bar */}
+        {/* Monthly Budget Settings Grid */}
         <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/10 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {/* 1. Monthly Budget Limit */}
             <div className="space-y-2">
-              <Label className="font-semibold text-sm">Monthly AI Spend Limit (₹ INR)</Label>
+              <Label className="font-semibold text-xs">Monthly AI Spend Limit (₹ INR)</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">₹</span>
                 <Input
@@ -55,27 +55,73 @@ export function AIBudgetAndFallbackCard({ config, onChange }: Props) {
                   placeholder="e.g. 2500"
                   value={config.monthly_budget_inr || 2500}
                   onChange={(e) => onChange('monthly_budget_inr', parseFloat(e.target.value) || 0)}
-                  className="pl-8 font-mono"
+                  className="pl-8 font-mono text-xs"
                 />
               </div>
-              <p className="text-xs text-muted-foreground">
-                Prevents unexpected OpenAI / AI billing spikes when viral traffic occurs.
-              </p>
             </div>
 
+            {/* 2. Alert & Action Threshold % */}
             <div className="space-y-2">
-              <Label className="font-semibold text-sm">Action When 100% Budget Reached</Label>
+              <Label className="font-semibold text-xs">Trigger Action At Threshold</Label>
               <Select
-                value={config.budget_action || 'handoff'}
-                onValueChange={(v) => onChange('budget_action', v)}
+                value={String(config.budget_alert_threshold_percent || 90)}
+                onValueChange={(v) => { if (v) onChange('budget_alert_threshold_percent', parseInt(v)); }}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select action" />
+                <SelectTrigger className="text-xs">
+                  <SelectValue placeholder="Select threshold %" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="handoff">Transfer Chat to Human Agent (Recommended)</SelectItem>
+                  <SelectItem value="50">At 50% of Budget Limit</SelectItem>
+                  <SelectItem value="75">At 75% of Budget Limit</SelectItem>
+                  <SelectItem value="90">At 90% of Budget Limit (Recommended)</SelectItem>
+                  <SelectItem value="100">At 100% of Budget Limit (Strict Cap)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 3. Action When Threshold Reached */}
+            <div className="space-y-2">
+              <Label className="font-semibold text-xs">Action When Reached</Label>
+              <Select
+                value={config.budget_action || 'handoff'}
+                onValueChange={(v) => { if (v) onChange('budget_action', v); }}
+              >
+                <SelectTrigger className="text-xs">
+                  <SelectValue placeholder="Select action">
+                    {config.budget_action === 'pause'
+                      ? 'Pause AI Auto-Reply'
+                      : config.budget_action === 'system_fallback'
+                      ? 'Switch to Free System Fallback'
+                      : 'Transfer Chat to Human Agent'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="handoff">Transfer Chat to Human Agent</SelectItem>
                   <SelectItem value="pause">Pause AI Auto-Reply</SelectItem>
                   <SelectItem value="system_fallback">Switch to Free System Fallback</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 4. Monthly Reset Day */}
+            <div className="space-y-2">
+              <Label className="font-semibold text-xs flex items-center gap-1">
+                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                Monthly Reset Day
+              </Label>
+              <Select
+                value={String(config.budget_reset_day || 1)}
+                onValueChange={(v) => { if (v) onChange('budget_reset_day', parseInt(v)); }}
+              >
+                <SelectTrigger className="text-xs">
+                  <SelectValue placeholder="Select day" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1st of every month</SelectItem>
+                  <SelectItem value="5">5th of every month</SelectItem>
+                  <SelectItem value="10">10th of every month</SelectItem>
+                  <SelectItem value="15">15th of every month</SelectItem>
+                  <SelectItem value="25">25th of every month</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -85,16 +131,16 @@ export function AIBudgetAndFallbackCard({ config, onChange }: Props) {
           <div className="space-y-1.5 pt-2">
             <div className="flex justify-between text-xs font-semibold">
               <span>Month-to-Date Spend Progress</span>
-              <span className={spendPercent >= 90 ? 'text-rose-500 font-bold' : spendPercent >= 80 ? 'text-amber-500' : 'text-emerald-500'}>
-                ₹{currentMonthSpendInr.toFixed(2)} / ₹{budgetInr.toLocaleString()} ({spendPercent}%)
+              <span className={spendPercent >= triggerPercent ? 'text-rose-500 font-bold' : spendPercent >= (triggerPercent - 15) ? 'text-amber-500' : 'text-emerald-500'}>
+                ₹{currentMonthSpendInr.toFixed(2)} / ₹{budgetInr.toLocaleString()} ({spendPercent}% spent — Action triggers at {triggerPercent}%)
               </span>
             </div>
             <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
               <div
                 className={`h-full transition-all ${
-                  spendPercent >= 90
+                  spendPercent >= triggerPercent
                     ? 'bg-rose-500'
-                    : spendPercent >= 80
+                    : spendPercent >= (triggerPercent - 15)
                     ? 'bg-amber-500'
                     : 'bg-emerald-500'
                 }`}
@@ -132,9 +178,9 @@ export function AIBudgetAndFallbackCard({ config, onChange }: Props) {
                 <Label className="text-xs font-medium">Backup Provider</Label>
                 <Select
                   value={config.fallback_provider || 'gemini'}
-                  onValueChange={(v) => onChange('fallback_provider', v)}
+                  onValueChange={(v) => { if (v) onChange('fallback_provider', v); }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="text-xs">
                     <SelectValue placeholder="Select fallback provider" />
                   </SelectTrigger>
                   <SelectContent>
@@ -150,9 +196,9 @@ export function AIBudgetAndFallbackCard({ config, onChange }: Props) {
                 <Label className="text-xs font-medium">Backup Model</Label>
                 <Select
                   value={config.fallback_model || 'gemini-1.5-flash'}
-                  onValueChange={(v) => onChange('fallback_model', v)}
+                  onValueChange={(v) => { if (v) onChange('fallback_model', v); }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="text-xs">
                     <SelectValue placeholder="Select fallback model" />
                   </SelectTrigger>
                   <SelectContent>
