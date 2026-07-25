@@ -42,8 +42,16 @@ export async function POST(request: Request) {
     });
   } catch (err: any) {
     console.error('API key test error:', err);
+    let errMsg = err?.message || 'Failed to connect to AI Provider with given credentials.';
+    
+    if (errMsg.includes('Quota exceeded') || errMsg.includes('limit: 0')) {
+      errMsg = 'Google AI Free Tier Quota Limit 0 for this model. Please select "Gemini 1.5 Flash (Recommended - Works on Free & Paid Keys)" in the Model dropdown.';
+    } else if (errMsg.includes('is not found for API version') || errMsg.includes('v1beta')) {
+      errMsg = 'Selected model name is not available on this API key. Please select "Gemini 1.5 Flash (Recommended)".';
+    }
+
     return NextResponse.json(
-      { error: err?.message || 'Failed to connect to AI Provider with given credentials.' },
+      { error: errMsg },
       { status: 400 }
     );
   }

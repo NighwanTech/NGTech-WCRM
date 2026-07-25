@@ -78,7 +78,7 @@ export function GeneralSettingsCard({ config, onChange }: Props) {
                 onChange('provider', v);
                 // Set sensible default model when switching provider
                 if (v === 'openai') onChange('model', 'gpt-4o');
-                else if (v === 'gemini') onChange('model', 'gemini-1.5-pro');
+                else if (v === 'gemini') onChange('model', 'gemini-1.5-flash');
                 else if (v === 'claude') onChange('model', 'claude-3-5-sonnet-latest');
                 else if (v === 'groq') onChange('model', 'llama-3.3-70b-versatile');
                 else if (v === 'deepseek') onChange('model', 'deepseek-chat');
@@ -101,7 +101,7 @@ export function GeneralSettingsCard({ config, onChange }: Props) {
 
           <div className="space-y-2">
             <Label>Model</Label>
-            <Select value={config.model || 'gemini-1.5-pro'} onValueChange={(v) => onChange('model', v)}>
+            <Select value={config.model || 'gemini-1.5-flash'} onValueChange={(v) => onChange('model', v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select model" />
               </SelectTrigger>
@@ -117,9 +117,9 @@ export function GeneralSettingsCard({ config, onChange }: Props) {
                 )}
                 {provider === 'gemini' && (
                   <>
-                    <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro</SelectItem>
-                    <SelectItem value="gemini-1.5-flash">Gemini 1.5 Flash</SelectItem>
-                    <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash</SelectItem>
+                    <SelectItem value="gemini-1.5-flash">Gemini 1.5 Flash (Recommended - Works on Free & Paid Keys)</SelectItem>
+                    <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro (High Intelligence)</SelectItem>
+                    <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash (Experimental - Billing Required)</SelectItem>
                   </>
                 )}
                 {provider === 'claude' && (
