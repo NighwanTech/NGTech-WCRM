@@ -44,10 +44,10 @@ export function AIBudgetAndFallbackCard({ config, onChange }: Props) {
       <CardContent className="space-y-6">
         {/* Monthly Budget Settings Grid */}
         <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/10 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* 1. Monthly Budget Limit */}
-            <div className="space-y-2">
-              <Label className="font-semibold text-xs">Monthly AI Spend Limit (₹ INR)</Label>
+            <div className="space-y-2 min-w-0">
+              <Label className="font-semibold text-xs truncate block">Monthly AI Spend Limit (₹ INR)</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">₹</span>
                 <Input
@@ -55,68 +55,68 @@ export function AIBudgetAndFallbackCard({ config, onChange }: Props) {
                   placeholder="e.g. 2500"
                   value={config.monthly_budget_inr || 2500}
                   onChange={(e) => onChange('monthly_budget_inr', parseFloat(e.target.value) || 0)}
-                  className="pl-8 font-mono text-xs"
+                  className="pl-8 font-mono text-xs w-full"
                 />
               </div>
             </div>
 
             {/* 2. Alert & Action Threshold % */}
-            <div className="space-y-2">
-              <Label className="font-semibold text-xs">Trigger Action At Threshold</Label>
+            <div className="space-y-2 min-w-0">
+              <Label className="font-semibold text-xs truncate block">Trigger Action At Threshold</Label>
               <Select
                 value={String(config.budget_alert_threshold_percent || 90)}
                 onValueChange={(v) => { if (v) onChange('budget_alert_threshold_percent', parseInt(v)); }}
               >
-                <SelectTrigger className="text-xs">
+                <SelectTrigger className="text-xs w-full overflow-hidden">
                   <SelectValue placeholder="Select threshold %" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="50">At 50% of Budget Limit</SelectItem>
-                  <SelectItem value="75">At 75% of Budget Limit</SelectItem>
-                  <SelectItem value="90">At 90% of Budget Limit (Recommended)</SelectItem>
-                  <SelectItem value="100">At 100% of Budget Limit (Strict Cap)</SelectItem>
+                <SelectContent className="w-full min-w-[var(--radix-select-trigger-width)] max-w-[90vw]">
+                  <SelectItem value="50">At 50% Budget Limit</SelectItem>
+                  <SelectItem value="75">At 75% Budget Limit</SelectItem>
+                  <SelectItem value="90">At 90% Budget Limit (Default)</SelectItem>
+                  <SelectItem value="100">At 100% Budget Limit (Strict)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* 3. Action When Threshold Reached */}
-            <div className="space-y-2">
-              <Label className="font-semibold text-xs">Action When Reached</Label>
+            <div className="space-y-2 min-w-0">
+              <Label className="font-semibold text-xs truncate block">Action When Reached</Label>
               <Select
                 value={config.budget_action || 'handoff'}
                 onValueChange={(v) => { if (v) onChange('budget_action', v); }}
               >
-                <SelectTrigger className="text-xs">
+                <SelectTrigger className="text-xs w-full overflow-hidden">
                   <SelectValue placeholder="Select action">
                     {config.budget_action === 'pause'
                       ? 'Pause AI Auto-Reply'
                       : config.budget_action === 'system_fallback'
-                      ? 'Switch to Free System Fallback'
-                      : 'Transfer Chat to Human Agent'}
+                      ? 'Free System Fallback'
+                      : 'Transfer to Human Agent'}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="handoff">Transfer Chat to Human Agent</SelectItem>
+                <SelectContent className="w-full min-w-[var(--radix-select-trigger-width)] max-w-[90vw]">
+                  <SelectItem value="handoff">Transfer to Human Agent</SelectItem>
                   <SelectItem value="pause">Pause AI Auto-Reply</SelectItem>
-                  <SelectItem value="system_fallback">Switch to Free System Fallback</SelectItem>
+                  <SelectItem value="system_fallback">Free System Fallback</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* 4. Monthly Reset Day */}
-            <div className="space-y-2">
-              <Label className="font-semibold text-xs flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+            <div className="space-y-2 min-w-0">
+              <Label className="font-semibold text-xs flex items-center gap-1 truncate">
+                <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 Monthly Reset Day
               </Label>
               <Select
                 value={String(config.budget_reset_day || 1)}
                 onValueChange={(v) => { if (v) onChange('budget_reset_day', parseInt(v)); }}
               >
-                <SelectTrigger className="text-xs">
+                <SelectTrigger className="text-xs w-full overflow-hidden">
                   <SelectValue placeholder="Select day" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="w-full min-w-[var(--radix-select-trigger-width)] max-w-[90vw]">
                   <SelectItem value="1">1st of every month</SelectItem>
                   <SelectItem value="5">5th of every month</SelectItem>
                   <SelectItem value="10">10th of every month</SelectItem>
