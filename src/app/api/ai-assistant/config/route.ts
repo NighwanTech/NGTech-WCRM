@@ -27,7 +27,7 @@ export async function GET() {
       )
     }
 
-    const { data: config, error: configError } = await supabase
+    const { data: rawConfig, error: configError } = await supabase
       .from('ai_assistant_settings')
       .select('*')
       .eq('account_id', profile.account_id)
@@ -39,6 +39,21 @@ export async function GET() {
         { error: 'Failed to fetch AI configuration' },
         { status: 500 }
       )
+    }
+
+    const config = rawConfig ? { ...rawConfig } : null;
+
+    // SECURITY: Mask any saved custom API keys in GET responses so raw keys are NEVER exposed in DevTools or Inspect Element
+    if (config) {
+      if (config.custom_api_key_encrypted) {
+        config.custom_api_key = '••••••••••••••••';
+      }
+      delete config.openai_api_key_encrypted;
+      delete config.gemini_api_key_encrypted;
+      delete config.claude_api_key_encrypted;
+      delete config.groq_api_key_encrypted;
+      delete config.deepseek_api_key_encrypted;
+      delete config.custom_api_key_encrypted;
     }
 
     return NextResponse.json({ config: config || null })
@@ -88,7 +103,11 @@ export async function PATCH(request: Request) {
       advanced_settings,
       knowledge_base_structured,
       ai_rules,
-      handoff_rules
+      handoff_rules,
+      use_custom_keys,
+      custom_api_key,
+      custom_api_base_url,
+      custom_model_name,
     } = body
 
     const updateFields: Record<string, any> = {
@@ -109,9 +128,18 @@ export async function PATCH(request: Request) {
     if (knowledge_base_structured !== undefined) updateFields.knowledge_base_structured = knowledge_base_structured
     if (ai_rules !== undefined) updateFields.ai_rules = ai_rules
     if (handoff_rules !== undefined) updateFields.handoff_rules = handoff_rules
+    if (use_custom_keys !== undefined) updateFields.use_custom_keys = use_custom_keys
+    if (custom_api_base_url !== undefined) updateFields.custom_api_base_url = custom_api_base_url
+    if (custom_model_name !== undefined) updateFields.custom_model_name = custom_model_name
 
-    // Upsert the row since it might not exist if they never enabled AI
-    const { data: config, error: configError } = await supabase
+    // Cryptographic AES-256-GCM Encryption for API Keys
+    if (custom_api_key && typeof custom_api_key === 'string' && !custom_api_key.includes('••••')) {
+      const { encrypt } = await import('@/lib/whatsapp/encryption');
+      updateFields.custom_api_key_encrypted = encrypt(custom_api_key.trim());
+    }
+
+    // Upsert the row
+    const { data: rawConfig, error: configError } = await supabase
       .from('ai_assistant_settings')
       .upsert({
         account_id: profile.account_id,
@@ -126,6 +154,12 @@ export async function PATCH(request: Request) {
         { error: 'Failed to update AI settings' },
         { status: 500 }
       )
+    }
+
+    const config = rawConfig ? { ...rawConfig } : null;
+    if (config && config.custom_api_key_encrypted) {
+      config.custom_api_key = '••••••••••••••••';
+      delete config.custom_api_key_encrypted;
     }
 
     return NextResponse.json({ config })

@@ -1,55 +1,77 @@
-import { groq } from '@ai-sdk/groq';
+import { createGroq } from '@ai-sdk/groq';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 
+export interface GetModelOptions {
+  provider: string;
+  modelName?: string;
+  apiKey?: string;
+  baseUrl?: string;
+}
+
 export class AIProviderService {
   /**
-   * Returns the initialized AI model for the `@ai-sdk` generateText/streamText functions.
+   * Returns the initialized AI model for `@ai-sdk` generateText/streamText functions.
+   * Supports custom API keys and custom base URLs per client account.
    */
-  static getModel(provider: string, modelName: string) {
+  static getModel(provider: string, modelName?: string, options?: { apiKey?: string; baseUrl?: string }) {
+    const customKey = options?.apiKey?.trim();
+    const customUrl = options?.baseUrl?.trim();
+
     if (provider === 'groq') {
-      if (!process.env.GROQ_API_KEY) {
-        throw new Error('GROQ_API_KEY is missing');
-      }
-      return groq(modelName || 'llama-3.3-70b-versatile');
+      const apiKey = customKey || process.env.GROQ_API_KEY;
+      if (!apiKey) throw new Error('Groq API Key is missing');
+      const groqProvider = createGroq({ apiKey });
+      return groqProvider(modelName || 'llama-3.3-70b-versatile');
     }
 
     if (provider === 'gemini') {
-      if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-        throw new Error('GOOGLE_GENERATIVE_AI_API_KEY is missing');
-      }
-      const google = createGoogleGenerativeAI({
-        apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-      });
+      const apiKey = customKey || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+      if (!apiKey) throw new Error('Google Gemini API Key is missing');
+      const google = createGoogleGenerativeAI({ apiKey });
       return google(modelName || 'gemini-1.5-pro');
     }
 
     if (provider === 'openai') {
-      if (!process.env.OPENAI_API_KEY) {
-        throw new Error('OPENAI_API_KEY is missing');
-      }
+      const apiKey = customKey || process.env.OPENAI_API_KEY;
+      if (!apiKey) throw new Error('OpenAI API Key is missing');
       const openai = createOpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
+        apiKey,
+        ...(customUrl ? { baseURL: customUrl } : {}),
       });
       return openai(modelName || 'gpt-4o');
     }
 
-    if (provider === 'claude') {
-      if (!process.env.ANTHROPIC_API_KEY) {
-        throw new Error('ANTHROPIC_API_KEY is missing');
-      }
-      const anthropic = createAnthropic({
-        apiKey: process.env.ANTHROPIC_API_KEY,
-      });
+    if (provider === 'claude' || provider === 'anthropic') {
+      const apiKey = customKey || process.env.ANTHROPIC_API_KEY;
+      if (!apiKey) throw new Error('Anthropic Claude API Key is missing');
+      const anthropic = createAnthropic({ apiKey });
       return anthropic(modelName || 'claude-3-5-sonnet-latest');
     }
 
-    if (provider === 'ollama') {
-      throw new Error(`Provider ${provider} is coming in a future update.`);
+    if (provider === 'deepseek') {
+      const apiKey = customKey || process.env.DEEPSEEK_API_KEY;
+      if (!apiKey) throw new Error('DeepSeek API Key is missing');
+      const deepseek = createOpenAI({
+        apiKey,
+        baseURL: customUrl || 'https://api.deepseek.com/v1',
+      });
+      return deepseek(modelName || 'deepseek-chat');
+    }
+
+    if (provider === 'custom' || provider === 'ollama') {
+      const apiKey = customKey || 'ollama';
+      const baseURL = customUrl || 'http://localhost:11434/v1';
+      const customOpenAI = createOpenAI({
+        apiKey,
+        baseURL,
+      });
+      return customOpenAI(modelName || 'llama3');
     }
 
     // Default fallback
     throw new Error(`Unsupported AI Provider: ${provider}`);
   }
 }
+
