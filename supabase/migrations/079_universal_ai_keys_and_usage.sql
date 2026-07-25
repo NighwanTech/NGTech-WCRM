@@ -1,6 +1,6 @@
 -- 079_universal_ai_keys_and_usage.sql
 
--- 1. Add multi-provider BYOK (Bring Your Own Key) columns to ai_assistant_settings
+-- 1. Add multi-provider BYOK (Bring Your Own Key) & Budget Protection columns to ai_assistant_settings
 ALTER TABLE ai_assistant_settings
   ADD COLUMN IF NOT EXISTS use_custom_keys BOOLEAN DEFAULT false,
   ADD COLUMN IF NOT EXISTS openai_api_key_encrypted TEXT,
@@ -10,9 +10,19 @@ ALTER TABLE ai_assistant_settings
   ADD COLUMN IF NOT EXISTS deepseek_api_key_encrypted TEXT,
   ADD COLUMN IF NOT EXISTS custom_api_base_url TEXT,
   ADD COLUMN IF NOT EXISTS custom_api_key_encrypted TEXT,
-  ADD COLUMN IF NOT EXISTS custom_model_name TEXT;
+  ADD COLUMN IF NOT EXISTS custom_model_name TEXT,
+  -- Budget Protection & Threshold Columns
+  ADD COLUMN IF NOT EXISTS monthly_budget_inr NUMERIC(10, 2) DEFAULT 2500.00,
+  ADD COLUMN IF NOT EXISTS budget_alert_threshold_percent INT DEFAULT 90,
+  ADD COLUMN IF NOT EXISTS budget_action VARCHAR(50) DEFAULT 'handoff',
+  ADD COLUMN IF NOT EXISTS budget_reset_day INT DEFAULT 1,
+  ADD COLUMN IF NOT EXISTS enable_budget_cap BOOLEAN DEFAULT true,
+  -- Secondary Provider Auto-Failover Columns
+  ADD COLUMN IF NOT EXISTS enable_auto_fallback BOOLEAN DEFAULT true,
+  ADD COLUMN IF NOT EXISTS fallback_provider VARCHAR(50) DEFAULT 'gemini',
+  ADD COLUMN IF NOT EXISTS fallback_model VARCHAR(100) DEFAULT 'gemini-1.5-flash';
 
--- 2. Create ai_usage_logs table for multi-tenant token & cost tracking
+-- 2. Create ai_usage_logs table for multi-tenant token, USD & INR cost tracking
 CREATE TABLE IF NOT EXISTS ai_usage_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id UUID NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
@@ -24,6 +34,7 @@ CREATE TABLE IF NOT EXISTS ai_usage_logs (
   completion_tokens INT DEFAULT 0,
   total_tokens INT DEFAULT 0,
   estimated_cost_usd NUMERIC(10, 6) DEFAULT 0,
+  estimated_cost_inr NUMERIC(10, 4) DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
