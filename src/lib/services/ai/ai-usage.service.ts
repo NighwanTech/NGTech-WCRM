@@ -11,6 +11,11 @@ export interface LogAIUsageParams {
 }
 
 /**
+ * Standard USD to INR (₹) exchange rate multiplier
+ */
+export const USD_TO_INR_RATE = 86.0;
+
+/**
  * Model pricing per 1 million tokens (USD)
  */
 const MODEL_PRICING: Record<string, { prompt: number; completion: number }> = {
@@ -39,7 +44,7 @@ const MODEL_PRICING: Record<string, { prompt: number; completion: number }> = {
 
 export class AIUsageService {
   /**
-   * Log token usage & calculate estimated USD cost
+   * Log token usage & calculate estimated USD & INR (₹) costs
    */
   static async logUsage(params: LogAIUsageParams): Promise<void> {
     const {
@@ -59,6 +64,7 @@ export class AIUsageService {
     const costPrompt = (promptTokens / 1_000_000) * pricing.prompt;
     const costCompletion = (completionTokens / 1_000_000) * pricing.completion;
     const estimatedCostUsd = Number((costPrompt + costCompletion).toFixed(6));
+    const estimatedCostInr = Number((estimatedCostUsd * USD_TO_INR_RATE).toFixed(4));
 
     try {
       const supabase = await createClient();
@@ -72,9 +78,21 @@ export class AIUsageService {
         completion_tokens: completionTokens,
         total_tokens: totalTokens,
         estimated_cost_usd: estimatedCostUsd,
+        estimated_cost_inr: estimatedCostInr,
       });
     } catch (err) {
       console.error('Failed to log AI usage:', err);
     }
+  }
+
+  /**
+   * Utility helper to convert USD to formatted INR string (₹)
+   */
+  static formatINR(usdAmount: number): string {
+    const inrAmount = usdAmount * USD_TO_INR_RATE;
+    if (inrAmount < 0.01 && inrAmount > 0) {
+      return `₹${inrAmount.toFixed(4)}`;
+    }
+    return `₹${inrAmount.toFixed(2)}`;
   }
 }

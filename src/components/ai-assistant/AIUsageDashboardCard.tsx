@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Cpu, DollarSign, Activity, Layers, RefreshCw, Loader2 } from 'lucide-react';
+import { Cpu, IndianRupee, Activity, Layers, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AIUsageSummary {
@@ -12,6 +12,8 @@ interface AIUsageSummary {
     totalPromptTokens: number;
     totalCompletionTokens: number;
     totalEstimatedCostUsd: number;
+    totalEstimatedCostInr: number;
+    exchangeRate: number;
   };
   providerBreakdown: Record<string, { requests: number; tokens: number; cost: number }>;
   modelBreakdown: Record<string, { requests: number; tokens: number; cost: number }>;
@@ -57,6 +59,15 @@ export function AIUsageDashboardCard() {
     totalPromptTokens: 0,
     totalCompletionTokens: 0,
     totalEstimatedCostUsd: 0,
+    totalEstimatedCostInr: 0,
+    exchangeRate: 86.0,
+  };
+
+  // Utility helper for INR formatting
+  const formatCostINR = (usdAmount: number) => {
+    const inr = usdAmount * (summary.exchangeRate || 86.0);
+    if (inr < 0.01 && inr > 0) return `₹${inr.toFixed(4)}`;
+    return `₹${inr.toFixed(2)}`;
   };
 
   return (
@@ -65,10 +76,10 @@ export function AIUsageDashboardCard() {
         <div>
           <CardTitle className="text-xl font-bold flex items-center gap-2">
             <Cpu className="h-5 w-5 text-primary" />
-            AI Usage & Analytics Dashboard
+            AI Usage & Analytics Dashboard (INR ₹)
           </CardTitle>
           <CardDescription>
-            Real-time token consumption, request count, and estimated cost for your account.
+            Real-time token consumption, request count, and estimated cost in Indian Rupees (₹).
           </CardDescription>
         </div>
         <Button
@@ -100,14 +111,14 @@ export function AIUsageDashboardCard() {
 
           <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
             <div className="flex items-center justify-between text-muted-foreground mb-1 text-xs">
-              <span>Estimated Cost</span>
-              <DollarSign className="h-4 w-4 text-emerald-500" />
+              <span>Estimated Cost (INR)</span>
+              <IndianRupee className="h-4 w-4 text-emerald-500" />
             </div>
             <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
-              ${summary.totalEstimatedCostUsd.toFixed(4)}
+              ₹{summary.totalEstimatedCostInr.toFixed(2)}
             </div>
             <div className="text-[11px] text-muted-foreground mt-1">
-              Based on model token pricing
+              (${summary.totalEstimatedCostUsd.toFixed(4)} USD)
             </div>
           </div>
 
@@ -126,14 +137,14 @@ export function AIUsageDashboardCard() {
 
           <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/10">
             <div className="flex items-center justify-between text-muted-foreground mb-1 text-xs">
-              <span>Providers Used</span>
+              <span>Active Providers</span>
               <Cpu className="h-4 w-4 text-purple-500" />
             </div>
             <div className="text-2xl font-bold font-mono text-purple-600 dark:text-purple-400">
               {Object.keys(data?.providerBreakdown || {}).length || 1}
             </div>
             <div className="text-[11px] text-muted-foreground mt-1">
-              Active providers
+              Active engines
             </div>
           </div>
         </div>
@@ -142,7 +153,7 @@ export function AIUsageDashboardCard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
           {/* Provider/Model Breakdown */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold">Usage by Provider / Model</h4>
+            <h4 className="text-sm font-semibold">Usage & Cost by Provider / Model</h4>
             {Object.keys(data?.modelBreakdown || {}).length === 0 ? (
               <p className="text-xs text-muted-foreground italic">No AI executions recorded yet.</p>
             ) : (
@@ -160,7 +171,7 @@ export function AIUsageDashboardCard() {
                     </div>
                     <div className="text-right">
                       <span className="font-bold">{stats.tokens.toLocaleString()} tokens</span>
-                      <span className="text-muted-foreground ml-2">(${stats.cost.toFixed(4)})</span>
+                      <span className="text-emerald-600 font-semibold ml-2">({formatCostINR(stats.cost)})</span>
                     </div>
                   </div>
                 ))}
@@ -191,7 +202,7 @@ export function AIUsageDashboardCard() {
                         {log.provider}
                       </Badge>
                       <span className="font-mono text-muted-foreground">
-                        {log.total_tokens} tokens
+                        {log.total_tokens} tokens ({formatCostINR(log.estimated_cost_usd)})
                       </span>
                     </div>
                   </div>

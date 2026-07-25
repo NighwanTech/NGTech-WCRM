@@ -74,6 +74,9 @@ export async function GET() {
       modelBreakdown[mKey].cost += Number(log.estimated_cost_usd || 0);
     });
 
+    const USD_TO_INR_RATE = 86.0;
+    const totalEstimatedCostInr = Number((totalEstimatedCostUsd * USD_TO_INR_RATE).toFixed(2));
+
     return NextResponse.json({
       summary: {
         totalRequests: (logs || []).length,
@@ -81,6 +84,8 @@ export async function GET() {
         totalPromptTokens,
         totalCompletionTokens,
         totalEstimatedCostUsd: Number(totalEstimatedCostUsd.toFixed(4)),
+        totalEstimatedCostInr,
+        exchangeRate: USD_TO_INR_RATE,
       },
       providerBreakdown,
       modelBreakdown,

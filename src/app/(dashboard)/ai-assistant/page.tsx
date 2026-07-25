@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Loader2, Settings, UserSquare2, Code2, Database, ShieldAlert, Users, Clock, TestTube2, LineChart, Save } from 'lucide-react'
 import { GeneralSettingsCard } from '@/components/ai-assistant/GeneralSettingsCard'
 import { AIUsageDashboardCard } from '@/components/ai-assistant/AIUsageDashboardCard'
+import { AIBudgetAndFallbackCard } from '@/components/ai-assistant/AIBudgetAndFallbackCard'
 import { PersonalityCard } from '@/components/ai-assistant/PersonalityCard'
 import { SystemPromptEditor } from '@/components/ai-assistant/SystemPromptEditor'
 import { KnowledgeBaseManager } from '@/components/ai-assistant/KnowledgeBaseManager'
@@ -113,6 +114,7 @@ export default function AIAssistantPage() {
         return (
           <div className="space-y-6">
             <GeneralSettingsCard config={config || {}} onChange={handleConfigChange} />
+            <AIBudgetAndFallbackCard config={config || {}} onChange={handleConfigChange} />
             <AIUsageDashboardCard />
           </div>
         )
