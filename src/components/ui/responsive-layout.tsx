@@ -138,7 +138,7 @@ export function ThreePanel({
 
   return (
     <ThreePanelCtx.Provider value={ctx}>
-      <div className={cn("relative flex h-full w-full overflow-hidden dashboard-mobile-safe-bottom", className)}>
+      <div className={cn("relative flex h-full w-full overflow-hidden", className)}>
 
         {/* ── LEFT PANEL ─────────────────────────────────────── */}
         {isMobileOrTablet ? (

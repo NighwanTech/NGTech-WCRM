@@ -65,12 +65,10 @@ div[data-nextjs-dialog-overlay],
   display: none !important;
 }
 
-/* Ensure ALL mobile dashboard pages leave 5rem (80px) space at bottom for fixed mobile bottom nav bar */
+/* Uniform Mobile Bottom Safe Padding (64px = h-16) */
 @media (max-width: 767px) {
-  .dashboard-mobile-safe-bottom,
-  [data-dashboard-content],
-  main:has(~ .dashboard-mobile-bottom-nav) {
-    padding-bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
+  .dashboard-mobile-safe-bottom {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
   }
 }
 
