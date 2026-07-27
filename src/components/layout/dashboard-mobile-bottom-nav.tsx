@@ -45,7 +45,7 @@ export function DashboardMobileBottomNav() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/90 backdrop-blur-xl border-t border-border/60 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] pb-[env(safe-area-inset-bottom)]">
+    <div className="dashboard-mobile-bottom-nav fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/90 backdrop-blur-xl border-t border-border/60 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-around h-16 px-2 max-w-md mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
