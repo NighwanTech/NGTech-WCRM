@@ -1,0 +1,13 @@
+{
+  "appId": "com.nighwantech.ngtechwcrm",
+  "appName": "NGTech WCRM",
+  "webDir": "out",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://ngtechwcrm.nighwantech.com",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}
