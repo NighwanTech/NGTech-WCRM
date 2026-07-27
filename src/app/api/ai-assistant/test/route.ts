@@ -105,7 +105,7 @@ export async function POST(request: Request) {
         const errMsg = err?.message || '';
         if (provider === 'gemini' && (errMsg.includes('limit: 0') || errMsg.includes('Quota exceeded') || errMsg.includes('quota'))) {
           console.log('[AI test] Gemini 2.0 quota limit hit. Retrying with Gemini 1.5 Flash latest...');
-          model = AIProviderService.getModel(provider, 'gemini-1.5-flash-latest', {
+          model = AIProviderService.getModel(provider, 'gemini-1.5-flash', {
             apiKey: apiKey?.trim(),
             baseUrl: config?.custom_api_base_url,
           });
