@@ -42,10 +42,47 @@ export async function POST(request: Request) {
       const hoursUntilMeeting = (scheduledAt.getTime() - now.getTime()) / (1000 * 60 * 60)
       
       if (hoursUntilMeeting <= 24) {
+        // Resolve account timezone for this meeting
+        let timezone = 'UTC'
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('account_id')
+          .eq('user_id', meeting.user_id)
+          .maybeSingle()
+
+        if (profile?.account_id) {
+          const { data: account } = await supabase
+            .from('accounts')
+            .select('business_hours')
+            .eq('id', profile.account_id)
+            .maybeSingle()
+          
+          const businessHours = account?.business_hours as any
+          if (businessHours?.timezone) {
+            timezone = businessHours.timezone
+          }
+        }
+
+        // Get a friendly timezone abbreviation/name
+        let tzAbbreviation = ''
+        try {
+          const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: timezone,
+            timeZoneName: 'short'
+          }).formatToParts(new Date())
+          const tzPart = parts.find(p => p.type === 'timeZoneName')
+          if (tzPart) {
+            tzAbbreviation = ` (${tzPart.value})`
+          }
+        } catch (e) {
+          tzAbbreviation = ` (${timezone})`
+        }
+
         // Construct the reminder message
         const formattedDate = scheduledAt.toLocaleString('en-US', { 
+          timeZone: timezone,
           weekday: 'long', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' 
-        })
+        }) + tzAbbreviation
         const messageText = `⏰ *MEETING REMINDER* ⏰\n━━━━━━━━━━━━━━━━━━━━━━\nJust a quick reminder about our upcoming meeting:\n\n✨ *Topic:* ${meeting.title}\n🕒 *Time:* ${formattedDate}\n🔗 *Link:* ${meeting.meeting_link || 'To be provided'}\n━━━━━━━━━━━━━━━━━━━━━━\nSee you soon!`
 
         // In a real application, you would hit the internal /api/whatsapp/send logic here

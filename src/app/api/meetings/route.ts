@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { contact_id, title, meeting_link, scheduled_at } = body
+    const { contact_id, title, meeting_link, scheduled_at, timezone: clientTimezone } = body
 
     if (!contact_id || !title) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -33,15 +33,54 @@ export async function POST(request: Request) {
 
     if (meetingError) throw meetingError
 
+    // Resolve account timezone
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('account_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    let accountTimezone = 'UTC'
+    if (profile?.account_id) {
+      const { data: account } = await supabase
+        .from('accounts')
+        .select('business_hours')
+        .eq('id', profile.account_id)
+        .maybeSingle()
+      
+      const businessHours = account?.business_hours as any
+      if (businessHours?.timezone) {
+        accountTimezone = businessHours.timezone
+      }
+    }
+
+    const timezone = clientTimezone || accountTimezone || 'UTC'
+
+    // Get a friendly timezone abbreviation/name
+    let tzAbbreviation = ''
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        timeZoneName: 'short'
+      }).formatToParts(new Date())
+      const tzPart = parts.find(p => p.type === 'timeZoneName')
+      if (tzPart) {
+        tzAbbreviation = ` (${tzPart.value})`
+      }
+    } catch (e) {
+      tzAbbreviation = ` (${timezone})`
+    }
+
     // 2. Generate WhatsApp formatted message
     const formattedDate = scheduled_at 
       ? new Date(scheduled_at).toLocaleString('en-US', { 
+          timeZone: timezone,
           weekday: 'long', 
           month: 'short', 
           day: 'numeric', 
           hour: 'numeric', 
           minute: '2-digit' 
-        }) 
+        }) + tzAbbreviation
       : 'To Be Determined'
       
     const messageText = `📅 *MEETING INVITATION* 📅\n━━━━━━━━━━━━━━━━━━━━━━\n✨ *Topic:* ${title}\n🕒 *Time:* ${formattedDate}\n🔗 *Link:* ${meeting_link || 'To be provided'}\n━━━━━━━━━━━━━━━━━━━━━━\nWe look forward to speaking with you! Let us know if you need to reschedule.`

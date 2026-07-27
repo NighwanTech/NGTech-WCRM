@@ -20,6 +20,14 @@ interface AudienceConfig {
   type: string;
   tagIds?: string[];
   csvContacts?: { phone: string; name?: string }[];
+  customField?: {
+    fieldId: string;
+    operator: string;
+    value: string;
+  };
+  includeContactIds?: string[];
+  excludeTagIds?: string[];
+  excludeContactIds?: string[];
 }
 
 interface Step4Props {
@@ -54,25 +62,154 @@ export function Step4ScheduleSend({
       setLoadingReach(true);
       try {
         const supabase = createClient();
+        const baseContactIds = new Set<string>();
 
         if (audience.type === 'all') {
-          const { count } = await supabase
-            .from('contacts')
-            .select('*', { count: 'exact', head: true });
-          setEstimatedReach(count ?? 0);
-        } else if (audience.type === 'tags' && audience.tagIds && audience.tagIds.length > 0) {
-          const { data: contactTags } = await supabase
-            .from('contact_tags')
-            .select('contact_id')
-            .in('tag_id', audience.tagIds);
+          const PAGE_SIZE = 1000;
+          let from = 0;
+          let to = PAGE_SIZE - 1;
+          let hasMore = true;
 
-          const uniqueIds = new Set((contactTags ?? []).map((ct) => ct.contact_id));
-          setEstimatedReach(uniqueIds.size);
+          while (hasMore) {
+            const { data } = await supabase
+              .from('contacts')
+              .select('id')
+              .range(from, to);
+
+            if (data && data.length > 0) {
+              for (const c of data) {
+                baseContactIds.add(c.id);
+              }
+              if (data.length < PAGE_SIZE) {
+                hasMore = false;
+              } else {
+                from += PAGE_SIZE;
+                to += PAGE_SIZE;
+              }
+            } else {
+              hasMore = false;
+            }
+          }
+        } else if (audience.type === 'tags' && audience.tagIds && audience.tagIds.length > 0) {
+          const PAGE_SIZE = 1000;
+          let from = 0;
+          let to = PAGE_SIZE - 1;
+          let hasMore = true;
+
+          while (hasMore) {
+            const { data: contactTags } = await supabase
+              .from('contact_tags')
+              .select('contact_id')
+              .in('tag_id', audience.tagIds)
+              .range(from, to);
+
+            if (contactTags && contactTags.length > 0) {
+              for (const ct of contactTags) {
+                baseContactIds.add(ct.contact_id);
+              }
+              if (contactTags.length < PAGE_SIZE) {
+                hasMore = false;
+              } else {
+                from += PAGE_SIZE;
+                to += PAGE_SIZE;
+              }
+            } else {
+              hasMore = false;
+            }
+          }
+        } else if (audience.type === 'custom_field' && audience.customField) {
+          const PAGE_SIZE = 1000;
+          let from = 0;
+          let to = PAGE_SIZE - 1;
+          let hasMore = true;
+
+          while (hasMore) {
+            let query = supabase
+              .from('contact_custom_values')
+              .select('contact_id')
+              .eq('custom_field_id', audience.customField.fieldId);
+
+            if (audience.customField.operator === 'is') query = query.eq('value', audience.customField.value);
+            else if (audience.customField.operator === 'is_not') query = query.neq('value', audience.customField.value);
+            else if (audience.customField.operator === 'contains') query = query.ilike('value', `%${audience.customField.value}%`);
+
+            const { data } = await query.range(from, to);
+
+            if (data && data.length > 0) {
+              for (const row of data) {
+                baseContactIds.add(row.contact_id);
+              }
+              if (data.length < PAGE_SIZE) {
+                hasMore = false;
+              } else {
+                from += PAGE_SIZE;
+                to += PAGE_SIZE;
+              }
+            } else {
+              hasMore = false;
+            }
+          }
+        } else if (audience.type === 'specific_contacts' && audience.includeContactIds) {
+          for (const id of audience.includeContactIds) {
+            baseContactIds.add(id);
+          }
         } else if (audience.type === 'csv' && audience.csvContacts) {
           setEstimatedReach(audience.csvContacts.length);
-        } else {
-          setEstimatedReach(0);
+          return;
         }
+
+        // Apply includeContactIds if specified alongside other filters
+        if (audience.type !== 'specific_contacts' && audience.includeContactIds && audience.includeContactIds.length > 0) {
+          for (const id of audience.includeContactIds) {
+            baseContactIds.add(id);
+          }
+        }
+
+        // Apply exclude tags
+        if (audience.excludeTagIds && audience.excludeTagIds.length > 0) {
+          const PAGE_SIZE = 1000;
+          let from = 0;
+          let to = PAGE_SIZE - 1;
+          let hasMore = true;
+          const excludedIds = new Set<string>();
+
+          while (hasMore) {
+            const { data: excludeRows } = await supabase
+              .from('contact_tags')
+              .select('contact_id')
+              .in('tag_id', audience.excludeTagIds)
+              .range(from, to);
+
+            if (excludeRows && excludeRows.length > 0) {
+              for (const r of excludeRows) {
+                excludedIds.add(r.contact_id);
+              }
+              if (excludeRows.length < PAGE_SIZE) {
+                hasMore = false;
+              } else {
+                from += PAGE_SIZE;
+                to += PAGE_SIZE;
+              }
+            } else {
+              hasMore = false;
+            }
+          }
+
+          for (const id of excludedIds) {
+            baseContactIds.delete(id);
+          }
+        }
+
+        // Apply exclude contact IDs
+        if (audience.excludeContactIds && audience.excludeContactIds.length > 0) {
+          for (const id of audience.excludeContactIds) {
+            baseContactIds.delete(id);
+          }
+        }
+
+        setEstimatedReach(baseContactIds.size);
+      } catch (err) {
+        console.error('Error estimating reach:', err);
       } finally {
         setLoadingReach(false);
       }

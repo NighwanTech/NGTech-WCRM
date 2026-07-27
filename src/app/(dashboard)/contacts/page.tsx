@@ -59,7 +59,7 @@ import { GatedButton } from '@/components/ui/gated-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { maskPhone } from '@/lib/masking';
 
-const PAGE_SIZE = 25;
+
 
 interface ContactWithTags extends Contact {
   tags?: Tag[];
@@ -76,6 +76,7 @@ export default function ContactsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
   const [totalCount, setTotalCount] = useState(0);
   // Tag filter — contacts shown must have ANY of these tags (OR).
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
@@ -93,6 +94,7 @@ export default function ContactsPage() {
   // Bulk selection (page-scoped — only the loaded rows are selectable)
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [selectAllInDb, setSelectAllInDb] = useState(false);
 
   // All tags for display
   const [tagsMap, setTagsMap] = useState<Record<string, Tag>>({});
@@ -125,9 +127,10 @@ export default function ContactsPage() {
     // referred to the old page/search results so the bulk bar can't
     // act on rows the user can no longer see.
     setSelected(new Set());
+    setSelectAllInDb(false);
 
-    const from = page * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
     const term = search.trim();
 
     let contactRows: Contact[];
@@ -141,7 +144,7 @@ export default function ContactsPage() {
       const { data, error } = await supabase.rpc('filter_contacts_by_tags', {
         p_tag_ids: selectedTagIds,
         p_search: term || null,
-        p_limit: PAGE_SIZE,
+        p_limit: pageSize,
         p_offset: from,
       });
       if (seq !== fetchSeq.current) return; // superseded by a newer fetch
@@ -207,7 +210,7 @@ export default function ContactsPage() {
 
     setContacts(enriched);
     setLoading(false);
-  }, [supabase, page, search, selectedTagIds, tagsMap]);
+  }, [supabase, page, search, selectedTagIds, tagsMap, pageSize]);
 
   // Load-once-on-mount-ish data fetches. Each setter inside runs
   // inside an async promise completion (Supabase await), not
@@ -278,6 +281,7 @@ export default function ContactsPage() {
       const next = new Set(prev);
       if (allOnPageSelected) {
         contacts.forEach((c) => next.delete(c.id));
+        setSelectAllInDb(false);
       } else {
         contacts.forEach((c) => next.add(c.id));
       }
@@ -286,6 +290,7 @@ export default function ContactsPage() {
   }
 
   function toggleSelect(id: string) {
+    setSelectAllInDb(false);
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -294,26 +299,110 @@ export default function ContactsPage() {
     });
   }
 
-  async function handleBulkDelete() {
-    const ids = [...selected];
-    if (ids.length === 0) return;
-    setDeleting(true);
+  async function fetchAllMatchingContactIds(): Promise<string[]> {
+    const term = search.trim();
+    const ids: string[] = [];
 
-    const { error } = await supabase.from('contacts').delete().in('id', ids);
+    if (selectedTagIds.length > 0) {
+      // Fetch all matching contact IDs from the tags filter RPC
+      const PAGE_SIZE = 1000;
+      let offset = 0;
+      let hasMore = true;
 
-    if (error) {
-      toast.error('Failed to delete contacts');
+      while (hasMore) {
+        const { data, error } = await supabase.rpc('filter_contacts_by_tags', {
+          p_tag_ids: selectedTagIds,
+          p_search: term || null,
+          p_limit: PAGE_SIZE,
+          p_offset: offset,
+        });
+
+        if (error) throw error;
+
+        const rows = (data ?? []) as { contact: Contact }[];
+        if (rows.length > 0) {
+          rows.forEach((r) => ids.push(r.contact.id));
+          if (rows.length < PAGE_SIZE) {
+            hasMore = false;
+          } else {
+            offset += PAGE_SIZE;
+          }
+        } else {
+          hasMore = false;
+        }
+      }
     } else {
-      toast.success(`${ids.length} contact${ids.length === 1 ? '' : 's'} deleted`);
-      setSelected(new Set());
-      fetchContacts();
+      const PAGE_SIZE = 1000;
+      let from = 0;
+      let to = PAGE_SIZE - 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        let query = supabase.from('contacts').select('id').range(from, to);
+        if (term) {
+          const like = `%${term}%`;
+          query = query.or(`name.ilike.${like},phone.ilike.${like},email.ilike.${like}`);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          data.forEach((c) => ids.push(c.id));
+          if (data.length < PAGE_SIZE) {
+            hasMore = false;
+          } else {
+            from += PAGE_SIZE;
+            to += PAGE_SIZE;
+          }
+        } else {
+          hasMore = false;
+        }
+      }
     }
 
-    setDeleting(false);
-    setBulkDeleteOpen(false);
+    return ids;
   }
 
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  async function handleBulkDelete() {
+    setDeleting(true);
+
+    try {
+      let idsToDelete: string[] = [];
+      if (selectAllInDb) {
+        idsToDelete = await fetchAllMatchingContactIds();
+      } else {
+        idsToDelete = [...selected];
+      }
+
+      if (idsToDelete.length === 0) {
+        setDeleting(false);
+        setBulkDeleteOpen(false);
+        return;
+      }
+
+      // Delete in chunks of 100 to avoid request length overflows
+      const BATCH_SIZE = 100;
+      for (let i = 0; i < idsToDelete.length; i += BATCH_SIZE) {
+        const batch = idsToDelete.slice(i, i + BATCH_SIZE);
+        const { error } = await supabase.from('contacts').delete().in('id', batch);
+        if (error) throw error;
+      }
+
+      toast.success(`${idsToDelete.length} contact${idsToDelete.length === 1 ? '' : 's'} deleted`);
+      setSelected(new Set());
+      setSelectAllInDb(false);
+      setPage(0);
+      fetchContacts();
+    } catch (error: any) {
+      toast.error(`Failed to delete contacts: ${error.message}`);
+    } finally {
+      setDeleting(false);
+      setBulkDeleteOpen(false);
+    }
+  }
+
+  const totalPages = Math.ceil(totalCount / pageSize);
   const hasNext = page < totalPages - 1;
   const hasPrev = page > 0;
 
@@ -499,30 +588,63 @@ export default function ContactsPage() {
 
       {/* Bulk action bar */}
       {selected.size > 0 && (
-        <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-muted/40 px-4 py-2">
-          <p className="text-sm text-foreground">
-            <span className="font-medium">{selected.size}</span>{' '}
-            {selected.size === 1 ? 'contact' : 'contacts'} selected
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelected(new Set())}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Clear
-            </Button>
-            <GatedButton
-              variant="destructive"
-              size="sm"
-              canAct={canEdit}
-              gateReason="delete contacts"
-              onClick={() => setBulkDeleteOpen(true)}
-            >
-              <Trash2 className="size-4" />
-              Delete selected
-            </GatedButton>
+        <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <p className="text-sm text-foreground">
+                {selectAllInDb ? (
+                  <>
+                    All <span className="font-bold text-primary">{totalCount}</span> contacts in this view are selected.
+                  </>
+                ) : (
+                  <>
+                    Selected <span className="font-semibold">{selected.size}</span> contact{selected.size === 1 ? '' : 's'}.
+                  </>
+                )}
+              </p>
+              {!selectAllInDb && allOnPageSelected && totalCount > contacts.length && (
+                <button
+                  onClick={() => setSelectAllInDb(true)}
+                  className="text-xs text-primary font-medium hover:underline text-left block"
+                >
+                  Select all {totalCount} contacts in this view
+                </button>
+              )}
+              {selectAllInDb && (
+                <button
+                  onClick={() => {
+                    setSelectAllInDb(false);
+                    setSelected(new Set());
+                  }}
+                  className="text-xs text-muted-foreground hover:text-foreground font-medium hover:underline text-left block"
+                >
+                  Clear selection
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSelected(new Set());
+                  setSelectAllInDb(false);
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Clear
+              </Button>
+              <GatedButton
+                variant="destructive"
+                size="sm"
+                canAct={canEdit}
+                gateReason="delete contacts"
+                onClick={() => setBulkDeleteOpen(true)}
+              >
+                <Trash2 className="size-4" />
+                Delete selected
+              </GatedButton>
+            </div>
           </div>
         </div>
       )}
@@ -692,35 +814,56 @@ export default function ContactsPage() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            Showing {page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, totalCount)} of{' '}
-            {totalCount}
-          </p>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon-sm"
-              disabled={!hasPrev}
-              onClick={() => setPage((p) => p - 1)}
-              className="border-border text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-            <span className="text-xs text-muted-foreground px-2">
-              Page {page + 1} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="icon-sm"
-              disabled={!hasNext}
-              onClick={() => setPage((p) => p + 1)}
-              className="border-border text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
-            >
-              <ChevronRight className="size-4" />
-            </Button>
+      {totalCount > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border pt-4">
+          <div className="flex items-center gap-4">
+            <p className="text-xs text-muted-foreground">
+              Showing {page * pageSize + 1}-{Math.min((page + 1) * pageSize, totalCount)} of{' '}
+              {totalCount}
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Rows per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setPageSize(val);
+                  setPage(0);
+                }}
+                className="bg-card border border-border text-foreground rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
           </div>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon-sm"
+                disabled={!hasPrev}
+                onClick={() => setPage((p) => p - 1)}
+                className="border-border text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <span className="text-xs text-muted-foreground px-2">
+                Page {page + 1} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                disabled={!hasNext}
+                onClick={() => setPage((p) => p + 1)}
+                className="border-border text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
+              >
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
@@ -793,12 +936,16 @@ export default function ContactsPage() {
         <DialogContent className="bg-popover border-border text-popover-foreground sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-popover-foreground">
-              Delete {selected.size} {selected.size === 1 ? 'Contact' : 'Contacts'}
+              {selectAllInDb ? (
+                <>Delete {totalCount} Contacts</>
+              ) : (
+                <>Delete {selected.size} {selected.size === 1 ? 'Contact' : 'Contacts'}</>
+              )}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground">
               Are you sure you want to delete{' '}
               <span className="text-popover-foreground font-medium">
-                {selected.size} {selected.size === 1 ? 'contact' : 'contacts'}
+                {selectAllInDb ? <>{totalCount} contacts</> : <>{selected.size} contact{selected.size === 1 ? '' : 's'}</>}
               </span>
               ? This action cannot be undone.
             </DialogDescription>

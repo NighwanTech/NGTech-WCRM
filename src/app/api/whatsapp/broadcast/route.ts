@@ -99,7 +99,7 @@ export async function POST(request: Request) {
       )
     }
 
-    let maxMessagesPm = 1000
+    let maxMessagesPm = 10000
     try {
       const adminClient = getAdminClient()
       const { data: acct } = await (adminClient as any)
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
           { status: 403 },
         )
       }
-      maxMessagesPm = acct?.max_messages_pm ?? 1000
+      maxMessagesPm = acct?.max_messages_pm ?? 10000
     } catch {
       // Ignore errors if columns aren't migrated
     }
