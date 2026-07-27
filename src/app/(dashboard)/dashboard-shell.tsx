@@ -58,13 +58,13 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
             <Header onOpenSidebar={() => setSidebarOpen(true)} />
           </>
         }
+        footer={<DashboardMobileBottomNav />}
         flush={isInbox}
       >
-        <div className="flex-1 flex flex-col min-h-0 h-full mb-24 md:mb-0">
+        <div className="flex-1 flex flex-col min-h-0 h-full">
           {children}
         </div>
       </AppShell>
-      <DashboardMobileBottomNav />
     </>
   );
 }

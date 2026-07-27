@@ -306,12 +306,13 @@ export function DrawerPanel({
 interface AppShellProps {
   sidebar: React.ReactNode;
   header: React.ReactNode;
+  footer?: React.ReactNode;
   children: React.ReactNode;
   /** When true, main area is flush (no padding) — e.g. Inbox */
   flush?: boolean;
 }
 
-export function AppShell({ sidebar, header, children, flush }: AppShellProps) {
+export function AppShell({ sidebar, header, footer, children, flush }: AppShellProps) {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {sidebar}
@@ -319,12 +320,13 @@ export function AppShell({ sidebar, header, children, flush }: AppShellProps) {
         {header}
         <main
           className={cn(
-            "flex-1 overflow-hidden",
+            "flex-1 min-h-0 overflow-hidden",
             !flush && "overflow-y-auto p-4 sm:p-6"
           )}
         >
           {children}
         </main>
+        {footer}
       </div>
     </div>
   );
