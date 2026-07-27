@@ -156,7 +156,12 @@ export function ConversationList({
     let result = conversations;
 
     if (filter === "hot_leads") {
-      result = result.filter((c: any) => c.ai_lead_score === "hot");
+      result = result.filter(
+        (c: any) =>
+          c.ai_lead_score === "hot" ||
+          c.ai_lead_score === "warm" ||
+          (c.last_message_text && c.last_message_text.includes("HOT_LEAD"))
+      );
     } else if (filter === "incoming") {
       result = result.filter((c: any) => c.routing_status === "unassigned" || c.routing_status === "needs_manual_review");
     } else if (filter === "my_queue") {
