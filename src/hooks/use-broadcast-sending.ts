@@ -64,7 +64,7 @@ interface UseBroadcastSendingReturn {
  * rate so a large broadcast never trips the upstream limiter.
  */
 const SEND_BATCH_SIZE = 10;
-const SEND_BATCH_DELAY_MS = 1000;
+const SEND_BATCH_DELAY_MS = 2000;
 
 /** `broadcast_recipients` inserts are independent of the send rate. */
 const INSERT_BATCH_SIZE = 200;
