@@ -320,9 +320,7 @@ export function AppShell({ sidebar, header, children, flush }: AppShellProps) {
         <main
           className={cn(
             "flex-1 overflow-hidden",
-            flush
-              ? "mb-16 md:mb-0"
-              : "overflow-y-auto p-4 sm:p-6 pb-20 md:pb-6"
+            !flush && "overflow-y-auto p-4 sm:p-6"
           )}
         >
           {children}
