@@ -662,24 +662,22 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
             resultsByPhone.set(r.phone, r);
           }
 
-          for (const recipient of batch) {
+          const updatePromises = batch.map((recipient) => {
             const phone = recipient.contact?.phone;
             const result = phone ? resultsByPhone.get(phone) : undefined;
 
             if (!result) {
-              failedCount++;
-              await supabase
+              return supabase
                 .from('broadcast_recipients')
                 .update({
                   status: 'failed',
                   error_message: 'No phone number on contact',
                 })
                 .eq('id', recipient.id);
-              continue;
             }
 
             if (result.status === 'sent') {
-              await supabase
+              return supabase
                 .from('broadcast_recipients')
                 .update({
                   status: 'sent',
@@ -689,8 +687,7 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
                 })
                 .eq('id', recipient.id);
             } else {
-              failedCount++;
-              await supabase
+              return supabase
                 .from('broadcast_recipients')
                 .update({
                   status: 'failed',
@@ -698,18 +695,38 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
                 })
                 .eq('id', recipient.id);
             }
+          });
+
+          // Execute all updates in parallel
+          const updateResults = await Promise.all(updatePromises);
+          
+          // Check for database errors
+          for (const res of updateResults) {
+            if (res.error) {
+              console.error('Failed to update recipient status:', res.error);
+            }
+          }
+
+          // Calculate batch failed counts
+          for (const recipient of batch) {
+            const phone = recipient.contact?.phone;
+            const result = phone ? resultsByPhone.get(phone) : undefined;
+            if (!result || result.status !== 'sent') {
+              failedCount++;
+            }
           }
         } catch (err) {
-          for (const recipient of batch) {
-            failedCount++;
-            await supabase
+          const updatePromises = batch.map((recipient) =>
+            supabase
               .from('broadcast_recipients')
               .update({
                 status: 'failed',
                 error_message: err instanceof Error ? err.message : 'Unknown error',
               })
-              .eq('id', recipient.id);
-          }
+              .eq('id', recipient.id)
+          );
+          await Promise.all(updatePromises);
+          failedCount += batch.length;
         }
 
         const progressPct =
