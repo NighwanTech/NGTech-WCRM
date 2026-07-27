@@ -11,6 +11,7 @@ import { AIProviderService } from '@/lib/services/ai/provider.service'
 import { AIPromptService } from '@/lib/services/ai/prompt.service'
 import { AIAnalyticsService } from '@/lib/services/ai/analytics.service'
 import { AIClassificationService } from '@/lib/services/ai/classification.service'
+import { AIUsageService } from '@/lib/services/ai/ai-usage.service'
 import {
   handleTemplateWebhookChange,
   isTemplateWebhookField,
@@ -929,7 +930,7 @@ async function processMessage(
       await (async () => {
         try {
           const analysisModel = AIProviderService.getModel(analysisProvider, analysisModelName);
-          const { object } = await generateObject({
+          const { object, usage } = await generateObject({
             model: analysisModel as any,
             schema: z.object({
               sentiment: z.enum(['positive', 'neutral', 'negative']),
@@ -941,6 +942,17 @@ async function processMessage(
             prompt: `Analyze the following customer message to determine their sentiment, lead temperature, primary topic, language, and suggested tags.
 Message: "${inboundText}"`,
           });
+          
+          if (usage) {
+            await AIUsageService.logUsage({
+              accountId,
+              provider: analysisProvider,
+              model: analysisModelName,
+              feature: 'sentiment_analysis',
+              promptTokens: usage.promptTokens || 0,
+              completionTokens: usage.completionTokens || 0,
+            });
+          }
           
           detectedLanguage = object.language;
           detectedIntent = object.topic;
@@ -1157,6 +1169,17 @@ Message: "${inboundText}"`,
                   frequencyPenalty: aiConfig?.advanced_settings?.frequency_penalty || undefined,
                   presencePenalty: aiConfig?.advanced_settings?.presence_penalty || undefined,
                 });
+                
+                if (result.usage) {
+                  await AIUsageService.logUsage({
+                    accountId,
+                    provider,
+                    model: modelName,
+                    feature: 'auto_reply',
+                    promptTokens: result.usage.promptTokens || 0,
+                    completionTokens: result.usage.completionTokens || 0,
+                  });
+                }
                 
                 const handoffMatch = result.text.match(/\[HANDOFF:\s*(.*?)\]/i);
                 
