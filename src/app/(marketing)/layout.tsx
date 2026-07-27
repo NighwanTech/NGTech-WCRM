@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { LanguageSwitcher } from '@/components/layout/language-switcher'
 import { MarketingMobileMenu } from '@/components/layout/marketing-mobile-menu'
 import { AiChatbot } from '@/components/marketing/ai-chatbot'
+import { Breadcrumbs } from '@/components/layout/breadcrumbs'
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -60,6 +61,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
 
       {/* ─── Main Content ─── */}
       <main className="flex-1">
+        <Breadcrumbs />
         {children}
       </main>
 

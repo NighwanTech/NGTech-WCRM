@@ -267,12 +267,41 @@ export default async function CitySEOPage({ params }: { params: Promise<{ city: 
     priceRange: '₹₹',
   };
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://ngtechwcrm.nighwantech.com',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'WhatsApp CRM',
+        item: 'https://ngtechwcrm.nighwantech.com/whatsapp-crm-near-me',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: data.name,
+        item: `https://ngtechwcrm.nighwantech.com/whatsapp-crm/${resolvedParams.city}`,
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground relative">
       {/* Schema.org Structured Data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       {/* Navigation Header */}
