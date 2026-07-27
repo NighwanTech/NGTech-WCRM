@@ -63,8 +63,8 @@ interface UseBroadcastSendingReturn {
  * and keeps us comfortably under Meta's per-phone-number messaging
  * rate so a large broadcast never trips the upstream limiter.
  */
-const SEND_BATCH_SIZE = 10;
-const SEND_BATCH_DELAY_MS = 2000;
+const SEND_BATCH_SIZE = 5;
+const SEND_BATCH_DELAY_MS = 2500;
 
 /** `broadcast_recipients` inserts are independent of the send rate. */
 const INSERT_BATCH_SIZE = 200;
@@ -125,7 +125,7 @@ export function resolveVariables(
  * Bulk-fetch contact_custom_values for a set of contacts. Returns an
  * index keyed by contact_id → field_id → value.
  */
-async function fetchCustomValueIndex(
+export async function fetchCustomValueIndex(
   supabase: ReturnType<typeof createClient>,
   contactIds: string[],
 ): Promise<CustomValueIndex> {

@@ -21,7 +21,7 @@ const formatWhatsAppText = (text: string) => {
     .replace(/\*(.*?)\*/g, '<strong>$1</strong>')
     .replace(/_(.*?)_/g, '<em>$1</em>')
     .replace(/~(.*?)~/g, '<del>$1</del>')
-    .replace(/```(.*?)```/gs, '<code class="bg-black/30 px-1.5 py-0.5 rounded font-mono text-xs">$1</code>');
+    .replace(/```([\s\S]*?)```/g, '<code class="bg-black/30 px-1.5 py-0.5 rounded font-mono text-xs">$1</code>');
     
   return <span dangerouslySetInnerHTML={{ __html: formatted.replace(/\n/g, '<br />') }} />;
 };

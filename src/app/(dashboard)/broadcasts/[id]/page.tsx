@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Broadcast, BroadcastRecipient, RecipientStatus } from '@/types';
@@ -32,12 +32,17 @@ import {
   Download,
   ChevronDown,
   Trash2,
+  RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   getBroadcastStatus,
   getRecipientStatus,
 } from '@/lib/broadcast-status';
+import {
+  fetchCustomValueIndex,
+  resolveVariables,
+} from '@/hooks/use-broadcast-sending';
 
 interface StatCardProps {
   label: string;
@@ -155,38 +160,182 @@ export default function BroadcastDetailPage() {
   );
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+  const [retryProgress, setRetryProgress] = useState(0);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const supabase = createClient();
+
+      const { data: bc, error: bcError } = await supabase
+        .from('broadcasts')
+        .select('*')
+        .eq('id', broadcastId)
+        .single();
+
+      if (bcError) throw bcError;
+      setBroadcast(bc);
+
+      const { data: recs, error: recsError } = await supabase
+        .from('broadcast_recipients')
+        .select('*, contact:contacts(*)')
+        .eq('broadcast_id', broadcastId)
+        .order('created_at', { ascending: false });
+
+      if (recsError) throw recsError;
+      setRecipients(recs ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load broadcast');
+    } finally {
+      setLoading(false);
+    }
+  }, [broadcastId]);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const supabase = createClient();
-
-        const { data: bc, error: bcError } = await supabase
-          .from('broadcasts')
-          .select('*')
-          .eq('id', broadcastId)
-          .single();
-
-        if (bcError) throw bcError;
-        setBroadcast(bc);
-
-        const { data: recs, error: recsError } = await supabase
-          .from('broadcast_recipients')
-          .select('*, contact:contacts(*)')
-          .eq('broadcast_id', broadcastId)
-          .order('created_at', { ascending: false });
-
-        if (recsError) throw recsError;
-        setRecipients(recs ?? []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load broadcast');
-      } finally {
-        setLoading(false);
-      }
-    }
-
     fetchData();
-  }, [broadcastId]);
+  }, [fetchData]);
+
+  const failedRecipients = useMemo(
+    () => recipients.filter((r) => r.status === 'failed'),
+    [recipients],
+  );
+
+  async function handleRetryFailed() {
+    if (!broadcast || failedRecipients.length === 0 || retrying) return;
+
+    setRetrying(true);
+    setRetryProgress(0);
+    const supabase = createClient();
+
+    try {
+      const contactIds = failedRecipients
+        .map((r) => r.contact?.id)
+        .filter((id): id is string => Boolean(id));
+
+      const customValueIndex = await fetchCustomValueIndex(supabase, contactIds);
+
+      const RETRY_BATCH_SIZE = 5;
+      const RETRY_BATCH_DELAY_MS = 2500;
+      let retriedSent = 0;
+      let retriedFailed = 0;
+
+      for (let i = 0; i < failedRecipients.length; i += RETRY_BATCH_SIZE) {
+        const batch = failedRecipients.slice(i, i + RETRY_BATCH_SIZE);
+
+        const apiRecipients = batch
+          .filter((r) => r.contact?.phone)
+          .map((r) => ({
+            phone: r.contact!.phone as string,
+            params: r.contact
+              ? resolveVariables(
+                  (broadcast.template_variables as any) ?? {},
+                  r.contact,
+                  customValueIndex.get(r.contact.id),
+                )
+              : [],
+          }));
+
+        if (apiRecipients.length > 0) {
+          try {
+            const res = await fetch('/api/whatsapp/broadcast', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                recipients: apiRecipients,
+                template_name: broadcast.template_name,
+                template_language: broadcast.template_language ?? 'en_US',
+              }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.results) {
+              const resultsByPhone = new Map<string, any>();
+              for (const r of data.results) {
+                resultsByPhone.set(r.phone, r);
+              }
+
+              for (const recipient of batch) {
+                const phone = recipient.contact?.phone;
+                const result = phone ? resultsByPhone.get(phone) : undefined;
+
+                if (result && result.status === 'sent') {
+                  await supabase
+                    .from('broadcast_recipients')
+                    .update({
+                      status: 'sent',
+                      sent_at: new Date().toISOString(),
+                      whatsapp_message_id: result.whatsapp_message_id ?? null,
+                      error_message: null,
+                    })
+                    .eq('id', recipient.id);
+                  retriedSent++;
+                } else {
+                  const errorMsg = result?.error ?? 'Unknown retry error';
+                  await supabase
+                    .from('broadcast_recipients')
+                    .update({
+                      status: 'failed',
+                      error_message: errorMsg,
+                    })
+                    .eq('id', recipient.id);
+                  retriedFailed++;
+                }
+              }
+            } else {
+              const errorMsg = data.error || 'Retry API request failed';
+              for (const recipient of batch) {
+                await supabase
+                  .from('broadcast_recipients')
+                  .update({
+                    status: 'failed',
+                    error_message: errorMsg,
+                  })
+                  .eq('id', recipient.id);
+                retriedFailed++;
+              }
+            }
+          } catch (err) {
+            const errorMsg =
+              err instanceof Error ? err.message : 'Unknown retry error';
+            for (const recipient of batch) {
+              await supabase
+                .from('broadcast_recipients')
+                .update({
+                  status: 'failed',
+                  error_message: errorMsg,
+                })
+                .eq('id', recipient.id);
+              retriedFailed++;
+            }
+          }
+        }
+
+        const pct = Math.round(
+          ((i + batch.length) / failedRecipients.length) * 100,
+        );
+        setRetryProgress(pct);
+
+        if (i + RETRY_BATCH_SIZE < failedRecipients.length) {
+          await new Promise((res) => setTimeout(res, RETRY_BATCH_DELAY_MS));
+        }
+      }
+
+      toast.success(
+        `Retry completed: ${retriedSent} sent successfully, ${retriedFailed} failed.`,
+      );
+      await fetchData();
+    } catch (err) {
+      toast.error(
+        `Error retrying failed messages: ${
+          err instanceof Error ? err.message : 'Unknown error'
+        }`,
+      );
+    } finally {
+      setRetrying(false);
+      setRetryProgress(0);
+    }
+  }
 
   const filteredRecipients = useMemo(
     () =>
@@ -303,48 +452,72 @@ export default function BroadcastDetailPage() {
           </div>
         </div>
 
-        {/* Delete — inline-confirm pattern matches the pipeline-settings
-            "Delete Pipeline" flow. Mid-send broadcasts can't be deleted
-            because orphaning in-flight Meta messages would leave the
-            funnel inconsistent. */}
-        {confirmDelete ? (
-          <div className="flex items-center gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-sm">
-            <span className="text-red-300">Delete this broadcast?</span>
+        <div className="flex items-center gap-2">
+          {failedRecipients.length > 0 && (
+            <Button
+              variant="default"
+              size="sm"
+              disabled={retrying || broadcast.status === 'sending'}
+              onClick={handleRetryFailed}
+              className="bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50"
+            >
+              {retrying ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  Retrying ({retryProgress}%)…
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                  Retry ({failedRecipients.length}) Failed
+                </>
+              )}
+            </Button>
+          )}
+
+          {/* Delete — inline-confirm pattern matches the pipeline-settings
+              "Delete Pipeline" flow. Mid-send broadcasts can't be deleted
+              because orphaning in-flight Meta messages would leave the
+              funnel inconsistent. */}
+          {confirmDelete ? (
+            <div className="flex items-center gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-sm">
+              <span className="text-red-300">Delete this broadcast?</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmDelete(false)}
+                disabled={deleting}
+                className="h-7 border-border bg-transparent text-muted-foreground hover:bg-muted"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="h-7 bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleting ? 'Deleting…' : 'Confirm'}
+              </Button>
+            </div>
+          ) : (
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setConfirmDelete(false)}
-              disabled={deleting}
-              className="h-7 border-border bg-transparent text-muted-foreground hover:bg-muted"
+              disabled={broadcast.status === 'sending'}
+              onClick={() => setConfirmDelete(true)}
+              title={
+                broadcast.status === 'sending'
+                  ? 'Cannot delete while a broadcast is actively sending'
+                  : 'Delete this broadcast'
+              }
+              className="border-red-500/30 bg-transparent text-red-400 hover:bg-red-500/10 disabled:opacity-40"
             >
-              Cancel
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete
             </Button>
-            <Button
-              size="sm"
-              onClick={handleDelete}
-              disabled={deleting}
-              className="h-7 bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-            >
-              {deleting ? 'Deleting…' : 'Confirm'}
-            </Button>
-          </div>
-        ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={broadcast.status === 'sending'}
-            onClick={() => setConfirmDelete(true)}
-            title={
-              broadcast.status === 'sending'
-                ? 'Cannot delete while a broadcast is actively sending'
-                : 'Delete this broadcast'
-            }
-            className="border-red-500/30 bg-transparent text-red-400 hover:bg-red-500/10 disabled:opacity-40"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            Delete
-          </Button>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Stats — 6 cards: Total / Sent / Delivered / Read / Replied / Failed */}
@@ -444,6 +617,20 @@ export default function BroadcastDetailPage() {
               </DropdownMenuContent>
             </DropdownMenu>
 
+            {failedRecipients.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRetryFailed}
+                disabled={retrying || broadcast.status === 'sending'}
+                className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${retrying ? 'animate-spin' : ''}`} />
+                {retrying
+                  ? `Retrying (${retryProgress}%)`
+                  : `Retry ${failedRecipients.length} Failed`}
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"

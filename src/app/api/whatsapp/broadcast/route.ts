@@ -10,11 +10,7 @@ import {
   phoneVariants,
   isRecipientNotAllowedError,
 } from '@/lib/whatsapp/phone-utils'
-import {
-  checkRateLimit,
-  rateLimitResponse,
-  RATE_LIMITS,
-} from '@/lib/rate-limit'
+
 import { getAdminClient } from '@/lib/admin-supabase'
 import { getMessageUsageThisMonth } from '@/lib/usage-tracking'
 import { checkMessageLimit } from '@/lib/plan-limits'
@@ -74,13 +70,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Per-user broadcast budget. Note: this limits how often a user
-    // can *start* a campaign, not how many messages go out inside
-    // one — the fan-out loop below runs without additional gating.
-    const limit = checkRateLimit(`broadcast:${user.id}`, RATE_LIMITS.broadcast)
-    if (!limit.success) {
-      return rateLimitResponse(limit)
-    }
+
 
     // Resolve the caller's account_id. whatsapp_config + templates
     // + broadcasts are all account-scoped post-multi-user, so the
@@ -107,7 +97,7 @@ export async function POST(request: Request) {
         .select('status, max_messages_pm')
         .eq('id', accountId)
         .maybeSingle()
-      
+
       if (acct?.status && acct.status !== 'active') {
         return NextResponse.json(
           { error: 'Your account has been suspended. Please contact support.' },
