@@ -31,63 +31,110 @@ export default async function MarketingHomePage() {
     <div className="flex flex-col">
 
       {/* ══════════════════════════════════════════════════════════
-          HERO SECTION
+          HERO SECTION — AI-POWERED REVENUE ENGINE
           ══════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden pt-24 pb-32 lg:pt-32 lg:pb-44">
-        {/* Ambient background blobs */}
-        <div className="absolute top-[-100px] left-1/4 w-[500px] h-[500px] bg-primary/20 blur-[150px] rounded-full pointer-events-none -z-10 animate-pulse-slow" />
-        <div className="absolute top-[100px] right-1/4 w-[400px] h-[400px] bg-blue-500/15 blur-[130px] rounded-full pointer-events-none -z-10 animate-pulse-slow" style={{ animationDelay: '3s' }} />
+      <section className="relative overflow-hidden pt-20 pb-28 lg:pt-28 lg:pb-40">
+        {/* Ambient background blobs & glow */}
+        <div className="absolute top-[-100px] left-1/4 w-[500px] h-[500px] bg-emerald-500/20 blur-[160px] rounded-full pointer-events-none -z-10 animate-pulse" />
+        <div className="absolute top-[100px] right-1/4 w-[450px] h-[450px] bg-blue-500/15 blur-[140px] rounded-full pointer-events-none -z-10 animate-pulse" style={{ animationDelay: '2s' }} />
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-gradient-to-b from-transparent to-background pointer-events-none -z-10" />
 
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          {/* Pill Badge */}
-          <div className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/5 backdrop-blur-sm px-4 py-1.5 text-xs sm:text-sm font-medium text-primary mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <span className="flex h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400 mr-2.5 animate-pulse" />
-            <span className="tracking-wide">Introducing NGTech WCRM 2.0 — The Ultimate WhatsApp Platform</span>
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-8">
+          {/* AI Pill Badge */}
+          <div className="inline-flex items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-md px-4 py-1.5 text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <Sparkles className="h-4 w-4 text-emerald-500 mr-2 animate-bounce" />
+            <span className="tracking-wide">Powered by Gemini 1.5 Pro AI & Meta Official WhatsApp API</span>
           </div>
 
-          {/* Main Heading */}
-          <h1 className="text-4xl md:text-6xl lg:text-[4.5rem] font-extrabold tracking-tight text-foreground mb-6 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100 max-w-4xl mx-auto leading-[1.1]">
+          {/* Main AI Heading */}
+          <h1 className="text-4xl md:text-6xl lg:text-[4.5rem] font-black tracking-tight text-foreground max-w-4xl mx-auto leading-[1.1] animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
             Turn WhatsApp into your{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-400 to-violet-500">
-              Revenue Engine
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-500 drop-shadow-sm">
+              AI-Powered Revenue Engine
             </span>
           </h1>
 
-          {/* Subtitle */}
-          <p className="text-base md:text-lg text-muted-foreground/80 mb-10 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 leading-relaxed">
-            The all-in-one CRM and Shared Team Inbox built for ambitious Indian businesses. Automate support, launch broadcast campaigns, and close more deals directly on WhatsApp.
+          {/* AI Subtitle */}
+          <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 leading-relaxed font-normal">
+            Automate <strong className="text-foreground font-semibold">90% of customer support</strong> with 24/7 Gemini AI Agents, qualify leads in 2 seconds with real-time AI intent scoring, and launch Meta-approved broadcast campaigns that convert.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-in fade-in slide-in-from-bottom-10 duration-700 delay-300">
+          {/* Floating AI Micro-Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs font-bold text-muted-foreground animate-in fade-in slide-in-from-bottom-9 duration-700 delay-250">
+            <span className="px-3.5 py-1.5 rounded-full bg-card border border-border shadow-sm flex items-center gap-1.5 text-foreground">
+              🤖 24/7 Gemini AI Support
+            </span>
+            <span className="px-3.5 py-1.5 rounded-full bg-card border border-border shadow-sm flex items-center gap-1.5 text-foreground">
+              🔥 AI Lead Intent Scoring
+            </span>
+            <span className="px-3.5 py-1.5 rounded-full bg-card border border-border shadow-sm flex items-center gap-1.5 text-foreground">
+              💬 Shared Multi-Agent Inbox
+            </span>
+            <span className="px-3.5 py-1.5 rounded-full bg-card border border-border shadow-sm flex items-center gap-1.5 text-foreground">
+              ⚡ Meta Green Tick Partner
+            </span>
+          </div>
+
+          {/* CTA Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 animate-in fade-in slide-in-from-bottom-10 duration-700 delay-300">
             <Link
               href="/free-trial"
-              className="flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-primary to-primary/80 px-8 text-sm font-semibold text-primary-foreground transition-all duration-300 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.03] w-full sm:w-auto"
+              className="flex h-13 items-center justify-center rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-9 text-base transition-all duration-300 shadow-xl shadow-emerald-500/20 hover:scale-[1.03] w-full sm:w-auto gap-2"
             >
-              Start 7-Day Free Trial
+              Start 14-Day Free Trial <ArrowRight className="h-5 w-5" />
             </Link>
             <Link
               href="/book-demo"
-              className="flex h-12 items-center justify-center rounded-full border border-border/60 bg-card/50 backdrop-blur-sm px-8 text-sm font-semibold text-foreground transition-all duration-300 hover:bg-card hover:border-primary/30 w-full sm:w-auto group"
+              className="flex h-13 items-center justify-center rounded-full border-2 border-emerald-500/40 bg-card/60 backdrop-blur-sm px-9 text-base font-bold text-foreground transition-all duration-300 hover:bg-emerald-500/10 w-full sm:w-auto group"
             >
-              Book a Demo
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+              Book AI Live Demo
             </Link>
           </div>
-          <p className="mt-4 text-[11px] tracking-wide uppercase text-muted-foreground/50 animate-in fade-in duration-700 delay-500">
-            No credit card required · Setup in 5 minutes
+          <p className="text-xs font-semibold text-muted-foreground/70 animate-in fade-in duration-700 delay-500">
+            ✓ 14-Day Free Trial · ✓ Zero Credit Card Required · ✓ 10-Minute Instant Setup
           </p>
         </div>
 
-        {/* Dashboard / Video Mockup */}
-        <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 mt-16 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-500">
-          <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-primary/30 via-border/20 to-transparent shadow-2xl shadow-primary/10">
+        {/* Dashboard Video & Live AI Agent Simulation Mockup */}
+        <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 mt-16 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-500 space-y-6">
+          {/* Live AI Agent Simulation Banner */}
+          <div className="rounded-2xl border border-emerald-500/30 bg-card/90 backdrop-blur-xl p-5 shadow-2xl space-y-3 max-w-2xl mx-auto">
+            <div className="flex items-center justify-between border-b border-border pb-2.5">
+              <div className="flex items-center gap-2">
+                <Bot className="h-5 w-5 text-emerald-500 animate-pulse" />
+                <span className="text-xs font-extrabold text-foreground tracking-wide">Gemini 1.5 Pro AI Agent — Live Conversation</span>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 text-[10px] font-bold">
+                ⚡ 2s Response Uptime
+              </span>
+            </div>
+
+            <div className="space-y-2.5 text-xs text-left">
+              <div className="p-3 rounded-xl bg-muted/60 border border-border flex items-start gap-2.5">
+                <span className="h-6 w-6 rounded-full bg-blue-500/20 text-blue-500 flex items-center justify-center font-bold shrink-0 text-[10px]">👤</span>
+                <div>
+                  <p className="font-bold text-foreground">Inbound Customer Inquiry</p>
+                  <p className="text-muted-foreground">"Looking for WhatsApp API & CRM pricing for our business in India..."</p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-2.5">
+                <Bot className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-emerald-600 dark:text-emerald-400">Gemini AI Automated Auto-Reply (2s)</p>
+                  <p className="text-foreground font-medium">"Sent pricing catalog PDF 📄 & auto-tagged HOT 🔥 lead for senior sales rep!"</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Demo Video Frame */}
+          <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-emerald-500/40 via-border/30 to-transparent shadow-2xl shadow-emerald-500/10">
             <div className="rounded-2xl bg-card/80 backdrop-blur-xl p-2 overflow-hidden">
               <div className="rounded-xl overflow-hidden border border-border/30 bg-background aspect-video relative">
                 <iframe
                   src="https://www.youtube.com/embed/mNGn31almlY?rel=0"
-                  title="NGTech WCRM Platform Demo"
+                  title="NGTech WCRM AI Platform Demo"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                   className="absolute inset-0 w-full h-full border-0"
