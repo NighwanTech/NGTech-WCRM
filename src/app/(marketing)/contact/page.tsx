@@ -109,7 +109,7 @@ export default function ContactPage() {
             <p className="text-xs font-semibold text-foreground leading-snug">
               Nighwan Technology Pvt. Ltd.
             </p>
-            <p className="text-xs text-muted-foreground">New Delhi, India</p>
+            <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Hyderabad, Telangana (TS), India</p>
           </div>
         </div>
 

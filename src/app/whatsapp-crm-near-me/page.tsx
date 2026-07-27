@@ -60,14 +60,14 @@ export default function NearMeSEOPage() {
     priceRange: '₹₹',
     address: {
       '@type': 'PostalAddress',
-      addressLocality: 'New Delhi',
-      addressRegion: 'Delhi',
+      addressLocality: 'Hyderabad',
+      addressRegion: 'Telangana',
       addressCountry: 'IN',
     },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: 28.6139,
-      longitude: 77.209,
+      latitude: 17.385,
+      longitude: 78.4867,
     },
     areaServed: 'IN',
   };

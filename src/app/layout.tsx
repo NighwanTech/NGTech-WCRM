@@ -199,8 +199,8 @@ export default async function RootLayout({
               "telephone": "+91 8985025794",
               "address": {
                 "@type": "PostalAddress",
-                "addressLocality": "New Delhi",
-                "addressRegion": "Delhi",
+                "addressLocality": "Hyderabad",
+                "addressRegion": "Telangana",
                 "addressCountry": "IN"
               },
               "areaServed": ["IN", "US", "AE", "GB", "SG"],
