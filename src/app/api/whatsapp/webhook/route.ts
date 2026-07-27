@@ -920,7 +920,7 @@ async function processMessage(
     const analysisProvider = aiConfig?.provider || 'groq';
     const analysisModelName = analysisProvider === 'groq' 
       ? 'llama-3.1-8b-instant'
-      : (analysisProvider === 'gemini' ? 'gemini-1.5-flash' : (aiConfig?.model || 'llama-3.1-8b-instant'));
+      : (analysisProvider === 'gemini' ? (aiConfig?.model || 'gemini-2.5-flash') : (aiConfig?.model || 'llama-3.1-8b-instant'));
     const hasAnalysisKey = analysisProvider === 'groq' ? !!process.env.GROQ_API_KEY
       : analysisProvider === 'gemini' ? !!process.env.GOOGLE_GENERATIVE_AI_API_KEY
       : !!process.env.GROQ_API_KEY; // fallback
