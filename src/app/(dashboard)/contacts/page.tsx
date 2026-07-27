@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import type { Contact, Tag, ContactTag } from '@/types';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -61,10 +62,9 @@ import { GatedButton } from '@/components/ui/gated-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { maskPhone } from '@/lib/masking';
 
-
-
 interface ContactWithTags extends Contact {
   tags?: Tag[];
+  ai_lead_score?: 'hot' | 'warm' | 'cold' | null;
 }
 
 export default function ContactsPage() {
@@ -82,6 +82,8 @@ export default function ContactsPage() {
   const [totalCount, setTotalCount] = useState(0);
   // Tag filter — contacts shown must have ANY of these tags (OR).
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  // Quick AI Hot Leads filter
+  const [onlyHotLeads, setOnlyHotLeads] = useState(false);
 
   // Modals
   const [formOpen, setFormOpen] = useState(false);
@@ -138,7 +140,61 @@ export default function ContactsPage() {
     let contactRows: Contact[];
     let count: number;
 
-    if (selectedTagIds.length > 0) {
+    if (onlyHotLeads) {
+      // Database-wide fetch for Hot & Warm leads across all 484+ contacts
+      const [{ data: hotConvs }, { data: hotTags }] = await Promise.all([
+        supabase
+          .from('conversations')
+          .select('contact_id')
+          .in('ai_lead_score', ['hot', 'warm']),
+        supabase
+          .from('tags')
+          .select('id, name')
+          .or('name.ilike.%hot%,name.ilike.%interested%,name.ilike.%urgent%,name.ilike.%sunil%,name.ilike.%follow-up%,name.ilike.%pricing%'),
+      ]);
+
+      let tagContactIds: string[] = [];
+      if (hotTags && hotTags.length > 0) {
+        const tagIds = hotTags.map((t) => t.id);
+        const { data: ctData } = await supabase
+          .from('contact_tags')
+          .select('contact_id')
+          .in('tag_id', tagIds);
+        tagContactIds = (ctData ?? []).map((ct) => ct.contact_id);
+      }
+
+      const convContactIds = (hotConvs ?? []).map((c) => c.contact_id).filter(Boolean) as string[];
+      const combinedIds = Array.from(new Set([...convContactIds, ...tagContactIds]));
+
+      if (combinedIds.length === 0) {
+        setContacts([]);
+        setTotalCount(0);
+        setLoading(false);
+        return;
+      }
+
+      let query = supabase
+        .from('contacts')
+        .select('*', { count: 'exact' })
+        .in('id', combinedIds)
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (term) {
+        const like = `%${term}%`;
+        query = query.or(`name.ilike.${like},phone.ilike.${like},email.ilike.${like}`);
+      }
+
+      const { data, count: exactCount, error } = await query;
+      if (seq !== fetchSeq.current) return;
+      if (error) {
+        toast.error('Failed to load hot contacts');
+        setLoading(false);
+        return;
+      }
+      contactRows = data ?? [];
+      count = exactCount ?? 0;
+    } else if (selectedTagIds.length > 0) {
       // Tag filter active — resolve it server-side (join + distinct +
       // windowed total count + pagination) so a tag covering many
       // contacts can't silently truncate the result or overflow an IN
@@ -189,12 +245,20 @@ export default function ContactsPage() {
       return;
     }
 
-    // Fetch tags for these contacts
+    // Fetch tags and AI lead scores for these contacts
     const contactIds = contactRows.map((c) => c.id);
-    const { data: contactTags } = await supabase
-      .from('contact_tags')
-      .select('contact_id, tag_id')
-      .in('contact_id', contactIds);
+    const [{ data: contactTags }, { data: convScores }] = await Promise.all([
+      supabase
+        .from('contact_tags')
+        .select('contact_id, tag_id')
+        .in('contact_id', contactIds),
+      supabase
+        .from('conversations')
+        .select('contact_id, ai_lead_score')
+        .in('contact_id', contactIds)
+        .order('last_message_at', { ascending: false }),
+    ]);
+    
     if (seq !== fetchSeq.current) return; // superseded by a newer fetch
 
     const tagsByContact: Record<string, string[]> = {};
@@ -203,8 +267,16 @@ export default function ContactsPage() {
       tagsByContact[ct.contact_id].push(ct.tag_id);
     });
 
+    const leadScoreMap: Record<string, 'hot' | 'warm' | 'cold'> = {};
+    convScores?.forEach((cs) => {
+      if (cs.contact_id && cs.ai_lead_score && !leadScoreMap[cs.contact_id]) {
+        leadScoreMap[cs.contact_id] = cs.ai_lead_score as any;
+      }
+    });
+
     const enriched: ContactWithTags[] = contactRows.map((c) => ({
       ...c,
+      ai_lead_score: leadScoreMap[c.id] || null,
       tags: (tagsByContact[c.id] ?? [])
         .map((tid) => tagsMap[tid])
         .filter(Boolean),
@@ -212,7 +284,20 @@ export default function ContactsPage() {
 
     setContacts(enriched);
     setLoading(false);
-  }, [supabase, page, search, selectedTagIds, tagsMap, pageSize]);
+  }, [supabase, page, search, selectedTagIds, onlyHotLeads, tagsMap, pageSize]);
+
+  const displayedContacts = useMemo(() => {
+    if (!onlyHotLeads) return contacts;
+    return contacts.filter(
+      (c) =>
+        c.ai_lead_score === 'hot' ||
+        c.ai_lead_score === 'warm' ||
+        c.tags?.some((t) => {
+          const n = t.name.toLowerCase();
+          return n.includes('hot') || n.includes('interested') || n.includes('urgent') || n.includes('follow-up') || n.includes('pricing');
+        })
+    );
+  }, [contacts, onlyHotLeads]);
 
   // Load-once-on-mount-ish data fetches. Each setter inside runs
   // inside an async promise completion (Supabase await), not
@@ -550,6 +635,28 @@ export default function ContactsPage() {
               )}
             </PopoverContent>
           </Popover>
+
+          <Button
+            variant={onlyHotLeads ? "default" : "outline"}
+            onClick={() => {
+              setOnlyHotLeads(!onlyHotLeads);
+              setPage(0);
+            }}
+            className={cn(
+              "shrink-0 transition-all font-semibold gap-1.5 border px-3 py-2 text-xs rounded-md shadow-sm",
+              onlyHotLeads 
+                ? "bg-red-600 hover:bg-red-700 text-white border-red-600 shadow-md ring-2 ring-red-500/30" 
+                : "border-red-500/40 text-red-500 hover:bg-red-500/10 hover:border-red-500"
+            )}
+          >
+            <Flame className={cn("size-4", onlyHotLeads ? "fill-white text-white animate-pulse" : "fill-red-500 text-red-500")} />
+            <span>Hot Leads 🔥</span>
+            {onlyHotLeads && (
+              <span className="ml-1 bg-white/20 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                ACTIVE
+              </span>
+            )}
+          </Button>
         </div>
 
         {/* Active tag-filter chips */}
@@ -684,17 +791,17 @@ export default function ContactsPage() {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : contacts.length === 0 ? (
+            ) : displayedContacts.length === 0 ? (
               <TableRow className="border-border">
                 <TableCell colSpan={8} className="text-center py-12">
                   <div className="flex flex-col items-center gap-2">
                     <Users className="size-8 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
-                      {hasActiveFilters
+                      {hasActiveFilters || onlyHotLeads
                         ? 'No contacts match your filters.'
                         : 'No contacts yet.'}
                     </p>
-                    {!hasActiveFilters && (
+                    {!hasActiveFilters && !onlyHotLeads && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -709,7 +816,7 @@ export default function ContactsPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              contacts.map((contact) => (
+              displayedContacts.map((contact) => (
                 <TableRow
                   key={contact.id}
                   className="border-border hover:bg-muted/50 cursor-pointer"
@@ -723,7 +830,19 @@ export default function ContactsPage() {
                     />
                   </TableCell>
                   <TableCell className="text-foreground font-medium">
-                    {contact.name || <span className="text-muted-foreground italic">Unnamed</span>}
+                    <div className="flex items-center gap-2">
+                      <span>{contact.name || <span className="text-muted-foreground italic">Unnamed</span>}</span>
+                      {contact.ai_lead_score === 'hot' && (
+                        <span title="Hot Lead" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-500 border border-red-500/20 shrink-0">
+                          <Flame className="h-3 w-3 fill-red-500 text-red-500" /> HOT
+                        </span>
+                      )}
+                      {contact.ai_lead_score === 'warm' && (
+                        <span title="Warm Lead" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 shrink-0">
+                          <Flame className="h-3 w-3 fill-amber-500 text-amber-500" /> WARM
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground font-mono text-xs">
                     <div className="flex items-center gap-2">

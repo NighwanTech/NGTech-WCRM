@@ -8,7 +8,7 @@ This guide explains how to generate and install the **NGTech WCRM** Android `.ap
 
 This is the fastest method to get an installable `.apk` file for your phone:
 
-1. Open **[PWABuilder.com](https://www.pwabuilder.com/)** in your desktop browser.
+1. Open **[PWABuilder.com](https://www.pwabuil  der.com/)** in your desktop browser.
 2. Type your live website URL:
    `https://ngtechwcrm.nighwantech.com`
 3. Click **Start** (PWABuilder will score the web app features).

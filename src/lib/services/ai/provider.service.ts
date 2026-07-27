@@ -30,8 +30,8 @@ export class AIProviderService {
       const apiKey = customKey || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
       if (!apiKey) throw new Error('Google Gemini API Key is missing');
       const google = createGoogleGenerativeAI({ apiKey });
-      
-      const targetModel = modelName || 'gemini-1.5-flash';
+
+      const targetModel = modelName || 'gemini-2.5-flash';
       return google(targetModel);
     }
 
