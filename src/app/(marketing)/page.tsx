@@ -43,7 +43,7 @@ export default async function MarketingHomePage() {
           {/* AI Pill Badge */}
           <div className="inline-flex items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-md px-4 py-1.5 text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
             <Sparkles className="h-4 w-4 text-emerald-500 mr-2 animate-bounce" />
-            <span className="tracking-wide">Powered by Gemini 1.5 Pro AI & Meta Official WhatsApp API</span>
+            <span className="tracking-wide">Powered by Multi-LLM AI (OpenAI GPT-4o, Claude 3.5 & Gemini) & Meta Official API</span>
           </div>
 
           {/* Main AI Heading */}
@@ -56,13 +56,13 @@ export default async function MarketingHomePage() {
 
           {/* AI Subtitle */}
           <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 leading-relaxed font-normal">
-            Automate <strong className="text-foreground font-semibold">90% of customer support</strong> with 24/7 Gemini AI Agents, qualify leads in 2 seconds with real-time AI intent scoring, and launch Meta-approved broadcast campaigns that convert.
+            Automate <strong className="text-foreground font-semibold">90% of customer support</strong> with 24/7 Multi-Model AI Agents (OpenAI, Claude & Gemini), qualify leads in 2 seconds with real-time AI intent scoring, and launch Meta-approved broadcast campaigns that convert.
           </p>
 
           {/* Floating AI Micro-Badges */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs font-bold text-muted-foreground animate-in fade-in slide-in-from-bottom-9 duration-700 delay-250">
             <span className="px-3.5 py-1.5 rounded-full bg-card border border-border shadow-sm flex items-center gap-1.5 text-foreground">
-              🤖 24/7 Gemini AI Support
+              🤖 Multi-LLM AI (GPT-4o, Claude & Gemini)
             </span>
             <span className="px-3.5 py-1.5 rounded-full bg-card border border-border shadow-sm flex items-center gap-1.5 text-foreground">
               🔥 AI Lead Intent Scoring
@@ -102,7 +102,7 @@ export default async function MarketingHomePage() {
             <div className="flex items-center justify-between border-b border-border pb-2.5">
               <div className="flex items-center gap-2">
                 <Bot className="h-5 w-5 text-emerald-500 animate-pulse" />
-                <span className="text-xs font-extrabold text-foreground tracking-wide">Gemini 1.5 Pro AI Agent — Live Conversation</span>
+                <span className="text-xs font-extrabold text-foreground tracking-wide">Multi-Model AI Agent (GPT-4o / Gemini) — Live Conversation</span>
               </div>
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 text-[10px] font-bold">
                 ⚡ 2s Response Uptime
