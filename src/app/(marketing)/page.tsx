@@ -244,7 +244,7 @@ export default async function MarketingHomePage() {
                   'Zero hidden fees or markup on WhatsApp messaging.',
                   'Enterprise-grade security and SOC2 compliance.',
                   'Advanced AI Assistant that actually understands intent.',
-                  '24/7 dedicated support via WhatsApp (+91 8985025794 - Messages Only) and Phone.'
+                  '24/7 dedicated support via WhatsApp (+91 80922 25777) and Direct Call (+91 8985025794).'
                 ].map((item, i) => (
                   <li key={i} className="flex items-start group">
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 mr-3 mt-0.5 shrink-0 group-hover:bg-emerald-500/20 transition-colors duration-200">
