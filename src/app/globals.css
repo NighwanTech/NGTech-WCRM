@@ -57,6 +57,21 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Hide Next.js Dev Overlay Indicator ("N") */
+nextjs-portal,
+div[data-nextjs-toast],
+div[data-nextjs-dialog-overlay],
+#__next-build-watcher {
+  display: none !important;
+}
+
+/* Ensure mobile dashboard content is never cut off by bottom nav */
+@media (max-width: 767px) {
+  .dashboard-mobile-safe-bottom {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
 /* ============================================================
  * THEMING — two orthogonal dimensions
  *
