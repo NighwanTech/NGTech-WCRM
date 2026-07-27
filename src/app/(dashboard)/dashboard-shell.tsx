@@ -8,6 +8,7 @@ import { Header } from "@/components/layout/header";
 import { PresenceHeartbeat } from "@/components/presence/presence-heartbeat";
 import { TrialBanner } from "@/components/layout/trial-banner";
 import { AppShell } from "@/components/ui/responsive-layout";
+import { DashboardMobileBottomNav } from "@/components/layout/dashboard-mobile-bottom-nav";
 
 // Auth-gated dashboard shell. Extracted from the layout so the layout
 // itself can stay a server component and export metadata (noindex) —
@@ -59,8 +60,11 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
         }
         flush={isInbox}
       >
-        {children}
+        <div className="pb-16 md:pb-0">
+          {children}
+        </div>
       </AppShell>
+      <DashboardMobileBottomNav />
     </>
   );
 }
