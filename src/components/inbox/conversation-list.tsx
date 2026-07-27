@@ -38,10 +38,11 @@ const STATUS_COLORS: Record<ConversationStatus, string> = {
   closed: "bg-muted-foreground",
 };
 
-type InboxFilter = "all" | "incoming" | "my_queue" | "department_queue" | "assigned" | "pending" | "closed";
+type InboxFilter = "all" | "hot_leads" | "incoming" | "my_queue" | "department_queue" | "assigned" | "pending" | "closed";
 
 const FILTER_OPTIONS: { label: string; value: InboxFilter }[] = [
   { label: "All", value: "all" },
+  { label: "🔥 Hot Leads", value: "hot_leads" },
   { label: "Incoming", value: "incoming" },
   { label: "My Queue", value: "my_queue" },
   { label: "Department Queue", value: "department_queue" },
@@ -154,7 +155,9 @@ export function ConversationList({
   const filtered = useMemo(() => {
     let result = conversations;
 
-    if (filter === "incoming") {
+    if (filter === "hot_leads") {
+      result = result.filter((c: any) => c.ai_lead_score === "hot");
+    } else if (filter === "incoming") {
       result = result.filter((c: any) => c.routing_status === "unassigned" || c.routing_status === "needs_manual_review");
     } else if (filter === "my_queue") {
       result = result.filter((c) => c.assigned_agent_id === user?.id);

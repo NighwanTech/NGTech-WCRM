@@ -48,6 +48,8 @@ import {
   SlidersHorizontal,
   Filter,
   X,
+  Phone,
+  Flame,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ContactForm } from '@/components/contacts/contact-form';
@@ -724,7 +726,19 @@ export default function ContactsPage() {
                     {contact.name || <span className="text-muted-foreground italic">Unnamed</span>}
                   </TableCell>
                   <TableCell className="text-muted-foreground font-mono text-xs">
-                    {maskPhone(contact.phone, isAgent, account?.mask_agent_phones ?? false)}
+                    <div className="flex items-center gap-2">
+                      <span>{maskPhone(contact.phone, isAgent, account?.mask_agent_phones ?? false)}</span>
+                      {contact.phone && (
+                        <a
+                          href={`tel:${contact.phone}`}
+                          onClick={(e) => e.stopPropagation()}
+                          title={`Call ${contact.name || contact.phone} directly`}
+                          className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 hover:scale-110 transition-transform"
+                        >
+                          <Phone className="h-3 w-3" />
+                        </a>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground hidden md:table-cell text-sm">
                     {contact.email || <span className="text-muted-foreground">-</span>}
