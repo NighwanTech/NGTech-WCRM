@@ -527,188 +527,197 @@ export function MessageComposer({
           </Button>
         </div>
       ) : (
-        <div className="flex items-end gap-2">
-          {/* Attach menu — photo / video / document / voice. */}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              disabled={inputsDisabled || busy}
-              title={
-                readOnly
-                  ? "Read-only — your role can't send messages"
-                  : inputsDisabled
-                    ? undefined
-                    : "Attach media"
-              }
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {busy ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Plus className="h-5 w-5" />
+        <div className="flex flex-col sm:flex-row sm:items-end gap-2">
+          {/* Line 1: Action Buttons Toolbar (Attachment, Internal Note, AI Sparkle, Template Picker) */}
+          <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto pb-1 sm:pb-0">
+            {/* Attach menu — photo / video / document / voice. */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                disabled={inputsDisabled || busy}
+                title={
+                  readOnly
+                    ? "Read-only — your role can't send messages"
+                    : inputsDisabled
+                      ? undefined
+                      : "Attach media"
+                }
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50 border border-border/50"
+              >
+                {busy ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="h-5 w-5" />
+                )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48 border-border bg-popover p-2">
+                <DropdownMenuItem onClick={() => imageInputRef.current?.click()}>
+                  <ImageIcon className="mr-2 h-4 w-4" />
+                  Photo
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => videoInputRef.current?.click()}>
+                  <Video className="mr-2 h-4 w-4" />
+                  Video
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => documentInputRef.current?.click()}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Document
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => document.getElementById("audio-upload")?.click()}
+                  className="gap-2 cursor-pointer rounded-md py-2"
+                >
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  Audio
+                </DropdownMenuItem>
+
+                <div className="my-1 h-px bg-border" />
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Sales Tools</div>
+
+                <DropdownMenuItem 
+                  onClick={() => setMeetingModalOpen(true)}
+                  className="gap-2 cursor-pointer rounded-md py-2"
+                >
+                  <Calendar className="h-4 w-4 text-blue-500" />
+                  Schedule Meeting
+                </DropdownMenuItem>
+                
+                <DropdownMenuItem 
+                  onClick={() => setQuoteModalOpen(true)}
+                  className="gap-2 cursor-pointer rounded-md py-2"
+                >
+                  <Receipt className="h-4 w-4 text-green-500" />
+                  Generate Quote
+                </DropdownMenuItem>
+
+                <div className="my-1 h-px bg-border" />
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Commerce</div>
+                
+                <DropdownMenuItem 
+                  onClick={() => onSendCommerce?.({ type: 'catalog' })}
+                  className="gap-2 cursor-pointer rounded-md py-2"
+                >
+                  <ShoppingBag className="h-4 w-4 text-emerald-500" />
+                  Send Full Catalog
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    const id = window.prompt("Enter specific Product ID from Catalog:");
+                    if (id) {
+                      onSendCommerce?.({ type: 'product', productId: id.trim() });
+                    }
+                  }}
+                  className="gap-2 cursor-pointer rounded-md py-2"
+                >
+                  <ShoppingBag className="h-4 w-4 text-emerald-500" />
+                  Send Specific Product
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <div className="h-5 w-px bg-border/60 mx-0.5" />
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsInternalMode(!isInternalMode)}
+              title={isInternalMode ? "Disable internal note" : "Send as internal note"}
+              className={cn(
+                "h-9 w-9 shrink-0 p-0 transition-colors rounded-full border border-border/50",
+                isInternalMode 
+                  ? "bg-amber-100 text-amber-700 hover:bg-amber-200 hover:text-amber-800 dark:bg-amber-900/50 dark:text-amber-400" 
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48 border-border bg-popover p-2">
-              <DropdownMenuItem onClick={() => imageInputRef.current?.click()}>
-                <ImageIcon className="mr-2 h-4 w-4" />
-                Photo
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => videoInputRef.current?.click()}>
-                <Video className="mr-2 h-4 w-4" />
-                Video
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => documentInputRef.current?.click()}>
-                <FileText className="mr-2 h-4 w-4" />
-                Document
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => document.getElementById("audio-upload")?.click()}
-                className="gap-2 cursor-pointer rounded-md py-2"
-              >
-                <FileText className="h-4 w-4 text-muted-foreground" />
-                Audio
-              </DropdownMenuItem>
+            >
+              <Lock className="h-4 w-4" />
+            </Button>
 
-              <div className="my-1 h-px bg-border" />
-              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Sales Tools</div>
-
-              <DropdownMenuItem 
-                onClick={() => setMeetingModalOpen(true)}
-                className="gap-2 cursor-pointer rounded-md py-2"
-              >
-                <Calendar className="h-4 w-4 text-blue-500" />
-                Schedule Meeting
-              </DropdownMenuItem>
-              
-              <DropdownMenuItem 
-                onClick={() => setQuoteModalOpen(true)}
-                className="gap-2 cursor-pointer rounded-md py-2"
-              >
-                <Receipt className="h-4 w-4 text-green-500" />
-                Generate Quote
-              </DropdownMenuItem>
-
-              <div className="my-1 h-px bg-border" />
-              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Commerce</div>
-              
-              <DropdownMenuItem 
-                onClick={() => onSendCommerce?.({ type: 'catalog' })}
-                className="gap-2 cursor-pointer rounded-md py-2"
-              >
-                <ShoppingBag className="h-4 w-4 text-emerald-500" />
-                Send Full Catalog
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => {
-                  const id = window.prompt("Enter specific Product ID from Catalog:");
-                  if (id) {
-                    onSendCommerce?.({ type: 'product', productId: id.trim() });
+            {onGenerateDraft && (
+              <GatedButton
+                variant="ghost"
+                size="sm"
+                canAct={!readOnly}
+                gateReason="send messages"
+                title={readOnly ? undefined : "AI Draft Reply"}
+                disabled={isDrafting || inputsDisabled || busy}
+                className={cn("h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-foreground rounded-full border border-border/50", isDrafting && "animate-pulse")}
+                onClick={async () => {
+                  try {
+                    setIsDrafting(true);
+                    const draftText = await onGenerateDraft();
+                    if (draftText) {
+                      setText(draftText);
+                      adjustHeight();
+                    }
+                  } finally {
+                    setIsDrafting(false);
                   }
                 }}
-                className="gap-2 cursor-pointer rounded-md py-2"
               >
-                <ShoppingBag className="h-4 w-4 text-emerald-500" />
-                Send Specific Product
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <div className="h-6 w-px bg-border mx-1" />
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsInternalMode(!isInternalMode)}
-            title={isInternalMode ? "Disable internal note" : "Send as internal note"}
-            className={cn(
-              "h-9 w-9 shrink-0 p-0 transition-colors",
-              isInternalMode 
-                ? "bg-amber-100 text-amber-700 hover:bg-amber-200 hover:text-amber-800 dark:bg-amber-900/50 dark:text-amber-400" 
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                <Sparkles className="h-4 w-4 text-purple-500" />
+              </GatedButton>
             )}
-          >
-            <Lock className="h-4 w-4" />
-          </Button>
 
-          {onGenerateDraft && (
             <GatedButton
               variant="ghost"
               size="sm"
               canAct={!readOnly}
               gateReason="send messages"
-              title={readOnly ? undefined : "AI Draft Reply"}
-              disabled={isDrafting || inputsDisabled || busy}
-              className={cn("h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-foreground", isDrafting && "animate-pulse")}
-              onClick={async () => {
-                try {
-                  setIsDrafting(true);
-                  const draftText = await onGenerateDraft();
-                  if (draftText) {
-                    setText(draftText);
-                    adjustHeight();
-                  }
-                } finally {
-                  setIsDrafting(false);
-                }
-              }}
+              title={readOnly ? undefined : "Send template"}
+              className="h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-foreground rounded-full border border-border/50"
+              onClick={onOpenTemplates}
             >
-              <Sparkles className="h-4 w-4 text-purple-500" />
+              <LayoutTemplate className="h-4 w-4" />
             </GatedButton>
-          )}
 
-          <GatedButton
-            variant="ghost"
-            size="sm"
-            canAct={!readOnly}
-            gateReason="send messages"
-            title={readOnly ? undefined : "Send template"}
-            className="h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-foreground"
-            onClick={onOpenTemplates}
-          >
-            <LayoutTemplate className="h-4 w-4" />
-          </GatedButton>
-
-          <textarea
-            ref={textareaRef}
-            value={text}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            placeholder={
-              readOnly
-                ? "Read-only — viewers can browse but not reply"
-                : sessionExpired
-                  ? "Session expired - use a template"
-                  : "Type a message..."
-            }
-            disabled={sessionExpired || readOnly}
-            rows={1}
-            // Textarea keeps its own inline title — the GatedButton
-            // wrapping pattern doesn't apply to non-button inputs.
-            // The placeholder text also surfaces the read-only state.
-            title={readOnly ? "Read-only — your role can't send messages" : undefined}
-            className={cn(
-              "flex-1 resize-none rounded-xl border px-4 py-2.5 text-sm outline-none transition-colors",
-              isInternalMode 
-                ? "border-amber-500/50 bg-amber-50/50 text-amber-900 placeholder-amber-700/50 focus:border-amber-500 dark:bg-amber-950/20 dark:text-amber-100 dark:placeholder-amber-400/50"
-                : "border-border bg-muted text-foreground placeholder-muted-foreground focus:border-primary/50",
-              (sessionExpired || readOnly) && "cursor-not-allowed opacity-50"
+            {sessionExpired && (
+              <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/30 whitespace-nowrap ml-1">
+                24h Session Expired
+              </span>
             )}
-          />
+          </div>
 
-          <GatedButton
-            size="sm"
-            canAct={!readOnly}
-            gateReason="send messages"
-            disabled={!text.trim() || sessionExpired || sending}
-            onClick={handleSend}
-            className={cn(
-              "h-9 w-9 shrink-0 p-0 disabled:opacity-40",
-              isInternalMode
-                ? "bg-amber-500 text-white hover:bg-amber-600"
-                : "bg-primary hover:bg-primary/90"
-            )}
-          >
-            <Send className="h-4 w-4" />
-          </GatedButton>
+          {/* Line 2: Textarea input box + Send button */}
+          <div className="flex items-end gap-2 flex-1 min-w-0 w-full">
+            <textarea
+              ref={textareaRef}
+              value={text}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              placeholder={
+                readOnly
+                  ? "Read-only — viewers can browse but not reply"
+                  : sessionExpired
+                    ? "Session expired - use a template"
+                    : "Type a message..."
+              }
+              disabled={sessionExpired || readOnly}
+              rows={1}
+              title={readOnly ? "Read-only — your role can't send messages" : undefined}
+              className={cn(
+                "flex-1 min-w-0 resize-none rounded-xl border px-4 py-2.5 text-sm outline-none transition-colors",
+                isInternalMode 
+                  ? "border-amber-500/50 bg-amber-50/50 text-amber-900 placeholder-amber-700/50 focus:border-amber-500 dark:bg-amber-950/20 dark:text-amber-100 dark:placeholder-amber-400/50"
+                  : "border-border bg-muted text-foreground placeholder-muted-foreground focus:border-primary/50",
+                (sessionExpired || readOnly) && "cursor-not-allowed opacity-50"
+              )}
+            />
+
+            <GatedButton
+              size="sm"
+              canAct={!readOnly}
+              gateReason="send messages"
+              disabled={!text.trim() || sessionExpired || sending}
+              onClick={handleSend}
+              className={cn(
+                "h-10 w-10 shrink-0 rounded-xl p-0 disabled:opacity-40 shadow-sm",
+                isInternalMode
+                  ? "bg-amber-500 text-white hover:bg-amber-600"
+                  : "bg-primary hover:bg-primary/90 text-primary-foreground"
+              )}
+            >
+              <Send className="h-4 w-4" />
+            </GatedButton>
+          </div>
         </div>
       )}
 
