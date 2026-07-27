@@ -126,6 +126,14 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: "/whatsapp-crm-:city",
+        destination: "/whatsapp-crm/:city",
+      },
+    ];
+  },
   typescript: {
     ignoreBuildErrors: true,
   },

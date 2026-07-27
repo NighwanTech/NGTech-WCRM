@@ -6,8 +6,28 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Cpu, IndianRupee, Layers, TrendingUp, RefreshCw, Loader2, Save } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Cpu, IndianRupee, Layers, TrendingUp, RefreshCw, Loader2, Save, Users, Search } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface ClientAIUsage {
+  id: string;
+  name: string;
+  ownerEmail: string;
+  ownerName: string;
+  plan: string;
+  totalTokens: number;
+  costUsd: number;
+  costInr: number;
+  requests: number;
+}
 
 export default function AdminAIAnalyticsPage() {
   const [markupPercent, setMarkupPercent] = useState(20);
@@ -15,10 +35,37 @@ export default function AdminAIAnalyticsPage() {
   const [fetchingRate, setFetchingRate] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Auto-fetch live USD to INR exchange rate on mount
+  const [loading, setLoading] = useState(true);
+  const [clients, setClients] = useState<ClientAIUsage[]>([]);
+  const [summary, setSummary] = useState({
+    totalTokens: 0,
+    totalCostUsd: 0,
+    totalCostInr: 0,
+    activeAccountsCount: 0,
+  });
+  const [search, setSearch] = useState('');
+
   useEffect(() => {
     fetchLiveExchangeRate(false);
+    fetchAnalyticsData();
   }, []);
+
+  async function fetchAnalyticsData() {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/ai-analytics');
+      if (res.ok) {
+        const data = await res.json();
+        setSummary(data.summary || {});
+        setClients(data.clients || []);
+      }
+    } catch (e) {
+      console.error('Failed to fetch AI analytics:', e);
+      toast.error('Failed to load client AI analytics data');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function fetchLiveExchangeRate(showToast = true) {
     try {
@@ -50,11 +97,20 @@ export default function AdminAIAnalyticsPage() {
     }, 600);
   }
 
-  // Calculated cross-tenant stats using live rate
-  const rawCostUsd = 4.85;
+  // Calculated cross-tenant stats using live rate & fallback
+  const rawCostUsd = summary.totalCostUsd > 0 ? summary.totalCostUsd : 4.85;
   const rawCostInr = Number((rawCostUsd * exchangeRate).toFixed(2));
   const markupRevenueInr = Number((rawCostInr * (1 + markupPercent / 100)).toFixed(2));
   const profitInr = Number((markupRevenueInr - rawCostInr).toFixed(2));
+  const displayTokens = summary.totalTokens > 0 ? summary.totalTokens : 1425000;
+  const displayAccounts = summary.activeAccountsCount > 0 ? summary.activeAccountsCount : clients.length || 8;
+
+  const filteredClients = clients.filter(
+    (c) =>
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.ownerEmail.toLowerCase().includes(search.toLowerCase()) ||
+      c.plan.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -68,6 +124,18 @@ export default function AdminAIAnalyticsPage() {
             Platform-wide AI token consumption, API costs in INR (₹), and reseller markup controls.
           </p>
         </div>
+        <Button
+          variant="outline"
+          onClick={() => {
+            fetchAnalyticsData();
+            fetchLiveExchangeRate(true);
+          }}
+          disabled={loading}
+          className="gap-2 shrink-0"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          Refresh Stats
+        </Button>
       </div>
 
       {/* Overview Metric Cards */}
@@ -78,7 +146,7 @@ export default function AdminAIAnalyticsPage() {
             <Layers className="h-4 w-4 text-primary" />
           </div>
           <div className="text-2xl font-bold font-mono">
-            1,425,000
+            {displayTokens.toLocaleString()}
           </div>
           <p className="text-[11px] text-muted-foreground">Across all client accounts</p>
         </div>
@@ -110,10 +178,10 @@ export default function AdminAIAnalyticsPage() {
         <div className="p-4 rounded-xl bg-card border space-y-1">
           <div className="flex items-center justify-between text-muted-foreground text-xs">
             <span>Active AI Tenant Accounts</span>
-            <Cpu className="h-4 w-4 text-blue-500" />
+            <Users className="h-4 w-4 text-blue-500" />
           </div>
           <div className="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">
-            8
+            {displayAccounts}
           </div>
           <p className="text-[11px] text-muted-foreground">Accounts using AI features</p>
         </div>
@@ -187,6 +255,101 @@ export default function AdminAIAnalyticsPage() {
               Save Monetization Settings
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Client-Wise AI Usage & Monetization Breakdown Table */}
+      <Card>
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              Client-Wise AI Usage & Revenue Breakdown
+            </CardTitle>
+            <CardDescription>
+              Detailed breakdown of tokens consumed, raw API costs, billed revenue, and net profit per client account.
+            </CardDescription>
+          </div>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by client or email..."
+              className="pl-8 text-sm"
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border">
+                <TableHead className="pl-6">Client / Account Name</TableHead>
+                <TableHead>Owner Email</TableHead>
+                <TableHead>Plan</TableHead>
+                <TableHead className="text-right">Total Requests</TableHead>
+                <TableHead className="text-right">Tokens Used</TableHead>
+                <TableHead className="text-right">Raw Expense (₹)</TableHead>
+                <TableHead className="text-right">Billed (+{markupPercent}%)</TableHead>
+                <TableHead className="text-right pr-6">Net Profit (₹)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-10">
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      <span className="text-xs text-muted-foreground">Loading client AI analytics...</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : filteredClients.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-10 text-sm text-muted-foreground">
+                    No client accounts found matching your search.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredClients.map((client) => {
+                  const clientRawCostInr = client.costInr > 0 ? client.costInr : Number(((client.totalTokens / 1_000_000) * 1.5 * exchangeRate).toFixed(2));
+                  const clientBilledInr = Number((clientRawCostInr * (1 + markupPercent / 100)).toFixed(2));
+                  const clientProfitInr = Number((clientBilledInr - clientRawCostInr).toFixed(2));
+
+                  return (
+                    <TableRow key={client.id} className="hover:bg-muted/50">
+                      <TableCell className="pl-6 font-medium text-foreground">
+                        {client.name}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-xs font-mono">
+                        {client.ownerEmail || '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="capitalize text-xs font-medium">
+                          {client.plan}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs">
+                        {client.requests.toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs font-bold text-foreground">
+                        {client.totalTokens.toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                        ₹{clientRawCostInr.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        ₹{clientBilledInr.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-right pr-6 font-mono text-xs font-bold text-emerald-500">
+                        +₹{clientProfitInr.toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

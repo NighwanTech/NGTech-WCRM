@@ -1,9 +1,9 @@
 import { Metadata } from 'next'
-import { Mail, Phone, MapPin, MessageSquare } from 'lucide-react'
+import { Mail, Phone, MapPin, MessageSquare, PhoneCall } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Contact Us | NGTech WCRM',
-  description: 'Get in touch with the NGTech WCRM team. We are here to help you scale your business on WhatsApp.',
+  description: 'Get in touch with the NGTech WCRM team. Call us directly at +91 8985025794 or chat on WhatsApp.',
 }
 
 export default function ContactPage() {
@@ -15,52 +15,67 @@ export default function ContactPage() {
             Get in <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500">Touch</span>
           </h1>
           <p className="text-lg text-muted-foreground">
-            Have questions about our CRM? Need help setting up your team? Our support and sales teams are ready to assist you.
+            Have questions about our CRM? Need help setting up your team? Call or chat with our sales and support teams directly.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-12 items-start max-w-5xl mx-auto">
           {/* Contact Information */}
-          <div className="bg-card border border-border rounded-2xl p-8 shadow-sm">
-            <h2 className="text-2xl font-bold mb-6">Contact Information</h2>
-            
-            <div className="space-y-6 text-muted-foreground">
-              <div className="flex items-start gap-4">
-                <div className="bg-primary/10 p-3 rounded-full text-primary shrink-0">
-                  <Mail className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Email</h3>
-                  <p className="mt-1">For general inquiries and support.</p>
-                  <a href="mailto:info@nighwantech.com" className="text-primary hover:underline mt-2 inline-block font-medium">info@nighwantech.com</a>
-                </div>
-              </div>
+          <div className="bg-card border border-border rounded-2xl p-8 shadow-sm space-y-6">
+            <h2 className="text-2xl font-bold mb-2">Contact Information</h2>
 
-              <div className="flex items-start gap-4">
-                <div className="bg-primary/10 p-3 rounded-full text-primary shrink-0">
-                  <MessageSquare className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">WhatsApp Chat</h3>
-                  <p className="mt-1">Fastest way to get support from our team.</p>
-                  <a href="https://wa.me/918092225777" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mt-2 inline-block font-medium">+91 80922 25777</a>
-                </div>
+            <div className="flex items-start gap-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+              <div className="bg-emerald-500 text-white p-3 rounded-full shrink-0">
+                <PhoneCall className="h-6 w-6 animate-pulse" />
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground text-lg">Direct Phone Call</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Speak with our sales & technical support experts.</p>
+                <a href="tel:+918985025794" className="text-emerald-600 dark:text-emerald-400 hover:underline mt-2 inline-block font-extrabold text-xl">
+                  +91 8985025794
+                </a>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 p-4 rounded-xl bg-muted/50 border border-border">
+              <div className="bg-primary/10 p-3 rounded-full text-primary shrink-0">
+                <MessageSquare className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">WhatsApp Chat</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Fastest way to get support from our team on WhatsApp.</p>
+                <a href="https://wa.me/918092225777" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline mt-2 inline-block font-bold text-base">
+                  +91 80922 25777
+                </a>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 p-4 rounded-xl bg-muted/50 border border-border">
+              <div className="bg-primary/10 p-3 rounded-full text-primary shrink-0">
+                <Mail className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">Email Support</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">For general inquiries and billing support.</p>
+                <a href="mailto:info@nighwantech.com" className="text-primary hover:underline mt-2 inline-block font-medium">
+                  info@nighwantech.com
+                </a>
               </div>
             </div>
           </div>
 
           {/* Quick FAQ or CTA */}
-          <div className="bg-muted/30 border border-border rounded-2xl p-8">
-            <h2 className="text-2xl font-bold mb-6">Ready to scale?</h2>
-            <p className="text-muted-foreground mb-6">
-              You don't need to wait for sales to get started. You can launch your free trial immediately and explore the full capabilities of NGTech WCRM.
+          <div className="bg-muted/30 border border-border rounded-2xl p-8 space-y-6">
+            <h2 className="text-2xl font-bold">Ready to scale?</h2>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Launch your 14-day free trial immediately and explore the full capabilities of NGTech WCRM, or call us at <strong className="text-foreground">+91 8985025794</strong> for a guided live demo.
             </p>
-            <a href="/free-trial" className="flex w-full h-12 items-center justify-center rounded-lg bg-gradient-to-r from-primary to-blue-500 hover:opacity-90 px-8 text-base font-semibold text-primary-foreground transition-all shadow-md mb-4">
-              Start Free Trial
+            <a href="tel:+918985025794" className="flex w-full h-12 items-center justify-center rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base transition-all shadow-lg gap-2">
+              <PhoneCall className="h-5 w-5 animate-pulse" /> Call +91 8985025794 Now
             </a>
-            <p className="text-xs text-center text-muted-foreground">
-              No credit card required. 7-day full access.
-            </p>
+            <a href="/free-trial" className="flex w-full h-12 items-center justify-center rounded-full border border-border bg-card hover:bg-muted text-base font-semibold text-foreground transition-all">
+              Start 14-Day Free Trial
+            </a>
           </div>
         </div>
       </div>

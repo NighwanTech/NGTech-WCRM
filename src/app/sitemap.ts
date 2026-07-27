@@ -1,7 +1,6 @@
 import { MetadataRoute } from 'next'
-import { createClient } from '@/lib/supabase/client' // Use server client if possible, but for build time, might need direct fetch or just static. We will use static + dynamic.
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ngtech-wcrm.com'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ngtechwcrm.nighwantech.com'
 
 const staticRoutes = [
   '',
@@ -13,6 +12,7 @@ const staticRoutes = [
   '/contact',
   '/blog',
   '/solutions',
+  '/whatsapp-crm-near-me',
 ]
 
 const features = [
@@ -39,19 +39,45 @@ const industries = [
   'service-business',
 ]
 
+const cities = [
+  'delhi',
+  'mumbai',
+  'bangalore',
+  'hyderabad',
+  'pune',
+  'ahmedabad',
+  'jaipur',
+  'chandigarh',
+  'chennai',
+  'kolkata',
+  'surat',
+  'lucknow',
+  'patna',
+  'ranchi',
+  'gaya',
+  'muzaffarpur',
+  'bhagalpur',
+  'dhanbad',
+  'jamshedpur',
+  'indore',
+  'bhopal',
+  'nagpur',
+  'varanasi',
+  'dehradun',
+  'raipur',
+]
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // We can fetch dynamic blog posts from Supabase for the sitemap here.
-  // For now, we'll map the static ones.
-  
   const routes = [
     ...staticRoutes,
     ...features.map(f => `/features/${f}`),
     ...industries.map(i => `/solutions/${i}`),
+    ...cities.map(c => `/whatsapp-crm/${c}`),
   ].map((route) => ({
     url: `${SITE_URL}${route}`,
     lastModified: new Date().toISOString(),
     changeFrequency: 'weekly' as const,
-    priority: route === '' ? 1 : 0.8,
+    priority: route === '' || route === '/whatsapp-crm-near-me' ? 1 : route.startsWith('/whatsapp-crm/') ? 0.9 : 0.8,
   }))
 
   return routes
