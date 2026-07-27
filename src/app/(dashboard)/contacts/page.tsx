@@ -173,27 +173,37 @@ export default function ContactsPage() {
         return;
       }
 
+      // Slice IDs for current page to prevent PostgREST 414 Request-URI Too Large error
+      const slicedIds = combinedIds.slice(from, from + pageSize);
+
+      if (slicedIds.length === 0) {
+        setContacts([]);
+        setTotalCount(combinedIds.length);
+        setLoading(false);
+        return;
+      }
+
       let query = supabase
         .from('contacts')
-        .select('*', { count: 'exact' })
-        .in('id', combinedIds)
-        .order('created_at', { ascending: false })
-        .range(from, to);
+        .select('*')
+        .in('id', slicedIds)
+        .order('created_at', { ascending: false });
 
       if (term) {
         const like = `%${term}%`;
         query = query.or(`name.ilike.${like},phone.ilike.${like},email.ilike.${like}`);
       }
 
-      const { data, count: exactCount, error } = await query;
+      const { data, error } = await query;
       if (seq !== fetchSeq.current) return;
       if (error) {
+        console.error('Failed to load hot contacts:', error);
         toast.error('Failed to load hot contacts');
         setLoading(false);
         return;
       }
       contactRows = data ?? [];
-      count = exactCount ?? 0;
+      count = combinedIds.length;
     } else if (selectedTagIds.length > 0) {
       // Tag filter active — resolve it server-side (join + distinct +
       // windowed total count + pagination) so a tag covering many
