@@ -4,6 +4,8 @@ import { generateText, tool } from 'ai';
 import { z } from 'zod';
 import { AIProviderService } from '@/lib/services/ai/provider.service';
 import { AIPromptService } from '@/lib/services/ai/prompt.service';
+import fs from 'fs';
+import path from 'path';
 
 export async function POST(request: Request) {
   try {
