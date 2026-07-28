@@ -1139,18 +1139,27 @@ Message: "${inboundText}"`,
                 .order('created_at', { ascending: false })
                 .limit(20); 
                 
-              const coreMessages: any[] = [];
+              const rawMessages: any[] = [];
               for (const m of (historyMsgs || [])) {
                 if (!m.content_text) continue;
-                coreMessages.push({
+                rawMessages.push({
                   role: m.sender_type === 'customer' ? 'user' : 'assistant',
                   content: m.content_text
                 });
               }
               // reverse to chronological order
-              coreMessages.reverse();
-              // Add current message
-              coreMessages.push({ role: 'user', content: inboundText });
+              rawMessages.reverse();
+              
+              // Merge consecutive messages with the same role to prevent API errors (e.g. Gemini)
+              const coreMessages: any[] = [];
+              for (const msg of rawMessages) {
+                const last = coreMessages[coreMessages.length - 1];
+                if (last && last.role === msg.role) {
+                  last.content += '\n\n' + msg.content;
+                } else {
+                  coreMessages.push(msg);
+                }
+              }
                 
               const fullSystemPrompt = await AIPromptService.buildSystemPrompt(
                 aiConfig || {}, 
