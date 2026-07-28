@@ -963,8 +963,8 @@ Message: "${inboundText}"`,
               provider: analysisProvider,
               model: analysisModelName,
               feature: 'sentiment_analysis',
-              promptTokens: usage.promptTokens || 0,
-              completionTokens: usage.completionTokens || 0,
+              promptTokens: usage.inputTokens || 0,
+              completionTokens: usage.outputTokens || 0,
             });
           }
           
@@ -1192,11 +1192,8 @@ Message: "${inboundText}"`,
                   system: fullSystemPrompt,
                   messages: coreMessages,
                   abortSignal: controller.signal,
-                  maxTokens: aiConfig?.advanced_settings?.max_tokens || undefined,
-                  temperature: aiConfig?.advanced_settings?.temperature || undefined,
-                  topP: aiConfig?.advanced_settings?.top_p || undefined,
-                  frequencyPenalty: aiConfig?.advanced_settings?.frequency_penalty || undefined,
-                  presencePenalty: aiConfig?.advanced_settings?.presence_penalty || undefined,
+                  maxOutputTokens: aiConfig?.advanced_settings?.max_tokens || undefined,
+                  temperature: aiConfig?.advanced_settings?.temperature ?? 0.7,
                 });
                 
                 if (result.usage) {
@@ -1205,8 +1202,8 @@ Message: "${inboundText}"`,
                     provider,
                     model: modelName,
                     feature: 'auto_reply',
-                    promptTokens: result.usage.promptTokens || 0,
-                    completionTokens: result.usage.completionTokens || 0,
+                    promptTokens: result.usage.inputTokens || 0,
+                    completionTokens: result.usage.outputTokens || 0,
                   });
                 }
                 
@@ -1259,8 +1256,8 @@ Message: "${inboundText}"`,
                 
                 // Log Analytics
                 if (aiConfig) {
-                   const promptTokens = result.usage?.promptTokens || 0;
-                   const completionTokens = result.usage?.completionTokens || 0;
+                   const promptTokens = result.usage?.inputTokens || 0;
+                   const completionTokens = result.usage?.outputTokens || 0;
                    await AIAnalyticsService.logEvent({
                      account_id: accountId,
                      conversation_id: conversation.id,
