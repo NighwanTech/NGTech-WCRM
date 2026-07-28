@@ -23,12 +23,8 @@ export class AIProviderService {
     const lowerModel = targetModel.toLowerCase();
 
     if (provider === 'gemini') {
-      if (lowerModel.includes('3.6-flash') || lowerModel.includes('3.5-flash-lite')) {
-        targetModel = 'gemini-1.5-flash';
-      } else if (lowerModel.includes('3.1-pro') || lowerModel.includes('2.5-pro') || lowerModel.includes('2.5-flash')) {
-        targetModel = 'gemini-1.5-pro';
-      } else if (!targetModel) {
-        targetModel = 'gemini-1.5-flash';
+      if (!targetModel) {
+        targetModel = 'gemini-2.0-flash';
       }
     } else if (provider === 'groq') {
       if (lowerModel.includes('llama-3.1-8b-instant')) {
