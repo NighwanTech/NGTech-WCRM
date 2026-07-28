@@ -941,7 +941,8 @@ async function processMessage(
       : !!process.env.GROQ_API_KEY); // fallback
 
     if (hasAnalysisKey) {
-      await (async () => {
+      // Run Sentiment & Lead Scoring in the background so it doesn't block the 200 OK webhook response
+      Promise.resolve().then(async () => {
         try {
           const analysisModel = AIProviderService.getModel(analysisProvider, analysisModelName, {
             apiKey: analysisApiKey?.trim(),
@@ -1089,7 +1090,7 @@ Message: "${inboundText}"`,
         } catch (err) {
           console.error('[ai-analysis] failed:', err);
         }
-      })();
+      });
     } // End of GROQ-specific Background Analysis
 
       // 2. AI Auto-Responder & Human Handoff
@@ -1368,21 +1369,24 @@ Message: "${inboundText}"`,
   }
   if (contactOutcome.wasCreated) automationTriggers.unshift('new_contact_created')
   if (isFirstInboundMessage) automationTriggers.unshift('first_inbound_message')
-  for (const triggerType of automationTriggers) {
-    try {
-      await runAutomationsForTrigger({
-        accountId,
-        triggerType,
-        contactId: contactRecord.id,
-        context: {
-          message_text: inboundText,
-          conversation_id: conversation.id,
-        },
-      })
-    } catch (err) {
-      console.error('[automations] dispatch failed:', err)
+  // Run automations in the background so it doesn't block the 200 OK webhook response
+  Promise.resolve().then(async () => {
+    for (const triggerType of automationTriggers) {
+      try {
+        await runAutomationsForTrigger({
+          accountId,
+          triggerType,
+          contactId: contactRecord.id,
+          context: {
+            message_text: inboundText,
+            conversation_id: conversation.id,
+          },
+        })
+      } catch (err) {
+        console.error('[automations] dispatch failed:', err)
+      }
     }
-  }
+  });
 }
 
 async function parseMessageContent(
