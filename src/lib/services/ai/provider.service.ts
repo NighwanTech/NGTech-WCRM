@@ -19,11 +19,30 @@ export class AIProviderService {
     const customKey = options?.apiKey?.trim();
     const customUrl = options?.baseUrl?.trim();
 
+    let targetModel = modelName?.trim() || '';
+    const lowerModel = targetModel.toLowerCase();
+
+    if (provider === 'gemini') {
+      if (lowerModel.includes('3.6-flash') || lowerModel.includes('3.5-flash-lite')) {
+        targetModel = 'gemini-1.5-flash';
+      } else if (lowerModel.includes('3.1-pro') || lowerModel.includes('2.5-pro') || lowerModel.includes('2.5-flash')) {
+        targetModel = 'gemini-1.5-pro';
+      } else if (!targetModel) {
+        targetModel = 'gemini-1.5-flash';
+      }
+    } else if (provider === 'groq') {
+      if (lowerModel.includes('llama-3.1-8b-instant')) {
+        targetModel = 'llama-3.3-70b-versatile';
+      } else if (!targetModel) {
+        targetModel = 'llama-3.3-70b-versatile';
+      }
+    }
+
     if (provider === 'groq') {
       const apiKey = customKey || process.env.GROQ_API_KEY;
       if (!apiKey) throw new Error('Groq API Key is missing');
       const groqProvider = createGroq({ apiKey });
-      return groqProvider(modelName || 'llama-3.3-70b-versatile');
+      return groqProvider(targetModel || 'llama-3.3-70b-versatile');
     }
 
     if (provider === 'gemini') {
@@ -31,8 +50,7 @@ export class AIProviderService {
       if (!apiKey) throw new Error('Google Gemini API Key is missing');
       const google = createGoogleGenerativeAI({ apiKey });
 
-      const targetModel = modelName || 'gemini-2.5-flash';
-      return google(targetModel);
+      return google(targetModel || 'gemini-1.5-flash');
     }
 
     if (provider === 'openai') {

@@ -118,6 +118,14 @@ export async function PATCH(request: Request) {
       custom_api_key,
       custom_api_base_url,
       custom_model_name,
+      monthly_budget_inr,
+      budget_alert_threshold_percent,
+      budget_action,
+      budget_reset_day,
+      enable_budget_cap,
+      enable_auto_fallback,
+      fallback_provider,
+      fallback_model,
     } = body
 
     const updateFields: Record<string, any> = {
@@ -141,6 +149,14 @@ export async function PATCH(request: Request) {
     if (use_custom_keys !== undefined) updateFields.use_custom_keys = use_custom_keys
     if (custom_api_base_url !== undefined) updateFields.custom_api_base_url = custom_api_base_url
     if (custom_model_name !== undefined) updateFields.custom_model_name = custom_model_name
+    if (monthly_budget_inr !== undefined) updateFields.monthly_budget_inr = monthly_budget_inr
+    if (budget_alert_threshold_percent !== undefined) updateFields.budget_alert_threshold_percent = budget_alert_threshold_percent
+    if (budget_action !== undefined) updateFields.budget_action = budget_action
+    if (budget_reset_day !== undefined) updateFields.budget_reset_day = budget_reset_day
+    if (enable_budget_cap !== undefined) updateFields.enable_budget_cap = enable_budget_cap
+    if (enable_auto_fallback !== undefined) updateFields.enable_auto_fallback = enable_auto_fallback
+    if (fallback_provider !== undefined) updateFields.fallback_provider = fallback_provider
+    if (fallback_model !== undefined) updateFields.fallback_model = fallback_model
 
     // Cryptographic AES-256-GCM Encryption for API Keys
     if (custom_api_key && typeof custom_api_key === 'string' && !custom_api_key.includes('••••')) {
