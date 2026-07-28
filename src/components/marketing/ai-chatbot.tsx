@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from 'react'
-import { useChat } from 'ai/react'
+import { useChat } from '@ai-sdk/react'
 import { Bot, X, Send, Minimize2, Sparkles, User, AlertCircle } from 'lucide-react'
 
 export function AiChatbot() {
