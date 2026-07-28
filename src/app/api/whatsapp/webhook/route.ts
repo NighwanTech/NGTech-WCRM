@@ -920,16 +920,30 @@ async function processMessage(
     // Uses the selected AI provider from the AI Assistant settings panel.
     const analysisProvider = aiConfig?.provider || 'groq';
     const analysisModelName = analysisProvider === 'groq' 
-      ? 'llama-3.1-8b-instant'
-      : (analysisProvider === 'gemini' ? (aiConfig?.model || 'gemini-2.5-flash') : (aiConfig?.model || 'llama-3.1-8b-instant'));
-    const hasAnalysisKey = analysisProvider === 'groq' ? !!process.env.GROQ_API_KEY
+      ? 'llama-3.3-70b-versatile'
+      : (analysisProvider === 'gemini' ? (aiConfig?.model || 'gemini-2.5-flash') : (aiConfig?.model || 'llama-3.3-70b-versatile'));
+    
+    let analysisApiKey = undefined;
+    if (aiConfig?.use_custom_keys && aiConfig?.custom_api_key_encrypted) {
+      const { decrypt } = await import('@/lib/whatsapp/encryption');
+      try {
+        analysisApiKey = decrypt(aiConfig.custom_api_key_encrypted);
+      } catch (e) {
+        console.error('[webhook-ai-analysis] failed to decrypt key:', e);
+      }
+    }
+
+    const hasAnalysisKey = analysisApiKey ? true : (analysisProvider === 'groq' ? !!process.env.GROQ_API_KEY
       : analysisProvider === 'gemini' ? !!process.env.GOOGLE_GENERATIVE_AI_API_KEY
-      : !!process.env.GROQ_API_KEY; // fallback
+      : !!process.env.GROQ_API_KEY); // fallback
 
     if (hasAnalysisKey) {
       await (async () => {
         try {
-          const analysisModel = AIProviderService.getModel(analysisProvider, analysisModelName);
+          const analysisModel = AIProviderService.getModel(analysisProvider, analysisModelName, {
+            apiKey: analysisApiKey?.trim(),
+            baseUrl: aiConfig?.custom_api_base_url,
+          });
           const { object, usage } = await generateObject({
             model: analysisModel as any,
             schema: z.object({
@@ -1148,8 +1162,23 @@ Message: "${inboundText}"`,
               );
               
               const provider = aiConfig?.provider || 'groq';
-              const modelName = aiConfig?.model || (provider === 'gemini' ? 'gemini-1.5-pro' : 'llama-3.3-70b-versatile');
-              const model = AIProviderService.getModel(provider, modelName);
+              const targetModel = aiConfig?.model === 'custom-model' ? aiConfig?.custom_model_name : aiConfig?.model;
+              const modelName = targetModel || (provider === 'gemini' ? 'gemini-1.5-pro' : 'llama-3.3-70b-versatile');
+              
+              let apiKey = undefined;
+              if (aiConfig?.use_custom_keys && aiConfig?.custom_api_key_encrypted) {
+                const { decrypt } = await import('@/lib/whatsapp/encryption');
+                try {
+                  apiKey = decrypt(aiConfig.custom_api_key_encrypted);
+                } catch (decErr) {
+                  console.error('[webhook-ai] failed to decrypt API key:', decErr);
+                }
+              }
+
+              const model = AIProviderService.getModel(provider, modelName, {
+                apiKey: apiKey?.trim(),
+                baseUrl: aiConfig?.custom_api_base_url,
+              });
               
               const startTime = performance.now();
 
