@@ -26,9 +26,16 @@ const MODEL_PRICING: Record<string, { prompt: number; completion: number }> = {
   'o3-mini': { prompt: 1.1, completion: 4.4 },
   'gpt-4-turbo': { prompt: 10.0, completion: 30.0 },
   // Gemini
+  'gemini-3.6-flash': { prompt: 0.15, completion: 0.6 },
+  'gemini-3.5-flash': { prompt: 0.1, completion: 0.4 },
+  'gemini-3.5-flash-lite': { prompt: 0.05, completion: 0.2 },
+  'gemini-2.5-flash': { prompt: 0.15, completion: 0.6 },
+  'gemini-2.5-flash-lite': { prompt: 0.075, completion: 0.3 },
+  'gemini-2.5-pro': { prompt: 1.25, completion: 10.0 },
+  'gemini-2.0-flash': { prompt: 0.1, completion: 0.4 },
+  'gemini-2.0-flash-lite': { prompt: 0.075, completion: 0.3 },
   'gemini-1.5-pro': { prompt: 1.25, completion: 5.0 },
   'gemini-1.5-flash': { prompt: 0.075, completion: 0.3 },
-  'gemini-2.0-flash': { prompt: 0.1, completion: 0.4 },
   // Claude
   'claude-3-5-sonnet-latest': { prompt: 3.0, completion: 15.0 },
   'claude-3-5-haiku-latest': { prompt: 0.8, completion: 4.0 },

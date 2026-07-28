@@ -78,7 +78,7 @@ export function GeneralSettingsCard({ config, onChange }: Props) {
                 onChange('provider', v);
                 // Set sensible default model when switching provider
                 if (v === 'openai') onChange('model', 'gpt-4o');
-                else if (v === 'gemini') onChange('model', 'gemini-3.6-flash');
+                else if (v === 'gemini') onChange('model', 'gemini-2.5-flash');
                 else if (v === 'claude') onChange('model', 'claude-3-5-sonnet-latest');
                 else if (v === 'groq') onChange('model', 'llama-3.3-70b-versatile');
                 else if (v === 'deepseek') onChange('model', 'deepseek-chat');
@@ -101,7 +101,7 @@ export function GeneralSettingsCard({ config, onChange }: Props) {
 
           <div className="space-y-2">
             <Label>Model</Label>
-            <Select value={config.model || 'gemini-2.0-flash'} onValueChange={(v) => onChange('model', v)}>
+            <Select value={config.model || 'gemini-2.5-flash'} onValueChange={(v) => onChange('model', v)}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select model" />
               </SelectTrigger>
@@ -118,12 +118,12 @@ export function GeneralSettingsCard({ config, onChange }: Props) {
                 )}
                 {provider === 'gemini' && (
                   <>
-                    <SelectItem value="gemini-3.6-flash">Gemini 3.6 Flash (Default Choice - Fast & Multimodal)</SelectItem>
-                    <SelectItem value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (High-Volume Workhorse)</SelectItem>
-                    <SelectItem value="gemini-3.1-pro">Gemini 3.1 Pro (Deep Reasoning)</SelectItem>
-                    <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro (Long Context)</SelectItem>
-                    <SelectItem value="gemini-1.5-flash">Gemini 1.5 Flash (Universal - Free Tier Compatible)</SelectItem>
-                    <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro</SelectItem>
+                    <SelectItem value="gemini-3.6-flash">Gemini 3.6 Flash (Latest High-Performance)</SelectItem>
+                    <SelectItem value="gemini-3.5-flash">Gemini 3.5 Flash (Fast, General-Purpose)</SelectItem>
+                    <SelectItem value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (Lowest Cost Text)</SelectItem>
+                    <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash (Production Recommended)</SelectItem>
+                    <SelectItem value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite (Budget Production)</SelectItem>
+                    <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro (Highest Reasoning Quality)</SelectItem>
                     <SelectItem value="custom-model">Custom Model Identifier...</SelectItem>
                   </>
                 )}

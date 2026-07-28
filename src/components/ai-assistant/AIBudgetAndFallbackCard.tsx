@@ -195,14 +195,16 @@ export function AIBudgetAndFallbackCard({ config, onChange }: Props) {
               <div className="space-y-2">
                 <Label className="text-xs font-medium">Backup Model</Label>
                 <Select
-                  value={config.fallback_model || 'gemini-1.5-flash'}
+                  value={config.fallback_model || 'gemini-2.0-flash-lite'}
                   onValueChange={(v) => { if (v) onChange('fallback_model', v); }}
                 >
                   <SelectTrigger className="text-xs">
                     <SelectValue placeholder="Select fallback model" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="gemini-1.5-flash">Gemini 1.5 Flash (Fast & Low Cost)</SelectItem>
+                    <SelectItem value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (Cheapest)</SelectItem>
+                    <SelectItem value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite (Budget)</SelectItem>
+                    <SelectItem value="gemini-2.0-flash-lite">Gemini 2.0 Flash-Lite (Legacy Budget)</SelectItem>
                     <SelectItem value="llama-3.1-8b-instant">Llama 3.1 8B Instant (Groq)</SelectItem>
                     <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
                   </SelectContent>
