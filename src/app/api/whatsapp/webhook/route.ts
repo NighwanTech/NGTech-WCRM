@@ -18,6 +18,9 @@ import {
 } from '@/lib/whatsapp/template-webhook'
 import { generateText, tool, generateObject } from 'ai'
 import { z } from 'zod'
+
+// In-memory set to debounce concurrent AI generations for the same conversation
+const processingAiConversations = new Set<string>();
 import { groq } from '@ai-sdk/groq'
 import { engineSendText } from '@/lib/automations/meta-send'
 import { checkRateLimit } from '@/lib/rate-limit'
@@ -1116,6 +1119,15 @@ Message: "${inboundText}"`,
       console.log(`[ai-auto-reply] shouldRunAi = ${shouldRunAi} for conversation ${conversation.id}`);
 
       if (shouldRunAi) {
+        if (processingAiConversations.has(conversation.id)) {
+          console.log(`[ai-auto-reply] Debouncing duplicate AI request for conversation ${conversation.id}`);
+          return;
+        }
+        processingAiConversations.add(conversation.id);
+        
+        // Wait 5000ms before fetching DB history so that rapid consecutive double-texts 
+        // from the user have time to be inserted into the database.
+        await new Promise(r => setTimeout(r, 5000));
         // AI Rate limiting
         const aiRateKey = `ai:${accountId}`;
         const rl = checkRateLimit(aiRateKey, { limit: 100, windowMs: 60_000 });
@@ -1327,7 +1339,9 @@ Message: "${inboundText}"`,
             }
           }
 
-        })();
+        })().finally(() => {
+          processingAiConversations.delete(conversation.id);
+        });
       }
   }
   // new_contact_created fires only when the webhook just auto-created the
