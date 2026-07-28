@@ -1125,18 +1125,20 @@ Message: "${inboundText}"`,
         }
         processingAiConversations.add(conversation.id);
         
-        // Wait 5000ms before fetching DB history so that rapid consecutive double-texts 
-        // from the user have time to be inserted into the database.
-        await new Promise(r => setTimeout(r, 5000));
-        // AI Rate limiting
-        const aiRateKey = `ai:${accountId}`;
-        const rl = checkRateLimit(aiRateKey, { limit: 100, windowMs: 60_000 });
-        if (!rl.success) {
-          console.warn(`[ai-rate-limit] Account ${accountId} exceeded 100 AI calls/min`);
-          return;
-        }
-
-        await (async () => {
+        // Run AI processing in the background so we don't block the 200 OK response to Meta!
+        // Meta requires a 200 OK within 3-5s, otherwise it retries the webhook and creates duplicate messages.
+        Promise.resolve().then(async () => {
+          // Wait 5000ms before fetching DB history so that rapid consecutive double-texts 
+          // from the user have time to be inserted into the database.
+          await new Promise(r => setTimeout(r, 5000));
+          
+          // AI Rate limiting
+          const aiRateKey = `ai:${accountId}`;
+          const rl = checkRateLimit(aiRateKey, { limit: 100, windowMs: 60_000 });
+          if (!rl.success) {
+            console.warn(`[ai-rate-limit] Account ${accountId} exceeded 100 AI calls/min`);
+            return;
+          }
           let retryCount = 0;
           let success = false;
           let isHandoff = false;
@@ -1338,8 +1340,9 @@ Message: "${inboundText}"`,
               }
             }
           }
-
-        })().finally(() => {
+        }).catch(err => {
+          console.error('[ai-auto-reply] Uncaught background error:', err);
+        }).finally(() => {
           processingAiConversations.delete(conversation.id);
         });
       }
