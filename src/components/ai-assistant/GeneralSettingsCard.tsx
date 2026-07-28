@@ -118,12 +118,15 @@ export function GeneralSettingsCard({ config, onChange }: Props) {
                 )}
                 {provider === 'gemini' && (
                   <>
-                    <SelectItem value="gemini-3.6-flash">Gemini 3.6 Flash (Latest High-Performance)</SelectItem>
-                    <SelectItem value="gemini-3.5-flash">Gemini 3.5 Flash (Fast, General-Purpose)</SelectItem>
-                    <SelectItem value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (Lowest Cost Text)</SelectItem>
-                    <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash (Production Recommended)</SelectItem>
-                    <SelectItem value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite (Budget Production)</SelectItem>
-                    <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro (Highest Reasoning Quality)</SelectItem>
+                    <SelectItem value="gemini-3.6-flash">Gemini 3.6 Flash (Latest Flagship)</SelectItem>
+                    <SelectItem value="gemini-3.5-flash">Gemini 3.5 Flash (Standard High-Throughput)</SelectItem>
+                    <SelectItem value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (Fastest & Cost-Effective)</SelectItem>
+                    <SelectItem value="gemini-3.5-flash-cyber">Gemini 3.5 Flash-Cyber (Security Testing)</SelectItem>
+                    <SelectItem value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview (Deep Reasoning)</SelectItem>
+                    <SelectItem value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite (High-Volume)</SelectItem>
+                    <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro (Legacy Reasoning)</SelectItem>
+                    <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash (Legacy Price-Performance)</SelectItem>
+                    <SelectItem value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite (Legacy Budget)</SelectItem>
                     <SelectItem value="custom-model">Custom Model Identifier...</SelectItem>
                   </>
                 )}

@@ -24,7 +24,7 @@ export class AIProviderService {
 
     if (provider === 'gemini') {
       if (!targetModel) {
-        targetModel = 'gemini-2.5-flash';
+        targetModel = 'gemini-3.6-flash';
       }
     } else if (provider === 'groq') {
       if (lowerModel.includes('llama-3.1-8b-instant')) {
@@ -46,7 +46,7 @@ export class AIProviderService {
       if (!apiKey) throw new Error('Google Gemini API Key is missing');
       const google = createGoogleGenerativeAI({ apiKey });
 
-      return google(targetModel || 'gemini-2.5-flash');
+      return google(targetModel || 'gemini-3.6-flash');
     }
 
     if (provider === 'openai') {

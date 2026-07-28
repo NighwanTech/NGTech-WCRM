@@ -55,30 +55,38 @@ export async function POST(request: Request) {
     });
 
     let text = '';
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     try {
       const res = await generateText({
         model: aiModel as any,
         prompt: 'Hello! Reply with "OK" if connection is working.',
-        maxTokens: 100,
+        maxOutputTokens: 100,
+        abortSignal: controller.signal,
       });
       text = res.text;
     } catch (err: any) {
       const errMsg = err?.message || '';
       if (provider === 'gemini' && (errMsg.includes('limit: 0') || errMsg.includes('Quota exceeded') || errMsg.includes('quota'))) {
-        console.log('[AI keys test] Gemini quota limit hit. Retrying with Gemini 2.0 Flash...');
-        aiModel = AIProviderService.getModel(provider, 'gemini-2.0-flash', {
+        console.log('[AI keys test] Gemini quota limit hit. Retrying with Gemini 3.6 Flash...');
+        aiModel = AIProviderService.getModel(provider, 'gemini-3.6-flash', {
           apiKey: apiKey?.trim(),
           baseUrl: baseUrl?.trim(),
         });
         const res = await generateText({
           model: aiModel as any,
           prompt: 'Hello! Reply with "OK" if connection is working.',
-          maxTokens: 100,
+          maxOutputTokens: 100,
+          abortSignal: controller.signal,
         });
         text = res.text;
       } else {
         throw err;
       }
+    } finally {
+      clearTimeout(timeoutId);
     }
 
     return NextResponse.json({

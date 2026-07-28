@@ -1187,7 +1187,7 @@ Message: "${inboundText}"`,
               
               const provider = aiConfig?.provider || 'groq';
               const targetModel = aiConfig?.model === 'custom-model' ? aiConfig?.custom_model_name : aiConfig?.model;
-              const modelName = targetModel || (provider === 'gemini' ? 'gemini-1.5-pro' : 'llama-3.3-70b-versatile');
+              const modelName = targetModel || (provider === 'gemini' ? 'gemini-3.6-flash' : 'llama-3.3-70b-versatile');
               
               let apiKey = undefined;
               if (aiConfig?.use_custom_keys && aiConfig?.custom_api_key_encrypted) {
