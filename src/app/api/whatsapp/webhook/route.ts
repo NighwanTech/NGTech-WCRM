@@ -920,8 +920,8 @@ async function processMessage(
     // Uses the selected AI provider from the AI Assistant settings panel.
     const analysisProvider = aiConfig?.provider || 'groq';
     const analysisModelName = analysisProvider === 'groq' 
-      ? 'llama-3.3-70b-versatile'
-      : (analysisProvider === 'gemini' ? (aiConfig?.model || 'gemini-2.5-flash') : (aiConfig?.model || 'llama-3.3-70b-versatile'));
+      ? 'llama-3.1-8b-instant' // Cheapest Groq for background analysis
+      : (analysisProvider === 'gemini' ? 'gemini-3.5-flash-lite' : (aiConfig?.fallback_model || 'llama-3.1-8b-instant'));
     
     let analysisApiKey = undefined;
     if (aiConfig?.use_custom_keys && aiConfig?.custom_api_key_encrypted) {
@@ -1137,28 +1137,28 @@ Message: "${inboundText}"`,
                 .select('content_text, sender_type')
                 .eq('conversation_id', conversation.id)
                 .order('created_at', { ascending: false })
-                .limit(25); // Fetch a bit more to ensure we hit the char limit
+                .limit(20); 
                 
-              let historyStr = '';
-              const maxHistoryChars = 2000;
-              // historyMsgs is ordered latest first
-              const lines = [];
-              
+              const coreMessages: any[] = [];
               for (const m of (historyMsgs || [])) {
-                const line = `${m.sender_type === 'customer' ? 'Customer' : 'Assistant'}: ${m.content_text || ''}`;
-                if ((historyStr.length + line.length) > maxHistoryChars) break;
-                historyStr += line + '\n\n'; // for length tracking
-                lines.push(line);
+                if (!m.content_text) continue;
+                coreMessages.push({
+                  role: m.sender_type === 'customer' ? 'user' : 'assistant',
+                  content: m.content_text
+                });
               }
               // reverse to chronological order
-              historyStr = lines.reverse().join('\n\n') + '\n\n';
+              coreMessages.reverse();
+              // Add current message
+              coreMessages.push({ role: 'user', content: inboundText });
                 
               const fullSystemPrompt = await AIPromptService.buildSystemPrompt(
                 aiConfig || {}, 
-                historyStr,
+                '', // History is now handled natively via messages array
                 inboundText,
                 accountId,
-                isWithinHours
+                isWithinHours,
+                detectedIntent
               );
               
               const provider = aiConfig?.provider || 'groq';
@@ -1190,7 +1190,7 @@ Message: "${inboundText}"`,
                 const result = await generateText({
                   model: model as any,
                   system: fullSystemPrompt,
-                  prompt: inboundText,
+                  messages: coreMessages,
                   abortSignal: controller.signal,
                   maxTokens: aiConfig?.advanced_settings?.max_tokens || undefined,
                   temperature: aiConfig?.advanced_settings?.temperature || undefined,

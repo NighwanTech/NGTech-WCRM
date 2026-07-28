@@ -55,7 +55,7 @@ export async function POST(
       .join('\n')
 
     const { object } = await generateObject({
-      model: google('gemini-flash-latest'),
+      model: google('gemini-3.5-flash-lite'),
       schema: z.object({
         summary: z.string().describe('A concise 2-3 sentence summary of the conversation history.'),
         follow_up_recommendation: z.string().describe('A specific, actionable recommendation for what the human agent should say or do next to advance the conversation.'),

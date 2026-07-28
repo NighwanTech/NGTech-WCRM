@@ -12,7 +12,8 @@ export class AIPromptService {
     history: string = '', 
     query: string = '', 
     accountId?: string,
-    isWithinHours: boolean = true
+    isWithinHours: boolean = true,
+    detectedIntent: string = 'General'
   ): Promise<string> {
     const { 
       system_prompt = 'You are a helpful customer support assistant for this business.',
@@ -143,8 +144,9 @@ export class AIPromptService {
       }
     }
 
-    // Fetch and inject dynamic Product/Services Catalog
-    if (accountId) {
+    // Fetch and inject dynamic Product/Services Catalog ONLY if intent is relevant
+    const needsProducts = ['Sales', 'Pricing', 'Appointment'].includes(detectedIntent);
+    if (accountId && needsProducts) {
       try {
         const supabase = supabaseAdmin();
         const { data: activeProducts } = await supabase
