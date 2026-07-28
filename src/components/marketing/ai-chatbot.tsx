@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useChat } from '@ai-sdk/react'
+import { DefaultChatTransport } from 'ai'
 import { Bot, X, Send, Minimize2, Sparkles, User, AlertCircle } from 'lucide-react'
 
 export function AiChatbot() {
@@ -16,16 +17,36 @@ export function AiChatbot() {
     return () => clearInterval(interval)
   }, [])
   
-  const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
-    api: '/api/chat',
-    initialMessages: [
+  const [input, setInput] = useState("")
+  
+  const { messages, sendMessage, status, error, setMessages } = useChat({
+    transport: new DefaultChatTransport({ api: '/api/chat' })
+  })
+
+  useEffect(() => {
+    setMessages([
       {
         id: '1',
         role: 'assistant',
-        content: "Hi! I'm the NGTech WCRM AI assistant. How can I help you learn about our WhatsApp CRM platform today?"
-      }
-    ]
-  })
+        parts: [{ type: 'text', text: "Hi! I'm the NGTech WCRM AI assistant. How can I help you learn about our WhatsApp CRM platform today?" }]
+      } as any
+    ])
+  }, [setMessages])
+
+  const isLoading = status === 'submitted' || status === 'streaming'
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input?.trim() || isLoading) return;
+    sendMessage(input as any);
+    setInput("");
+  }
+
+  const getMessageText = (m: any) => {
+    if (typeof m.content === 'string') return m.content;
+    if (m.parts) return m.parts.map((p: any) => p.text || '').join('');
+    return '';
+  }
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -295,9 +316,9 @@ export function AiChatbot() {
                   }`}
                 >
                   {m.role === 'user' ? (
-                    m.content
+                    getMessageText(m)
                   ) : (
-                    m.content.split(/(\*\*.*?\*\*)/g).map((part, idx) => {
+                    getMessageText(m).split(/(\*\*.*?\*\*)/g).map((part: string, idx: number) => {
                       if (part.startsWith('**') && part.endsWith('**')) {
                         return <strong key={idx} className="font-bold text-primary dark:text-blue-400">{part.slice(2, -2)}</strong>
                       }
@@ -377,7 +398,7 @@ export function AiChatbot() {
               <input
                 type="text"
                 value={input}
-                onChange={handleInputChange}
+                onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask anything about our CRM..."
                 className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50"
                 disabled={isLoading}
