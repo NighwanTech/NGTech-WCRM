@@ -68,8 +68,22 @@ export function phoneVariants(sanitized: string): string[] {
     if (v && !seen.has(v)) seen.add(v)
   }
 
+  // 0. Auto-fix 10-digit and 11-digit (leading 0) Indian numbers
+  if (/^[6-9]\d{9}$/.test(sanitized)) {
+    push('91' + sanitized)
+  }
+  if (/^0[6-9]\d{9}$/.test(sanitized)) {
+    push('91' + sanitized.slice(1))
+    push(sanitized.slice(1))
+  }
+
   // 1. Original
   push(sanitized)
+
+  // If 12-digit starting with 91, also try 10-digit without 91
+  if (/^91[6-9]\d{9}$/.test(sanitized)) {
+    push(sanitized.slice(2))
+  }
 
   // 2. Insert a 0 after each plausible country-code length
   for (const ccLen of [1, 2, 3]) {

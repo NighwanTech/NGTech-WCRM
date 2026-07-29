@@ -162,6 +162,8 @@ export default function BroadcastDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [retryProgress, setRetryProgress] = useState(0);
+  const [resuming, setResuming] = useState(false);
+  const [resumeProgress, setResumeProgress] = useState(0);
 
   const fetchData = useCallback(async () => {
     try {
@@ -199,6 +201,177 @@ export default function BroadcastDetailPage() {
     () => recipients.filter((r) => r.status === 'failed'),
     [recipients],
   );
+
+  const pendingRecipients = useMemo(
+    () => recipients.filter((r) => r.status === 'pending'),
+    [recipients],
+  );
+
+  async function handleResumePending() {
+    if (!broadcast || pendingRecipients.length === 0 || resuming || retrying) return;
+
+    setResuming(true);
+    setResumeProgress(0);
+    const supabase = createClient();
+
+    try {
+      const contactIds = pendingRecipients
+        .map((r) => r.contact?.id)
+        .filter((id): id is string => Boolean(id));
+
+      const customValueIndex = await fetchCustomValueIndex(supabase, contactIds);
+
+      const BATCH_SIZE = 5;
+      const BATCH_DELAY_MS = 2500;
+      let sentCount = 0;
+      let failedCount = 0;
+
+      for (let i = 0; i < pendingRecipients.length; i += BATCH_SIZE) {
+        const batch = pendingRecipients.slice(i, i + BATCH_SIZE);
+
+        const apiRecipients = batch
+          .filter((r) => r.contact?.phone)
+          .map((r) => ({
+            phone: r.contact!.phone as string,
+            params: r.contact
+              ? resolveVariables(
+                  (broadcast.template_variables as any) ?? {},
+                  r.contact,
+                  customValueIndex.get(r.contact.id),
+                )
+              : [],
+          }));
+
+        if (apiRecipients.length > 0) {
+          try {
+            const res = await fetch('/api/whatsapp/broadcast', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                recipients: apiRecipients,
+                template_name: broadcast.template_name,
+                template_language: broadcast.template_language ?? 'en_US',
+              }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.results) {
+              const resultsByPhone = new Map<string, any>();
+              for (const r of data.results) {
+                resultsByPhone.set(r.phone, r);
+              }
+
+              for (const recipient of batch) {
+                const phone = recipient.contact?.phone;
+                const result = phone ? resultsByPhone.get(phone) : undefined;
+
+                if (result && result.status === 'sent') {
+                  await supabase
+                    .from('broadcast_recipients')
+                    .update({
+                      status: 'sent',
+                      sent_at: new Date().toISOString(),
+                      whatsapp_message_id: result.whatsapp_message_id ?? null,
+                      error_message: null,
+                    })
+                    .eq('id', recipient.id);
+                  sentCount++;
+                } else {
+                  const errorMsg = result?.error ?? 'Unknown send error';
+                  await supabase
+                    .from('broadcast_recipients')
+                    .update({
+                      status: 'failed',
+                      error_message: errorMsg,
+                    })
+                    .eq('id', recipient.id);
+                  failedCount++;
+                }
+              }
+            } else {
+              const errorMsg = data.error || 'Broadcast API request failed';
+              for (const recipient of batch) {
+                await supabase
+                  .from('broadcast_recipients')
+                  .update({
+                    status: 'failed',
+                    error_message: errorMsg,
+                  })
+                  .eq('id', recipient.id);
+                failedCount++;
+              }
+            }
+          } catch (err) {
+            const errorMsg =
+              err instanceof Error ? err.message : 'Unknown send error';
+            for (const recipient of batch) {
+              await supabase
+                .from('broadcast_recipients')
+                .update({
+                  status: 'failed',
+                  error_message: errorMsg,
+                })
+                .eq('id', recipient.id);
+              failedCount++;
+            }
+          }
+        }
+
+        const pct = Math.round(
+          ((i + batch.length) / pendingRecipients.length) * 100,
+        );
+        setResumeProgress(pct);
+
+        if (i + BATCH_SIZE < pendingRecipients.length) {
+          await new Promise((res) => setTimeout(res, BATCH_DELAY_MS));
+        }
+      }
+
+      // Check if all pending processed and set status
+      const { count: remainingPending } = await supabase
+        .from('broadcast_recipients')
+        .select('*', { count: 'exact', head: true })
+        .eq('broadcast_id', broadcast.id)
+        .eq('status', 'pending');
+
+      if (!remainingPending || remainingPending === 0) {
+        await supabase
+          .from('broadcasts')
+          .update({ status: 'sent' })
+          .eq('id', broadcast.id);
+      }
+
+      toast.success(
+        `Resume completed: ${sentCount} sent, ${failedCount} failed.`,
+      );
+      await fetchData();
+    } catch (err) {
+      toast.error(
+        `Error resuming broadcast: ${
+          err instanceof Error ? err.message : 'Unknown error'
+        }`,
+      );
+    } finally {
+      setResuming(false);
+      setResumeProgress(0);
+    }
+  }
+
+  async function handleMarkFinished() {
+    if (!broadcast) return;
+    const supabase = createClient();
+    try {
+      await supabase
+        .from('broadcasts')
+        .update({ status: 'sent' })
+        .eq('id', broadcast.id);
+      toast.success('Broadcast marked as completed.');
+      await fetchData();
+    } catch (err) {
+      toast.error('Failed to update broadcast status');
+    }
+  }
 
   async function handleRetryFailed() {
     if (!broadcast || failedRecipients.length === 0 || retrying) return;
@@ -453,11 +626,33 @@ export default function BroadcastDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {pendingRecipients.length > 0 && (
+            <Button
+              variant="default"
+              size="sm"
+              disabled={resuming || retrying}
+              onClick={handleResumePending}
+              className="bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+            >
+              {resuming ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  Resuming ({resumeProgress}%)…
+                </>
+              ) : (
+                <>
+                  <Send className="mr-1.5 h-3.5 w-3.5" />
+                  Resume Sending ({pendingRecipients.length} Pending)
+                </>
+              )}
+            </Button>
+          )}
+
           {failedRecipients.length > 0 && (
             <Button
               variant="default"
               size="sm"
-              disabled={retrying || broadcast.status === 'sending'}
+              disabled={retrying || resuming}
               onClick={handleRetryFailed}
               className="bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50"
             >
@@ -472,6 +667,18 @@ export default function BroadcastDetailPage() {
                   Retry ({failedRecipients.length}) Failed
                 </>
               )}
+            </Button>
+          )}
+
+          {pendingRecipients.length === 0 && broadcast.status === 'sending' && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={resuming || retrying}
+              onClick={handleMarkFinished}
+              className="border-border text-foreground hover:bg-muted"
+            >
+              Mark Completed
             </Button>
           )}
 
@@ -504,10 +711,10 @@ export default function BroadcastDetailPage() {
             <Button
               variant="outline"
               size="sm"
-              disabled={broadcast.status === 'sending'}
+              disabled={broadcast.status === 'sending' && pendingRecipients.length > 0}
               onClick={() => setConfirmDelete(true)}
               title={
-                broadcast.status === 'sending'
+                broadcast.status === 'sending' && pendingRecipients.length > 0
                   ? 'Cannot delete while a broadcast is actively sending'
                   : 'Delete this broadcast'
               }

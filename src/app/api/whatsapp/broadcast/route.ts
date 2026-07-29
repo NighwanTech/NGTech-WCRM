@@ -172,17 +172,29 @@ export async function POST(request: Request) {
     const accessToken = decrypt(config.access_token)
 
     // Load the template row once so sendTemplateMessage can build
-    // header + button components on each iteration. Loading inside
-    // the loop would N+1 against Supabase for every recipient.
-    // Guard against a malformed local row crashing every send in
-    // the loop with the same opaque TypeError — fail loudly once.
-    const { data: rawTemplateRow } = await supabase
+    // header + button components on each iteration. Try exact language
+    // match first, then fall back to name match so language code variations
+    // (e.g. 'hi' vs 'en_US') still load the approved header & component definition.
+    let { data: rawTemplateRow } = await supabase
       .from('message_templates')
       .select('*')
       .eq('account_id', accountId)
       .eq('name', template_name)
       .eq('language', template_language || 'en_US')
       .maybeSingle()
+
+    if (!rawTemplateRow) {
+      const { data: fallbackRow } = await supabase
+        .from('message_templates')
+        .select('*')
+        .eq('account_id', accountId)
+        .eq('name', template_name)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      rawTemplateRow = fallbackRow
+    }
+
     if (rawTemplateRow && !isMessageTemplate(rawTemplateRow)) {
       return NextResponse.json(
         {
@@ -193,13 +205,23 @@ export async function POST(request: Request) {
       )
     }
     const templateRow = rawTemplateRow ?? null
+    const effectiveLanguage = templateRow?.language || template_language || 'en_US'
 
     const results: BroadcastResult[] = []
     let sentCount = 0
     let failedCount = 0
 
     for (const recipient of recipients) {
-      const sanitized = sanitizePhoneForMeta(recipient.phone)
+      let sanitized = sanitizePhoneForMeta(recipient.phone)
+
+      // Auto-prefix country code 91 for 10-digit / 11-digit Indian phone numbers
+      if (/^[6-9]\d{9}$/.test(sanitized)) {
+        sanitized = '91' + sanitized
+      } else if (/^0[6-9]\d{9}$/.test(sanitized)) {
+        sanitized = '91' + sanitized.slice(1)
+      } else if (sanitized.startsWith('0') && sanitized.length >= 11) {
+        sanitized = sanitized.replace(/^0+/, '')
+      }
 
       if (!isValidE164(sanitized)) {
         results.push({
@@ -211,8 +233,7 @@ export async function POST(request: Request) {
         continue
       }
 
-      // Retry with phone variants on "not in allowed list" so numbers
-      // that differ only in a trunk-prefix 0 still reach recipients.
+      // Retry with phone variants (country code variations, trunk prefix 0)
       const variants = phoneVariants(sanitized)
       let sentMessageId: string | null = null
       let lastError: string | null = null
@@ -224,7 +245,7 @@ export async function POST(request: Request) {
             accessToken,
             to: variant,
             templateName: template_name,
-            language: template_language || 'en_US',
+            language: effectiveLanguage,
             template: templateRow ?? undefined,
             messageParams: recipient.messageParams,
             params: recipient.params ?? [],
@@ -235,12 +256,8 @@ export async function POST(request: Request) {
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : 'Unknown error'
-          if (!isRecipientNotAllowedError(errorMessage)) {
-            lastError = errorMessage
-            break
-          }
           lastError = errorMessage
-          // retry with next variant
+          // Try next phone number variant if this format failed
         }
       }
 
