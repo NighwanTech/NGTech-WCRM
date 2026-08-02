@@ -1,14 +1,29 @@
 "use client"
 
 import { useState, useRef, useEffect } from 'react'
-import { useChat } from '@ai-sdk/react'
-import { DefaultChatTransport } from 'ai'
 import { Bot, X, Send, Minimize2, Sparkles, User, AlertCircle } from 'lucide-react'
+
+interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+}
 
 export function AiChatbot() {
   const [isOpen, setIsOpen] = useState(false)
   const [activeIcon, setActiveIcon] = useState<"ai" | "whatsapp">("ai")
   const [showTooltip, setShowTooltip] = useState(true)
+  const [input, setInput] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: '1',
+      role: 'assistant',
+      content: "Hi! I'm the NGTech WCRM AI assistant. How can I help you learn about our WhatsApp CRM platform today?"
+    }
+  ])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -16,36 +31,88 @@ export function AiChatbot() {
     }, 4500)
     return () => clearInterval(interval)
   }, [])
-  
-  const [input, setInput] = useState("")
-  
-  const { messages, sendMessage, status, error, setMessages } = useChat({
-    transport: new DefaultChatTransport({ api: '/api/chat' })
-  })
 
-  useEffect(() => {
-    setMessages([
-      {
-        id: '1',
-        role: 'assistant',
-        parts: [{ type: 'text', text: "Hi! I'm the NGTech WCRM AI assistant. How can I help you learn about our WhatsApp CRM platform today?" }]
-      } as any
-    ])
-  }, [setMessages])
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const text = input.trim()
+    if (!text || isLoading) return
 
-  const isLoading = status === 'submitted' || status === 'streaming'
+    setError(null)
+    const userMsg: ChatMessage = { id: Date.now().toString(), role: 'user', content: text }
+    const updatedMessages = [...messages, userMsg]
+    setMessages(updatedMessages)
+    setInput("")
+    setIsLoading(true)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input?.trim() || isLoading) return;
-    sendMessage(input as any);
-    setInput("");
+    const assistantMsgId = (Date.now() + 1).toString()
+    setMessages((prev) => [...prev, { id: assistantMsgId, role: 'assistant', content: "" }])
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: updatedMessages.map(m => ({ role: m.role, content: m.content }))
+        })
+      })
+
+      if (!res.ok) {
+        throw new Error(`Server returned status ${res.status}`)
+      }
+
+      const reader = res.body?.getReader()
+      const decoder = new TextDecoder()
+      let accumulatedText = ""
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          const chunkStr = decoder.decode(value, { stream: true })
+          
+          const lines = chunkStr.split('\n')
+          for (const line of lines) {
+            if (line.startsWith('0:')) {
+              try {
+                const parsed = JSON.parse(line.slice(2))
+                accumulatedText += parsed
+                setMessages((prev) =>
+                  prev.map((m) => (m.id === assistantMsgId ? { ...m, content: accumulatedText } : m))
+                )
+              } catch {
+                // ignore incomplete JSON chunk
+              }
+            }
+          }
+        }
+      }
+
+      if (!accumulatedText) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantMsgId
+              ? { ...m, content: "I am ready to help you with WCRM! Feel free to ask about our Pricing, Free Trial, or Features." }
+              : m
+          )
+        )
+      }
+    } catch (err: any) {
+      console.error("AI Chatbot Error:", err)
+      setError("Trouble connecting to AI server. Contact us on WhatsApp +91 8092225777.")
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantMsgId
+            ? { ...m, content: "I am having trouble reaching the AI server right now. You can chat directly with our team on WhatsApp at +91 8092225777 or call +91 8985025794!" }
+            : m
+        )
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const getMessageText = (m: any) => {
-    if (typeof m.content === 'string') return m.content;
-    if (m.parts) return m.parts.map((p: any) => p.text || '').join('');
-    return '';
+  const getMessageText = (m: ChatMessage) => {
+    return m.content || ''
   }
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -351,7 +418,7 @@ export function AiChatbot() {
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
               <div className="flex flex-col gap-1">
                 <p className="font-semibold">Failed to connect to the AI.</p>
-                <p className="opacity-80 break-all">{error.message || 'Unknown error occurred.'}</p>
+                <p className="opacity-80 break-all">{typeof error === 'string' ? error : 'Unknown error occurred.'}</p>
                 <p className="text-[10px] break-all">{JSON.stringify(error)}</p>
               </div>
             </div>

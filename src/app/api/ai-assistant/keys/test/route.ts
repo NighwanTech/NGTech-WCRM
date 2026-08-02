@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     });
 
     let text = '';
-    
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
   } catch (err: any) {
     console.error('API key test error:', err);
     let errMsg = err?.message || 'Failed to connect to AI Provider with given credentials.';
-    
+
     if (errMsg.includes('Quota exceeded') || errMsg.includes('limit: 0')) {
       errMsg = `Google AI Quota Limit Exceeded: ${err?.message || errMsg}. (Note: If using a Free tier key, select Gemini 1.5 Flash. If using a Paid billing-enabled key, please verify your Google Cloud Platform billing status/card payment is active).`;
     } else if (errMsg.includes('is not found for API version') || errMsg.includes('v1beta')) {

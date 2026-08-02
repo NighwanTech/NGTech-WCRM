@@ -22,10 +22,11 @@ function calculateBusinessElapsedMs(startTs: string, endTs: string, config: any)
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
+    const { id } = await params
 
     const {
       data: { user },
@@ -40,14 +41,15 @@ export async function GET(
     const { data: dept, error: deptErr } = await supabase
       .from('departments')
       .select('id, account_id, accounts(business_hours)')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (deptErr || !dept) {
       return NextResponse.json({ error: 'Department not found' }, { status: 404 })
     }
     
-    const businessHours = Array.isArray(dept.accounts) ? dept.accounts[0]?.business_hours : dept.accounts?.business_hours;
+    const accountsData = dept.accounts as any
+    const businessHours = Array.isArray(accountsData) ? accountsData[0]?.business_hours : accountsData?.business_hours;
 
     const { data: config } = await supabase
       .from('whatsapp_config')
@@ -61,7 +63,7 @@ export async function GET(
     const { data: convs, error: convsErr } = await supabase
       .from('conversations')
       .select('id, created_at, closed_at')
-      .eq('department_id', params.id)
+      .eq('department_id', id)
 
     if (convsErr || !convs) {
       return NextResponse.json({

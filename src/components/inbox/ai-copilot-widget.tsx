@@ -17,9 +17,10 @@ export function AICopilotWidget({ conversationId, contactId, onApplyDraft }: AIC
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [actionType, setActionType] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
   const widgetRef = useRef<HTMLDivElement>(null);
-  const { session } = useAuth();
+  const [copied, setCopied] = useState(false);
+  const auth = useAuth() as any;
+  const session = auth?.session;
 
   // Close when clicking outside
   useEffect(() => {

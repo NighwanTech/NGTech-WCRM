@@ -109,7 +109,7 @@ Instructions:
     const { text } = await generateText({
       model: groq('llama-3.3-70b-versatile'),
       prompt,
-      maxTokens: 500,
+      maxOutputTokens: 500,
       temperature: 0.7
     })
 

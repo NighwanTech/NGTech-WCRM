@@ -1,10 +1,26 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Sparkles, Bot, ShieldCheck, Zap, Layers } from 'lucide-react'
 
 export default function FreeTrialPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-xs font-mono">Loading free trial setup…</div>}>
+      <FreeTrialInner />
+    </Suspense>
+  )
+}
+
+function FreeTrialInner() {
+  const searchParams = useSearchParams()
+  const planParam = searchParams.get('plan') || 'growth'
+  const agentsParam = searchParams.get('agents') || '4'
+  const leadsParam = searchParams.get('leads') || '10000'
+  const salaryParam = searchParams.get('salary') || '30000'
+  const roiParam = searchParams.get('roi') || '40.4x'
+
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -13,11 +29,10 @@ export default function FreeTrialPage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    
+
     const formData = new FormData(e.currentTarget)
-    
+
     try {
-      // Send to our Lead Ingestion API
       const response = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -26,16 +41,18 @@ export default function FreeTrialPage() {
           email: formData.get('email'),
           mobileNumber: formData.get('phone'),
           companyName: formData.get('company'),
-          teamSize: formData.get('teamSize'),
-          messageVolume: formData.get('messageVolume'),
-          leadSource: 'Free Trial Form',
+          teamSize: formData.get('teamSize') || `${agentsParam} Agents`,
+          messageVolume: formData.get('messageVolume') || `${leadsParam} Leads`,
+          planSlug: planParam,
+          expectedRoi: roiParam,
+          leadSource: 'Free Trial Calculator Form',
           landingPageUrl: window.location.href,
         })
       })
 
       if (!response.ok) {
         const errData = await response.json().catch(() => null)
-        throw new Error(errData?.error || 'Failed to submit. Please try again.')
+        throw new Error(errData?.error || 'Failed to submit request. Please try again.')
       }
 
       setSuccess(true)
@@ -48,17 +65,17 @@ export default function FreeTrialPage() {
 
   if (success) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center bg-background px-4">
-        <div className="max-w-md w-full text-center space-y-6">
-          <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/10">
-            <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+      <div className="min-h-[85vh] flex items-center justify-center bg-background px-4">
+        <div className="max-w-md w-full text-center space-y-6 p-8 rounded-3xl bg-card border border-border shadow-2xl">
+          <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
+            <CheckCircle2 className="h-10 w-10" />
           </div>
-          <h2 className="text-3xl font-bold text-foreground">Welcome to NGTech WCRM!</h2>
-          <p className="text-muted-foreground">
-            We've received your request. Check your email for login credentials and onboarding instructions.
+          <h2 className="text-3xl font-black text-foreground">Welcome to WCRM Platform!</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Your 7-day free trial request for <strong className="text-emerald-400 uppercase">{planParam} Plan ({agentsParam} Agents)</strong> has been created. Check your WhatsApp & email for setup instructions.
           </p>
-          <Link href="/" className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground hover:bg-primary-hover transition-colors">
-            Return to Homepage
+          <Link href="/dashboard" className="w-full inline-flex h-12 items-center justify-center rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs transition-all shadow-lg">
+            Go to Platform Dashboard →
           </Link>
         </div>
       </div>
@@ -66,113 +83,167 @@ export default function FreeTrialPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-16 lg:py-24">
+    <div className="min-h-screen bg-background py-16 lg:py-24 text-left">
       <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
-          
-          {/* Left: Value Prop */}
-          <div className="flex flex-col justify-center">
-            <h1 className="text-4xl lg:text-5xl font-extrabold text-foreground mb-6">Start your 7-day free trial</h1>
-            <p className="text-lg text-muted-foreground mb-10">
-              Join the smartest WhatsApp CRM built for growth. No credit card required. Cancel anytime.
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+
+          {/* Left Value Narrative */}
+          <div className="lg:col-span-6 space-y-8">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-bold text-emerald-400">
+              <Sparkles className="h-4 w-4" /> 7-Day Risk-Free Trial · No Credit Card Required
+            </div>
+
+            <h1 className="text-4xl lg:text-5xl font-black tracking-tight text-foreground leading-[1.08]">
+              Start Your 7-Day Free Trial on WCRM
+            </h1>
+
+            <p className="text-base text-muted-foreground leading-relaxed">
+              Join hundreds of high-growth teams automating customer support, sales pipelines, and WhatsApp broadcast campaigns with zero platform token markups.
             </p>
-            
-            <div className="space-y-6">
+
+            <div className="space-y-4 pt-2">
               {[
-                "Unlimited team members during trial",
-                "Full access to automated workflows",
-                "Advanced CRM and pipeline management",
-                "Free onboarding session with an expert"
+                "Unlimited team seats during 7-day trial",
+                "Bring Your Own Key (BYOK) multi-model AI routing",
+                "Visual Kanban sales deals pipeline",
+                "Retell Voice AI integration & call logging",
+                "1-on-1 dedicated setup onboarding session"
               ].map((item, i) => (
-                <div key={i} className="flex items-center">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20 mr-4">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                <div key={i} className="flex items-center gap-3 text-xs font-bold text-foreground">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+                    <CheckCircle2 className="h-4 w-4" />
                   </div>
-                  <span className="font-medium text-foreground">{item}</span>
+                  <span>{item}</span>
                 </div>
               ))}
             </div>
 
-            <div className="mt-16 border-t border-border pt-10">
-              <p className="text-sm text-muted-foreground mb-4">"NGTech WCRM completely transformed how we handle customer support. Our response time dropped by 80%."</p>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-muted"></div>
+            <div className="p-6 rounded-3xl bg-card border border-border/80 space-y-3">
+              <p className="text-xs text-muted-foreground italic leading-relaxed">
+                &ldquo;WCRM transformed our student admission counseling. Response times dropped by 80% with Gemini AI auto-responders.&rdquo;
+              </p>
+              <div className="flex items-center gap-3 pt-1">
+                <div className="h-9 w-9 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">
+                  BP
+                </div>
                 <div>
-                  <p className="text-sm font-bold text-foreground">Rahul Sharma</p>
-                  <p className="text-xs text-muted-foreground">CEO, EduSmart India</p>
+                  <p className="text-xs font-extrabold text-foreground">Director of Admissions</p>
+                  <p className="text-[10px] text-emerald-400 font-mono">BPTPIA Institutions</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right: Form */}
-          <div>
-            <div className="rounded-2xl border border-border bg-card p-8 shadow-xl">
-              <h2 className="text-2xl font-bold text-foreground mb-6">Create your account</h2>
-              
-              {error && (
-                <div className="mb-6 rounded-lg bg-destructive/10 p-4 text-sm text-destructive">
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid grid-cols-2 gap-5">
-                  <div className="space-y-2">
-                    <label htmlFor="fullName" className="text-sm font-medium text-foreground">Full Name</label>
-                    <input id="fullName" name="fullName" required className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" placeholder="John Doe" />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="phone" className="text-sm font-medium text-foreground">Mobile Number</label>
-                    <input id="phone" name="phone" required className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" placeholder="+91 9876543210" />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-foreground">Work Email</label>
-                  <input id="email" name="email" type="email" required className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" placeholder="john@company.com" />
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="company" className="text-sm font-medium text-foreground">Company Name</label>
-                  <input id="company" name="company" required className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Acme Inc." />
-                </div>
-
-                <div className="grid grid-cols-2 gap-5">
-                  <div className="space-y-2">
-                    <label htmlFor="teamSize" className="text-sm font-medium text-foreground">Team Size</label>
-                    <select id="teamSize" name="teamSize" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary appearance-none">
-                      <option value="1-5">1 - 5</option>
-                      <option value="6-20">6 - 20</option>
-                      <option value="21-50">21 - 50</option>
-                      <option value="50+">50+</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="messageVolume" className="text-sm font-medium text-foreground">Messages / Month</label>
-                    <select id="messageVolume" name="messageVolume" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary appearance-none">
-                      <option value="<10k">Less than 10k</option>
-                      <option value="10k-50k">10k - 50k</option>
-                      <option value="50k-100k">50k - 100k</option>
-                      <option value=">100k">100k+</option>
-                    </select>
-                  </div>
-                </div>
-
-                <button 
-                  type="submit" 
-                  disabled={loading}
-                  className="mt-6 w-full flex h-12 items-center justify-center rounded-lg bg-primary px-4 text-base font-semibold text-primary-foreground transition-all hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Creating Account...' : (
-                    <>Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></>
-                  )}
-                </button>
-                <p className="text-center text-xs text-muted-foreground mt-4">
-                  By signing up, you agree to our Terms of Service and Privacy Policy.
-                </p>
-              </form>
+          {/* Right Lead Capture Form */}
+          <div className="lg:col-span-6 p-8 rounded-3xl bg-card border border-border/80 shadow-2xl space-y-6 relative">
+            
+            {/* Parsed Telemetry Callout */}
+            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-2">
+              <div className="flex items-center justify-between font-mono">
+                <span className="text-emerald-400 font-extrabold uppercase">CALCULATOR TELEMETRY DETECTED</span>
+                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-black">{roiParam} ROI</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 font-mono text-[11px] text-muted-foreground pt-1 border-t border-emerald-500/20">
+                <div>Plan: <strong className="text-foreground uppercase">{planParam}</strong></div>
+                <div>Team: <strong className="text-foreground">{agentsParam} Agents</strong></div>
+                <div>Volume: <strong className="text-foreground">{Number(leadsParam).toLocaleString()} Leads/mo</strong></div>
+                <div>Trial: <strong className="text-emerald-400">7 Days Free</strong></div>
+              </div>
             </div>
+
+            {error && (
+              <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-foreground">Full Name *</label>
+                <input
+                  name="fullName"
+                  type="text"
+                  required
+                  placeholder="e.g. Rahul Sharma"
+                  className="w-full rounded-xl border border-border bg-background p-3 text-xs outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-foreground">Business Email *</label>
+                  <input
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="rahul@company.com"
+                    className="w-full rounded-xl border border-border bg-background p-3 text-xs outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-foreground">WhatsApp Mobile Number *</label>
+                  <input
+                    name="phone"
+                    type="tel"
+                    required
+                    placeholder="+91 98765 43210"
+                    className="w-full rounded-xl border border-border bg-background p-3 text-xs outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-foreground">Company Name *</label>
+                <input
+                  name="company"
+                  type="text"
+                  required
+                  placeholder="e.g. UrbanStyle D2C Enterprises"
+                  className="w-full rounded-xl border border-border bg-background p-3 text-xs outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-foreground">Team Size</label>
+                  <select
+                    name="teamSize"
+                    defaultValue={`${agentsParam} Agents`}
+                    className="w-full rounded-xl border border-border bg-background p-3 text-xs outline-none focus:border-emerald-500"
+                  >
+                    <option value="1-3 Agents">1-3 Agents</option>
+                    <option value="4-10 Agents">4-10 Agents</option>
+                    <option value="10+ Agents">10+ Agents</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-foreground">Monthly Inquiries</label>
+                  <select
+                    name="messageVolume"
+                    defaultValue={`${leadsParam} Leads`}
+                    className="w-full rounded-xl border border-border bg-background p-3 text-xs outline-none focus:border-emerald-500"
+                  >
+                    <option value="<5,000 Leads/mo">&lt; 5,000 / mo</option>
+                    <option value="5,000-25,000 Leads/mo">5,000 - 25,000 / mo</option>
+                    <option value="25,000+ Leads/mo">25,000+ / mo</option>
+                  </select>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex h-14 items-center justify-center rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm transition-all shadow-xl shadow-emerald-500/25 mt-4"
+              >
+                {loading ? 'Activating 7-Day Trial…' : 'Activate 7-Day Free Trial Now →'}
+              </button>
+
+              <p className="text-[11px] text-center text-muted-foreground pt-1">
+                By clicking activate, you agree to WCRM Terms of Service. No credit card required.
+              </p>
+            </form>
+
           </div>
 
         </div>

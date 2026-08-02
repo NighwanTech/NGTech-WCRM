@@ -103,7 +103,7 @@ function LoginPageInner() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="flex flex-col gap-4">
+          <form onSubmit={handleLogin} className="flex flex-col gap-4">
             {error && (
               <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
                 {error}
@@ -162,8 +162,7 @@ function LoginPageInner() {
             </div>
 
             <Button
-              type="button"
-              onClick={handleLogin}
+              type="submit"
               disabled={loading}
               className="mt-2 h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >

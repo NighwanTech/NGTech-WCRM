@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 
 export default function CheckoutClient() {
   const searchParams = useSearchParams()
-  const planSlug = searchParams.get('plan') as Plan
+  const planSlug = searchParams.get('plan') as string
   const billing = searchParams.get('billing') // 'monthly' | 'annual'
 
   const [isSubmitting, setIsSubmitting] = useState(false)

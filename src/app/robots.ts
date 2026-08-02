@@ -1,14 +1,13 @@
-import { MetadataRoute } from 'next'
+import { MetadataRoute } from 'next';
+import { getSiteUrl } from '@/lib/site-config';
 
 export default function robots(): MetadataRoute.Robots {
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ngtech-wcrm.com'
-
   return {
     rules: {
       userAgent: '*',
       allow: '/',
       disallow: ['/admin/', '/api/', '/dashboard/'],
     },
-    sitemap: `${SITE_URL}/sitemap.xml`,
-  }
+    sitemap: getSiteUrl('/sitemap.xml'),
+  };
 }

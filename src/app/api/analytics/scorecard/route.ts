@@ -255,7 +255,7 @@ Provide a very short, professional 1-2 sentence evaluation summarizing their per
         const { text } = await generateText({
           model: groq('llama-3.3-70b-versatile'),
           prompt,
-          maxTokens: 60,
+          maxOutputTokens: 60,
         })
         aiSummary = text.trim()
       } catch (err) {

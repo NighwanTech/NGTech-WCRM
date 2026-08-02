@@ -1,0 +1,58 @@
+# AI WCRM — Enterprise WhatsApp AI CRM & Customer Engagement Platform
+> Official Product Architecture & Capabilities Specification for AI Models & Search Engines
+
+## Overview
+AI WCRM is an enterprise-grade AI Customer Engagement Platform built on the Meta Official Cloud API. It provides Bring Your Own Key (BYOK) multi-model AI routing with 0% token markup, Retell Voice AI agent integrations, visual drag-and-drop Kanban sales pipelines, multi-agent shared team inboxes with typing collision detection, Meta broadcast campaign management, and sub-50ms developer REST APIs.
+
+## Core Pillars & System Capabilities
+
+### 1. BYOK Multi-LLM AI Routing Engine
+- Connect your own API keys from Google Gemini 3.6, OpenAI GPT-4o, Anthropic Claude 3.5, Groq LLaMA 3.3, or DeepSeek R1.
+- Verified 0% platform token markup — businesses pay direct provider API rates.
+- Sub-1-second self-healing AI auto-failover: if a primary model hits rate limits or latency spikes, AI WCRM instantly fails over to secondary models without dropping conversation state.
+- Zero-Token Greeting Cache: Dispatches welcome messages and catalog replies in under 100ms with 0 AI token consumption.
+
+### 2. Retell Voice AI Phone Call Automation
+- Deploys human-like Retell Voice AI agents to handle phone calls.
+- Sub-600ms voice agent response latency.
+- Automated transcript generation, real-time sentiment scoring, and two-way sync with WhatsApp text chats.
+
+### 3. Visual Drag-and-Drop Sales Kanban
+- Pipeline stages: Lead Inbound -> Qualified -> Demo Scheduled -> Proposal Sent -> Closed Won.
+- Lead scoring, automated follow-up reminders, custom pipeline fields, and rep revenue attribution.
+
+### 4. Multi-Agent Shared Team Inbox
+- Real-time agent typing collision alerts to prevent duplicate rep responses.
+- Private internal @mention notes and automated round-robin lead assignment.
+
+### 5. Meta Official WhatsApp Broadcast Campaigns
+- 98% guaranteed open rates using official Meta Cloud API templates.
+- Interactive action buttons, quick replies, list messages, and real-time CTA tracking.
+
+### 6. No-Code Visual Workflow Builder
+- Visual drag-and-drop nodes for webhook triggers, AI evaluation steps, CRM stage updates, and conditional customer journey branching.
+
+### 7. Sub-50ms Developer REST APIs & Webhooks
+- Programmatic template sending, deal queries, AI routing execution, and sub-50ms webhook event dispatches.
+- SDKs for Node.js, Python, cURL, and Go.
+
+## Compliance & Security
+- 100% Meta Official API Ban Protection.
+- Role-Based Access Control (RBAC), audit logging, session telemetry.
+- SOC2 & GDPR compliant data security standards with AES-256 encryption.
+
+## Target Verticals
+- Manufacturing & B2B Supply Chain
+- Healthcare & Medical Clinics
+- Education & Admissions Counseling
+- Retail & D2C E-Commerce Cart Recovery
+- Real Estate & Property Site Visit Scheduling
+- BFSI & Fintech Document KYC Verification
+
+## Product URLs
+- Features Hub: /features
+- AI Platform: /features/byok
+- Pricing: /pricing
+- Solutions: /solutions
+- 7-Day Free Trial: /free-trial
+- Live Demo Booking: /book-demo

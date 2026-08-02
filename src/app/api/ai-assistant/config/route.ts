@@ -126,6 +126,10 @@ export async function PATCH(request: Request) {
       enable_auto_fallback,
       fallback_provider,
       fallback_model,
+      enable_greeting_cache,
+      custom_welcome_greeting,
+      custom_courtesy_reply,
+      enable_product_catalog,
     } = body
 
     const updateFields: Record<string, any> = {
@@ -157,6 +161,10 @@ export async function PATCH(request: Request) {
     if (enable_auto_fallback !== undefined) updateFields.enable_auto_fallback = enable_auto_fallback
     if (fallback_provider !== undefined) updateFields.fallback_provider = fallback_provider
     if (fallback_model !== undefined) updateFields.fallback_model = fallback_model
+    if (enable_greeting_cache !== undefined) updateFields.enable_greeting_cache = enable_greeting_cache
+    if (custom_welcome_greeting !== undefined) updateFields.custom_welcome_greeting = custom_welcome_greeting
+    if (custom_courtesy_reply !== undefined) updateFields.custom_courtesy_reply = custom_courtesy_reply
+    if (enable_product_catalog !== undefined) updateFields.enable_product_catalog = enable_product_catalog
 
     // Cryptographic AES-256-GCM Encryption for API Keys
     if (custom_api_key && typeof custom_api_key === 'string' && !custom_api_key.includes('••••')) {

@@ -111,6 +111,7 @@ const navItems: NavItem[] = [
 ];
 
 const bottomNavItems = [
+  { href: "/admin", label: "Super Admin", icon: Shield },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -345,7 +346,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                     <span className={cn(
                       "flex-1 overflow-hidden whitespace-nowrap transition-all duration-200",
                       collapsed ? "w-0 opacity-0 hidden" : "w-auto opacity-100"
-                    )}>{t(item.label)}</span>
+                    )}>{item.label === "Super Admin" ? "Super Admin" : t(item.label)}</span>
                   </Link>
                 </li>
               );

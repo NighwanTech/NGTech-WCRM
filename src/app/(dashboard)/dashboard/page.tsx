@@ -1,5 +1,6 @@
 "use client"
 
+import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -13,7 +14,8 @@ import {
   Send,
   Clock,
   ShieldCheck,
-  Database
+  Database,
+  Shield
 } from 'lucide-react'
 
 import {
@@ -232,17 +234,26 @@ export default function DashboardPage() {
           </p>
         </div>
         {(isAdmin || isOwner) && (
-          <Select value={selectedAgent} onValueChange={(v) => { setSelectedAgent(v || 'all'); setSeries({ 7: null, 30: null, 90: null }) }}>
-            <SelectTrigger className="w-[200px] bg-muted border-border">
-              <SelectValue placeholder="Filter by Agent" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Agents</SelectItem>
-              {agents.map(a => (
-                <SelectItem key={a.user_id} value={a.user_id}>{a.full_name || 'Unnamed Agent'}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin"
+              className="flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 shadow-sm transition-all"
+            >
+              <Shield className="h-4 w-4" /> Super Admin Portal
+            </Link>
+
+            <Select value={selectedAgent} onValueChange={(v) => { setSelectedAgent(v || 'all'); setSeries({ 7: null, 30: null, 90: null }) }}>
+              <SelectTrigger className="w-[180px] bg-muted border-border text-xs font-medium">
+                <SelectValue placeholder="Filter by Agent" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Agents</SelectItem>
+                {agents.map(a => (
+                  <SelectItem key={a.user_id} value={a.user_id}>{a.full_name || 'Unnamed Agent'}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         )}
       </div>
 

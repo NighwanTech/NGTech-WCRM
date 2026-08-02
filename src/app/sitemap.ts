@@ -1,6 +1,5 @@
-import { MetadataRoute } from 'next'
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ngtechwcrm.nighwantech.com'
+import { MetadataRoute } from 'next';
+import { getSiteUrl } from '@/lib/site-config';
 
 const staticRoutes = [
   '',
@@ -13,7 +12,15 @@ const staticRoutes = [
   '/blog',
   '/solutions',
   '/whatsapp-crm-near-me',
-]
+];
+
+const competitors = [
+  'interakt',
+  'doubletick',
+  'gupshup',
+  'wati',
+  'aisensy',
+];
 
 const features = [
   'shared-team-inbox',
@@ -22,7 +29,13 @@ const features = [
   'lead-management',
   'broadcast-campaigns',
   'security-compliance',
-]
+  'byok',
+  'crm-pipeline',
+  'voice-ai',
+  'analytics',
+  'api',
+  'security',
+];
 
 const industries = [
   'real-estate',
@@ -37,7 +50,7 @@ const industries = [
   'ngo',
   'government',
   'service-business',
-]
+];
 
 const cities = [
   'delhi',
@@ -65,20 +78,28 @@ const cities = [
   'varanasi',
   'dehradun',
   'raipur',
-]
+];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes = [
     ...staticRoutes,
-    ...features.map(f => `/features/${f}`),
-    ...industries.map(i => `/solutions/${i}`),
-    ...cities.map(c => `/whatsapp-crm/${c}`),
+    ...features.map((f) => `/features/${f}`),
+    ...industries.map((i) => `/solutions/${i}`),
+    ...cities.map((c) => `/whatsapp-crm/${c}`),
+    ...competitors.map((comp) => `/vs/${comp}`),
   ].map((route) => ({
-    url: `${SITE_URL}${route}`,
+    url: getSiteUrl(route),
     lastModified: new Date().toISOString(),
     changeFrequency: 'weekly' as const,
-    priority: route === '' || route === '/whatsapp-crm-near-me' ? 1 : route.startsWith('/whatsapp-crm/') ? 0.9 : 0.8,
-  }))
+    priority:
+      route === '' || route === '/whatsapp-crm-near-me'
+        ? 1.0
+        : route.startsWith('/whatsapp-crm/')
+        ? 0.9
+        : route.startsWith('/vs/')
+        ? 0.85
+        : 0.8,
+  }));
 
-  return routes
+  return routes;
 }

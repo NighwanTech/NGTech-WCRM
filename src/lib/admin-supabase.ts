@@ -1,4 +1,4 @@
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { createClient as createSupabaseClient, SupabaseClient } from '@supabase/supabase-js'
 
 /**
  * Singleton service-role Supabase client.
@@ -7,16 +7,16 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
  * code (API routes / server actions) that has already performed its
  * own authorization checks. Never expose it to the browser.
  */
-let _adminClient: ReturnType<typeof createSupabaseClient> | null = null
+let _adminClient: SupabaseClient<any, "public", any> | null = null
 
-export function getAdminClient() {
+export function getAdminClient(): SupabaseClient<any, "public", any> {
   if (!_adminClient) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY
     if (!url || !key) {
       throw new Error('[admin-supabase] Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
     }
-    _adminClient = createSupabaseClient(url, key, {
+    _adminClient = createSupabaseClient<any>(url, key, {
       auth: { persistSession: false },
     })
   }

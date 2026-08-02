@@ -101,9 +101,35 @@ export default function AdminOrdersPage() {
                       <Phone className="h-3 w-3" /> <span className="text-xs">{order.phone || 'N/A'}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="capitalize font-medium text-foreground">{order.plan}</div>
-                    <div className="text-xs text-muted-foreground capitalize">{order.billing_cycle}</div>
+                  <td className="px-6 py-4 space-y-1">
+                    <div className="capitalize font-bold text-foreground flex items-center gap-2">
+                      <span>{order.plan}</span>
+                      {(order as any).seats && (order as any).seats > 1 && (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold border border-emerald-500/30">
+                          {(order as any).seats} Seats
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs font-mono text-muted-foreground capitalize">
+                      {order.billing_cycle || 'monthly'} Billing
+                    </div>
+
+                    {/* Add-ons & Notes */}
+                    {(order as any).addons && (order as any).addons.length > 0 && (
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {((order as any).addons as string[]).map((addon, i) => (
+                          <span key={i} className="px-2 py-0.5 rounded bg-muted text-[10px] font-mono font-semibold text-emerald-400">
+                            + {addon}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {(order as any).notes && (
+                      <p className="text-[11px] font-mono text-amber-400/90 pt-1 line-clamp-1">
+                        Ref: {(order as any).notes}
+                      </p>
+                    )}
                   </td>
                   <td className="px-6 py-4 font-medium text-foreground">
                     ₹{order.price.toLocaleString('en-IN')}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import { LogOut, Menu, Settings as SettingsIcon, User, LayoutGrid, FileText } from "lucide-react";
+import { LogOut, Menu, Settings as SettingsIcon, User, LayoutGrid, FileText, Shield } from "lucide-react";
 import {
   Avatar,
   AvatarFallback,
@@ -70,7 +70,15 @@ export function Header({ onOpenSidebar }: HeaderProps) {
         </h1>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <Link
+          href="/admin"
+          className="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 shadow-sm transition-all"
+        >
+          <Shield className="size-3.5" />
+          <span>Super Admin</span>
+        </Link>
+
         <LanguageSwitcher />
         <ModeToggle />
 
@@ -108,6 +116,17 @@ export function Header({ onOpenSidebar }: HeaderProps) {
             </p>
           </div>
           <DropdownMenuSeparator className="bg-border" />
+          <DropdownMenuItem
+            render={
+              <Link
+                href="/admin"
+                className="text-emerald-400 font-bold focus:bg-accent focus:text-accent-foreground"
+              />
+            }
+          >
+            <Shield className="size-4 text-emerald-400" />
+            Super Admin Portal
+          </DropdownMenuItem>
           <DropdownMenuItem
             render={
               <Link

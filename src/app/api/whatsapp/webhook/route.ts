@@ -28,6 +28,24 @@ import { checkBusinessHours } from '@/lib/business-hours'
 
 import { supabaseAdmin } from '@/lib/flows/admin-client'
 
+// ─── Greeting Cache: 0-Token Fast Replies ───
+// Matches common greetings (case-insensitive, trims whitespace)
+const GREETING_REGEX = /^\s*(hi|hello|hey|hii+|helo|hola|namaste|namaskar|good\s*morning|good\s*afternoon|good\s*evening|good\s*night|gm|gn|assalam[ou]?\s*alaikum)\s*[!.?]*\s*$/i;
+// Matches courtesy/closing messages
+const COURTESY_REGEX = /^\s*(thanks|thank\s*you|thanku|thnx|thx|ok|okay|okk+|bye|bye\s*bye|good\s*bye|alright|done|great|perfect|sure|accha|theek\s*hai|shukriya|dhanyavaad)\s*[!.?]*\s*$/i;
+
+// ─── Per-Contact Spam Burst Protection ───
+// Tracks message counts per contact in a sliding window to prevent token abuse
+const contactMsgBurst = new Map<string, { count: number; resetAt: number }>();
+const BURST_LIMIT = 10; // max messages
+const BURST_WINDOW_MS = 2 * 60 * 1000; // 2 minutes
+
+// ─── AI Failover Consecutive Failure Tracker ───
+// Tracks consecutive primary model failures per account for self-healing
+const failoverCounters = new Map<string, { count: number; lastFailAt: number }>();
+const FAILOVER_HEAL_THRESHOLD = 3; // After 3 consecutive failures, auto-update settings
+const FAILOVER_WINDOW_MS = 5 * 60 * 1000; // 5-minute sliding window
+
 interface WhatsAppMessage {
   id: string
   from: string
@@ -1120,6 +1138,41 @@ Message: "${inboundText}"`,
       console.log(`[ai-auto-reply] shouldRunAi = ${shouldRunAi} for conversation ${conversation.id}`);
 
       if (shouldRunAi) {
+        // ─── Greeting Cache: 0-Token Instant Reply ───
+        // Priority 2 (after Flows, before AI LLM): Intercept simple greetings & courtesies
+        // with a static cached reply, using 0 AI tokens and <100ms response time.
+        const greetingCacheEnabled = aiConfig?.enable_greeting_cache !== false; // Default ON
+        if (greetingCacheEnabled && inboundText) {
+          const isGreeting = GREETING_REGEX.test(inboundText);
+          const isCourtesy = COURTESY_REGEX.test(inboundText);
+
+          if (isGreeting && aiConfig?.custom_welcome_greeting?.trim()) {
+            console.log(`[greeting-cache] Sending 0-token welcome greeting for conversation ${conversation.id}`);
+            await engineSendText({
+              accountId,
+              userId: configOwnerUserId,
+              contactId: contactRecord.id,
+              conversationId: conversation.id,
+              text: aiConfig.custom_welcome_greeting.trim(),
+            }).catch(e => console.error('[greeting-cache] Failed to send greeting:', e));
+            aiAutoReplied = true;
+            return; // Skip AI LLM entirely
+          }
+
+          if (isCourtesy && aiConfig?.custom_courtesy_reply?.trim()) {
+            console.log(`[greeting-cache] Sending 0-token courtesy reply for conversation ${conversation.id}`);
+            await engineSendText({
+              accountId,
+              userId: configOwnerUserId,
+              contactId: contactRecord.id,
+              conversationId: conversation.id,
+              text: aiConfig.custom_courtesy_reply.trim(),
+            }).catch(e => console.error('[greeting-cache] Failed to send courtesy:', e));
+            aiAutoReplied = true;
+            return; // Skip AI LLM entirely
+          }
+        }
+
         if (processingAiConversations.has(conversation.id)) {
           console.log(`[ai-auto-reply] Debouncing duplicate AI request for conversation ${conversation.id}`);
           return;
@@ -1133,6 +1186,22 @@ Message: "${inboundText}"`,
           // from the user have time to be inserted into the database.
           await new Promise(r => setTimeout(r, 5000));
           
+          // ─── Per-Contact Spam Burst Protection ───
+          // If a single contact sends >10 messages in 2 minutes, temporarily skip auto-reply
+          // to prevent token abuse, Meta rate limits, and runaway costs.
+          const burstKey = `${accountId}:${contactRecord.id}`;
+          const now = Date.now();
+          const burst = contactMsgBurst.get(burstKey);
+          if (burst && now < burst.resetAt) {
+            burst.count++;
+            if (burst.count > BURST_LIMIT) {
+              console.warn(`[spam-burst] Contact ${contactRecord.id} exceeded ${BURST_LIMIT} msgs in 2min — skipping AI auto-reply`);
+              return;
+            }
+          } else {
+            contactMsgBurst.set(burstKey, { count: 1, resetAt: now + BURST_WINDOW_MS });
+          }
+
           // AI Rate limiting
           const aiRateKey = `ai:${accountId}`;
           const rl = checkRateLimit(aiRateKey, { limit: 100, windowMs: 60_000 });
@@ -1144,7 +1213,9 @@ Message: "${inboundText}"`,
           let success = false;
           let isHandoff = false;
           let errorMessage = '';
+          let usedFailover = false; // Track if we used the backup model
 
+          // ─── Attempt 1: Primary Model | Attempt 2: Auto-Failover to Backup ───
           while (retryCount <= 1 && !success) {
             try {
               const { data: historyMsgs } = await supabaseAdmin()
@@ -1152,7 +1223,7 @@ Message: "${inboundText}"`,
                 .select('content_text, sender_type')
                 .eq('conversation_id', conversation.id)
                 .order('created_at', { ascending: false })
-                .limit(20); 
+                .limit(16); // Token Optimization: Limit to 16 recent messages (was 20)
                 
               const rawMessages: any[] = [];
               for (const m of (historyMsgs || [])) {
@@ -1175,19 +1246,38 @@ Message: "${inboundText}"`,
                   coreMessages.push(msg);
                 }
               }
-                
+
+              // ─── Determine provider & model (Primary on attempt 1, Failover on attempt 2) ───
+              let provider: string;
+              let modelName: string;
+
+              if (retryCount === 0) {
+                // ATTEMPT 1: Use Primary provider & model
+                provider = aiConfig?.provider || 'groq';
+                const targetModel = aiConfig?.model === 'custom-model' ? aiConfig?.custom_model_name : aiConfig?.model;
+                modelName = targetModel || (provider === 'gemini' ? 'gemini-3.6-flash' : 'llama-3.3-70b-versatile');
+              } else {
+                // ATTEMPT 2: Auto-Failover to Backup provider & model
+                usedFailover = true;
+                const fallbackEnabled = aiConfig?.enable_auto_fallback !== false; // Default ON
+                if (!fallbackEnabled) {
+                  // Failover disabled — re-throw the original error
+                  throw new Error(errorMessage || 'Primary model failed and auto-failover is disabled');
+                }
+                provider = aiConfig?.fallback_provider || 'gemini';
+                modelName = aiConfig?.fallback_model || 'gemini-3.6-flash';
+                console.log(`[ai-failover] Switching from primary to backup: ${provider}/${modelName} for conversation ${conversation.id}`);
+              }
+
               const fullSystemPrompt = await AIPromptService.buildSystemPrompt(
                 aiConfig || {}, 
                 '', // History is now handled natively via messages array
                 inboundText,
                 accountId,
                 isWithinHours,
-                detectedIntent
+                detectedIntent,
+                aiConfig?.enable_product_catalog ?? false // Product Catalog Toggle
               );
-              
-              const provider = aiConfig?.provider || 'groq';
-              const targetModel = aiConfig?.model === 'custom-model' ? aiConfig?.custom_model_name : aiConfig?.model;
-              const modelName = targetModel || (provider === 'gemini' ? 'gemini-3.6-flash' : 'llama-3.3-70b-versatile');
               
               let apiKey = undefined;
               if (aiConfig?.use_custom_keys && aiConfig?.custom_api_key_encrypted) {
@@ -1276,9 +1366,14 @@ Message: "${inboundText}"`,
                 success = true; // Mark as success so we don't retry
                 aiAutoReplied = true; // Signal to suppress automations
 
+                // ─── Reset failover counter on success ───
+                if (retryCount === 0) {
+                  failoverCounters.delete(accountId);
+                }
+
                 const endTime = performance.now();
                 
-                // Log Analytics
+                // Log Analytics (with actual provider/model used, not config defaults)
                 if (aiConfig) {
                    const promptTokens = result.usage?.inputTokens || 0;
                    const completionTokens = result.usage?.outputTokens || 0;
@@ -1298,19 +1393,103 @@ Message: "${inboundText}"`,
                      intent_category: detectedIntent
                    });
                 }
+
+                // ─── Admin WhatsApp Alert: Notify admin that failover was used ───
+                if (usedFailover) {
+                  const primaryProvider = aiConfig?.provider || 'groq';
+                  const primaryTargetModel = aiConfig?.model === 'custom-model' ? aiConfig?.custom_model_name : aiConfig?.model;
+                  const primaryModelName = primaryTargetModel || (primaryProvider === 'gemini' ? 'gemini-3.6-flash' : 'llama-3.3-70b-versatile');
+
+                  // Track consecutive failures for self-healing
+                  const fcNow = Date.now();
+                  const fc = failoverCounters.get(accountId);
+                  if (fc && fcNow - fc.lastFailAt < FAILOVER_WINDOW_MS) {
+                    fc.count++;
+                    fc.lastFailAt = fcNow;
+                  } else {
+                    failoverCounters.set(accountId, { count: 1, lastFailAt: fcNow });
+                  }
+
+                  const currentFc = failoverCounters.get(accountId)!;
+
+                  // ─── Self-Healing: Auto-update settings after 3 consecutive failures ───
+                  if (currentFc.count >= FAILOVER_HEAL_THRESHOLD) {
+                    console.log(`[ai-self-heal] Primary model ${primaryModelName} failed ${currentFc.count}x — auto-updating settings to ${modelName}`);
+                    await supabaseAdmin()
+                      .from('ai_assistant_settings')
+                      .update({ 
+                        provider: provider, 
+                        model: modelName,
+                        updated_at: new Date().toISOString() 
+                      })
+                      .eq('account_id', accountId)
+                      .then(() => failoverCounters.delete(accountId));
+                  }
+
+                  // ─── Send Admin WhatsApp Alert (fire-and-forget) ───
+                  Promise.resolve().then(async () => {
+                    try {
+                      // Lookup admin profile phone
+                      const { data: adminProfile } = await supabaseAdmin()
+                        .from('profiles')
+                        .select('phone')
+                        .eq('user_id', configOwnerUserId)
+                        .maybeSingle();
+
+                      if (adminProfile?.phone) {
+                        // Find admin contact record in the CRM
+                        const adminPhone = adminProfile.phone.replace(/\D/g, '');
+                        const { data: adminContact } = await supabaseAdmin()
+                          .from('contacts')
+                          .select('id')
+                          .eq('account_id', accountId)
+                          .eq('phone', adminPhone)
+                          .maybeSingle();
+
+                        if (adminContact) {
+                          // Find or create a conversation for the admin
+                          const { data: adminConvo } = await supabaseAdmin()
+                            .from('conversations')
+                            .select('id')
+                            .eq('account_id', accountId)
+                            .eq('contact_id', adminContact.id)
+                            .maybeSingle();
+
+                          if (adminConvo) {
+                            const healMsg = currentFc.count >= FAILOVER_HEAL_THRESHOLD
+                              ? `\n\n🔧 *Self-Healing Applied:* Primary settings auto-updated to *${modelName}* after ${currentFc.count} consecutive failures.`
+                              : '';
+                            
+                            await engineSendText({
+                              accountId,
+                              userId: configOwnerUserId,
+                              contactId: adminContact.id,
+                              conversationId: adminConvo.id,
+                              text: `⚠️ *WCRM AI Failover Alert*\n\nPrimary model (*${primaryModelName}*) failed with error: "${errorMessage}"\n\nSystem automatically switched to backup model (*${modelName}*) to respond with zero downtime.${healMsg}\n\n🕐 ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`,
+                            });
+                          }
+                        }
+                      }
+                    } catch (alertErr) {
+                      console.error('[ai-failover-alert] Failed to send admin notification:', alertErr);
+                    }
+                  });
+                }
+
               } finally {
                 clearTimeout(timeoutId);
               }
 
             } catch (err: any) {
-              console.error(`[ai-auto-reply] failed on attempt ${retryCount + 1}:`, err);
+              errorMessage = err.message || 'Unknown error';
+              console.error(`[ai-auto-reply] failed on attempt ${retryCount + 1} (${retryCount === 0 ? 'PRIMARY' : 'FAILOVER'}):`, err);
               retryCount++;
               
               if (retryCount <= 1) {
-                // Wait 1s before retrying
+                // Wait 1s before failover attempt
                 await new Promise(r => setTimeout(r, 1000));
               } else {
-                // If it still fails, send a fallback and log error
+                // Both Primary AND Failover failed — send a human fallback
                 const fallbackMessage = "Thanks for your message! We're experiencing a slight delay, but a team member will get back to you shortly.";
                 await engineSendText({
                   accountId,
@@ -1325,7 +1504,7 @@ Message: "${inboundText}"`,
                      account_id: accountId,
                      conversation_id: conversation.id,
                      provider: aiConfig?.provider || 'gemini',
-                     model: aiConfig?.model || 'gemini-1.5-pro',
+                     model: aiConfig?.model || 'gemini-3.6-flash',
                      response_time_ms: 0,
                      prompt_tokens: 0,
                      completion_tokens: 0,
@@ -1333,7 +1512,7 @@ Message: "${inboundText}"`,
                      estimated_cost: 0,
                      is_handoff: false,
                      is_error: true,
-                     error_message: err.message || 'Unknown error',
+                     error_message: errorMessage,
                      language: detectedLanguage,
                      intent_category: detectedIntent
                    });

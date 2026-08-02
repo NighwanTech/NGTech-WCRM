@@ -5,7 +5,8 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { KeyRound, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { KeyRound, Loader2, CheckCircle2, AlertCircle, Eye, EyeOff, Zap, ShoppingBag, MessageSquareText } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Props {
@@ -319,6 +320,83 @@ export function GeneralSettingsCard({ config, onChange }: Props) {
                   <SelectItem value="Spanish">Spanish</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+        </div>
+
+        {/* Instant Greeting Cache (0-Token Fast Replies) */}
+        <div className="pt-4 border-t space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MessageSquareText className="h-5 w-5 text-emerald-500" />
+              <div>
+                <Label className="font-semibold text-base">Instant Greeting Cache (0-Token Fast Replies)</Label>
+                <p className="text-xs text-muted-foreground">
+                  When enabled, greetings like &quot;Hi&quot;, &quot;Hello&quot;, &quot;Thanks&quot; are answered instantly with your custom welcome message — no AI tokens used!
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="enable-greeting-cache" className="text-xs font-medium">Enable</Label>
+              <Switch
+                id="enable-greeting-cache"
+                checked={config.enable_greeting_cache ?? true}
+                onCheckedChange={(v) => onChange('enable_greeting_cache', v)}
+              />
+            </div>
+          </div>
+
+          {config.enable_greeting_cache !== false && (
+            <div className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/10 space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Custom Welcome Greeting</Label>
+                <Textarea
+                  placeholder={"Hello! Welcome to [Your Business Name].\n\nI am your AI Assistant. How can I help you today?\n\n📞 Helpline: +91-XXXXXXXXXX"}
+                  value={config.custom_welcome_greeting || ''}
+                  onChange={(e) => onChange('custom_welcome_greeting', e.target.value)}
+                  rows={5}
+                  className="text-sm"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  This exact message is sent instantly when a customer sends &quot;Hi&quot;, &quot;Hello&quot;, &quot;Hey&quot;, &quot;Good morning&quot;, etc. Supports WhatsApp formatting (*bold*, _italic_).
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Custom Courtesy Reply (for &quot;Thanks&quot; / &quot;Ok&quot; / &quot;Bye&quot;)</Label>
+                <Textarea
+                  placeholder={"You're very welcome! Feel free to reach out if you have any more questions. 😊"}
+                  value={config.custom_courtesy_reply || ''}
+                  onChange={(e) => onChange('custom_courtesy_reply', e.target.value)}
+                  rows={2}
+                  className="text-sm"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Sent instantly for courtesy messages (&quot;Thanks&quot;, &quot;Thank you&quot;, &quot;Ok&quot;, &quot;Bye&quot;). Leave blank to let AI handle these.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Product Catalog Toggle */}
+        <div className="pt-4 border-t space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ShoppingBag className="h-5 w-5 text-blue-500" />
+              <div>
+                <Label className="font-semibold text-base">Product Catalog in AI Prompts</Label>
+                <p className="text-xs text-muted-foreground">
+                  When enabled, AI queries your product catalog database and includes it in responses. Disable if you don&apos;t have products to save tokens.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="enable-product-catalog" className="text-xs font-medium">Enable</Label>
+              <Switch
+                id="enable-product-catalog"
+                checked={config.enable_product_catalog ?? false}
+                onCheckedChange={(v) => onChange('enable_product_catalog', v)}
+              />
             </div>
           </div>
         </div>

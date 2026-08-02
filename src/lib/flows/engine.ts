@@ -911,7 +911,7 @@ async function advanceFromNodeKey(
         const result = await generateText({
           model: model as any,
           prompt: fullSystemPrompt,
-          maxTokens: aiSettings?.advanced_settings?.max_tokens || undefined,
+          maxOutputTokens: aiSettings?.advanced_settings?.max_tokens || undefined,
           temperature: aiSettings?.advanced_settings?.temperature || undefined,
         });
 

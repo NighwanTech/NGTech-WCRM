@@ -13,7 +13,8 @@ export class AIPromptService {
     query: string = '', 
     accountId?: string,
     isWithinHours: boolean = true,
-    detectedIntent: string = 'General'
+    detectedIntent: string = 'General',
+    enableProductCatalog: boolean = false
   ): Promise<string> {
     const { 
       system_prompt = 'You are a helpful customer support assistant for this business.',
@@ -130,37 +131,54 @@ export class AIPromptService {
       }
     }
     // Fetch and inject RAG Context from documents and websites
+    // Token Optimization: Clamp each RAG chunk to 300 chars max for token savings
     if (query && accountId) {
       try {
         const ragContext = await AIEmbeddingService.searchKnowledgeBase(accountId, query, 3);
         if (ragContext && ragContext.length > 0) {
-          finalPrompt += `\n\n[Relevant Document Extracts]`;
-          ragContext.forEach((chunk: any, idx: number) => {
-            finalPrompt += `\n- Extract ${idx + 1} (Source: ${chunk.source_type}): ${chunk.content}`;
-          });
+          // Filter by minimum similarity score (0.72) if available
+          const relevantChunks = ragContext.filter((chunk: any) => 
+            chunk.similarity === undefined || chunk.similarity >= 0.72
+          );
+          if (relevantChunks.length > 0) {
+            finalPrompt += `\n\n[Relevant Document Extracts]`;
+            relevantChunks.forEach((chunk: any, idx: number) => {
+              // Clamp each chunk to 300 characters to save tokens
+              const clampedContent = chunk.content?.length > 300 
+                ? chunk.content.substring(0, 300) + '...' 
+                : chunk.content;
+              finalPrompt += `\n- Extract ${idx + 1} (Source: ${chunk.source_type}): ${clampedContent}`;
+            });
+          }
         }
       } catch (err) {
         console.error('RAG context fetch failed:', err);
       }
     }
 
-    // Fetch and inject dynamic Product/Services Catalog ONLY if intent is relevant
-    const needsProducts = ['Sales', 'Pricing', 'Appointment'].includes(detectedIntent);
+    // Fetch and inject dynamic Product/Services Catalog
+    // Token Optimization: Only query products if enable_product_catalog is ON (default OFF).
+    // Most clients don't have products, so this saves ~2,500 tokens and a DB query per message.
+    const needsProducts = enableProductCatalog && ['Sales', 'Pricing', 'Appointment', 'General'].includes(detectedIntent);
     if (accountId && needsProducts) {
       try {
         const supabase = supabaseAdmin();
         const { data: activeProducts } = await supabase
           .from('products')
-          .select('*')
+          .select('name, type, price, currency, description')
           .eq('account_id', accountId)
           .eq('is_active', true)
-          .limit(50);
+          .limit(10); // Token Optimization: Limit to 10 most relevant products instead of 50
         
         if (activeProducts && activeProducts.length > 0) {
           finalPrompt += `\n\n[Active Offerings Catalog]`;
           activeProducts.forEach(p => {
-            finalPrompt += `\n- ${p.type.toUpperCase()}: ${p.name} | Price: ${p.currency} ${p.price}`;
-            if (p.description) finalPrompt += `\n  Description: ${p.description}`;
+            finalPrompt += `\n- ${p.type?.toUpperCase()}: ${p.name} | Price: ${p.currency} ${p.price}`;
+            if (p.description) {
+              // Clamp description to 150 chars
+              const desc = p.description.length > 150 ? p.description.substring(0, 150) + '...' : p.description;
+              finalPrompt += `\n  Description: ${desc}`;
+            }
           });
         }
       } catch (err) {

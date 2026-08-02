@@ -9,6 +9,7 @@ import { PresenceHeartbeat } from "@/components/presence/presence-heartbeat";
 import { TrialBanner } from "@/components/layout/trial-banner";
 import { AppShell } from "@/components/ui/responsive-layout";
 import { DashboardMobileBottomNav } from "@/components/layout/dashboard-mobile-bottom-nav";
+import { CopilotGuidanceAgent } from "@/components/dashboard/copilot-guidance-agent";
 
 // Auth-gated dashboard shell. Extracted from the layout so the layout
 // itself can stay a server component and export metadata (noindex) —
@@ -50,6 +51,7 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
       {/* Reports this tab's online/away presence once we know a user is
           signed in. Headless — renders nothing. */}
       <PresenceHeartbeat />
+      <CopilotGuidanceAgent />
       <AppShell
         sidebar={<Sidebar open={sidebarOpen} onClose={closeSidebar} />}
         header={
