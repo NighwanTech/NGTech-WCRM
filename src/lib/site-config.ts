@@ -3,7 +3,7 @@
  * Supports seamless domain migration via process.env.NEXT_PUBLIC_SITE_URL.
  */
 
-export const DEFAULT_SITE_URL = 'https://ngtechwcrm.nighwantech.com';
+export const DEFAULT_SITE_URL = 'https://www.aiwcrm.com';
 
 /**
  * Returns the fully qualified site URL for a given path.

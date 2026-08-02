@@ -21,12 +21,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://ngtechwcrm.nighwantech.com'),
+  metadataBase: new URL('https://www.aiwcrm.com'),
   title: {
-    default: "NGTech WCRM | India's Leading WhatsApp CRM Platform & API",
-    template: "%s — NGTech WCRM",
+    default: "AiWCRM | Enterprise WhatsApp CRM Platform & API",
+    template: "%s — AiWCRM",
   },
-  description: "Meta-Approved WhatsApp CRM software by NG Technology Pvt. Ltd. Shared multi-agent inbox, AI chatbots, bulk broadcast campaigns, and automated sales pipelines for Indian businesses.",
+  description: "Meta-Approved WhatsApp CRM software by NG Technology Pvt. Ltd. Shared multi-agent inbox, AI chatbots, bulk broadcast campaigns, and automated sales pipelines.",
   keywords: [
     "WhatsApp CRM India",
     "WhatsApp Business API Provider",
@@ -36,13 +36,14 @@ export const metadata: Metadata = {
     "WhatsApp AI Chatbot India",
     "Meta Approved WhatsApp API Partner",
     "WhatsApp CRM for Small Business",
-    "WhatsApp Marketing Software Delhi India",
+    "WhatsApp Marketing Software",
+    "AiWCRM"
   ],
-  authors: [{ name: "NG Technology Pvt. Ltd.", url: "https://ngtechwcrm.nighwantech.com" }],
+  authors: [{ name: "NG Technology Pvt. Ltd.", url: "https://www.aiwcrm.com" }],
   creator: "NG Technology Pvt. Ltd.",
   publisher: "NG Technology Pvt. Ltd.",
   alternates: {
-    canonical: "https://ngtechwcrm.nighwantech.com",
+    canonical: "https://www.aiwcrm.com",
   },
   robots: {
     index: true,
@@ -65,26 +66,26 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "NGTech WCRM | India's Leading WhatsApp CRM & Automation Platform",
+    title: "AiWCRM | Enterprise WhatsApp CRM & Automation Platform",
     description: "Connect, Automate, and Grow your business with Meta-Approved WhatsApp Shared Inbox, AI Chatbots, and Sales Pipelines.",
-    url: "https://ngtechwcrm.nighwantech.com",
-    siteName: "NGTech WCRM",
+    url: "https://www.aiwcrm.com",
+    siteName: "AiWCRM",
     locale: "en_IN",
     type: "website",
     images: [
       {
-        url: "https://ngtechwcrm.nighwantech.com/logo.png",
+        url: "https://www.aiwcrm.com/logo.png",
         width: 1254,
         height: 1254,
-        alt: "NGTech WCRM Logo",
+        alt: "AiWCRM Logo",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "NGTech WCRM | WhatsApp CRM Platform",
+    title: "AiWCRM | WhatsApp CRM Platform",
     description: "Meta-Approved WhatsApp CRM, Shared Inbox & AI Automation.",
-    images: ["https://ngtechwcrm.nighwantech.com/logo.png"],
+    images: ["https://www.aiwcrm.com/logo.png"],
   },
 };
 
@@ -170,6 +171,22 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }}
         />
         <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-LRP2ZMD5CY"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-LRP2ZMD5CY');
+            `,
+          }}
+        />
+        <Script
           id="sw-register"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
@@ -191,9 +208,9 @@ export default async function RootLayout({
               "@context": "https://schema.org",
               "@type": ["Organization", "LocalBusiness"],
               "name": "NG Technology Pvt. Ltd.",
-              "alternateName": "NGTech WCRM",
-              "url": "https://ngtechwcrm.nighwantech.com",
-              "logo": "https://ngtechwcrm.nighwantech.com/logo.png",
+              "alternateName": "AiWCRM",
+              "url": "https://www.aiwcrm.com",
+              "logo": "https://www.aiwcrm.com/logo.png",
               "description": "Meta-Approved WhatsApp Business API & CRM platform providing shared multi-agent inbox, broadcast campaigns, AI chatbots, and lead management.",
               "email": "mahendra@nighwantech.com",
               "telephone": "+91 8985025794",
