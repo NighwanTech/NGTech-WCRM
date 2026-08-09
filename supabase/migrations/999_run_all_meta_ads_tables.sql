@@ -1,5 +1,5 @@
 -- ============================================================
--- 🚀 AIWCRM Complete Meta Ads & AI Ads OS Migration + Role Grants
+-- 🚀 AIWCRM Complete Meta Ads & AI Ads OS Migration
 -- Run this in your Supabase Dashboard -> SQL Editor -> Run
 -- ============================================================
 
@@ -113,19 +113,6 @@ CREATE TABLE IF NOT EXISTS public.meta_optimization_rules (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Grant full table permissions to service_role, anon, authenticated, postgres
-GRANT ALL ON TABLE public.meta_ad_accounts TO postgres, anon, authenticated, service_role;
-GRANT ALL ON TABLE public.meta_campaign_cache TO postgres, anon, authenticated, service_role;
-GRANT ALL ON TABLE public.ai_ad_campaigns TO postgres, anon, authenticated, service_role;
-GRANT ALL ON TABLE public.ai_ad_creatives TO postgres, anon, authenticated, service_role;
-GRANT ALL ON TABLE public.ai_ad_audience TO postgres, anon, authenticated, service_role;
-GRANT ALL ON TABLE public.meta_lead_form_mappings TO postgres, anon, authenticated, service_role;
-GRANT ALL ON TABLE public.meta_optimization_rules TO postgres, anon, authenticated, service_role;
-
-GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, anon, authenticated, service_role;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO postgres, anon, authenticated, service_role;
-GRANT ALL ON ALL ROUTINES IN SCHEMA public TO postgres, anon, authenticated, service_role;
-
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.meta_ad_accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.meta_campaign_cache ENABLE ROW LEVEL SECURITY;
@@ -135,7 +122,7 @@ ALTER TABLE public.ai_ad_audience ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.meta_lead_form_mappings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.meta_optimization_rules ENABLE ROW LEVEL SECURITY;
 
--- Allow access policies
+-- Allow authenticated service access to tables
 DROP POLICY IF EXISTS "meta_ad_accounts_policy" ON public.meta_ad_accounts;
 CREATE POLICY "meta_ad_accounts_policy" ON public.meta_ad_accounts FOR ALL USING (true);
 

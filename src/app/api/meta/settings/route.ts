@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getActiveMetaAdAccounts, updateMetaPixelId } from '@/lib/meta/db-adapter'
+import { getActiveMetaAdAccounts, updateMetaPixelId, disconnectMetaAdAccounts } from '@/lib/meta/db-adapter'
 import { withZeroTrustGuard } from '@/lib/security/zero-trust-guard'
 
 export async function GET(request: Request) {
@@ -41,3 +41,16 @@ export async function POST(request: Request) {
     }
   })
 }
+
+export async function DELETE(request: Request) {
+  return withZeroTrustGuard(request, { permission: 'meta_ads:manage' }, async (ctx) => {
+    try {
+      await disconnectMetaAdAccounts(ctx.accountId, ctx.userId)
+      return NextResponse.json({ success: true, message: 'Meta Ad Account successfully disconnected' })
+    } catch (error: any) {
+      console.error('Disconnect meta error:', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+  })
+}
+

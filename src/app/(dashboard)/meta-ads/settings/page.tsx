@@ -131,12 +131,35 @@ export default function MetaAdsSettingsPage() {
     }
   }, [fetchSettings])
 
+  const [disconnecting, setDisconnecting] = useState(false)
+
+  const handleDisconnectMetaAccount = async () => {
+    if (!confirm("Are you sure you want to detach and disconnect this Meta Ad Account?")) {
+      return
+    }
+    setDisconnecting(true)
+    try {
+      const res = await fetch("/api/meta/settings", { method: "DELETE" })
+      if (res.ok) {
+        setIsConnected(false)
+        setAdAccounts([])
+        setAccountName(null)
+        setPixelId("")
+      }
+    } catch (e) {
+      console.error("Failed to disconnect", e)
+    } finally {
+      setDisconnecting(false)
+    }
+  }
+
   const handleFacebookOAuthLogin = () => {
     const appId = process.env.NEXT_PUBLIC_META_APP_ID || "843808418636023"
     const redirectUri = encodeURIComponent(`${window.location.origin}/api/meta/auth/callback`)
     const scope = encodeURIComponent("ads_management,ads_read,business_management,pages_show_list,pages_read_engagement")
     
-    const fbAuthUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code`
+    // auth_type=rerequest forces Meta to prompt and allow switching permissions/accounts
+    const fbAuthUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code&auth_type=rerequest`
 
     window.location.href = fbAuthUrl
   }
@@ -218,27 +241,26 @@ export default function MetaAdsSettingsPage() {
       {exchangeError && (
         <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
+            <AlertCircle className="w-5 h-5 shrink-0" />
             <div>
               <p className="font-semibold text-sm">Connection Issue</p>
               <p className="text-xs">{exchangeError}</p>
             </div>
           </div>
-          <Button size="sm" variant="outline" onClick={handleFacebookOAuthLogin} className="text-xs">
-            Try Again
-          </Button>
+          <Button size="sm" variant="outline" onClick={() => setExchangeError(null)}>Dismiss</Button>
         </div>
       )}
 
-      {/* Account Connection Card */}
-      <Card className="border bg-card shadow-sm">
+      {/* Section 1: Facebook Business OAuth */}
+      <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-primary" /> Meta Business Account Authorization
-            </CardTitle>
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-primary" />
+              <CardTitle className="text-lg">Meta Business Account Authorization</CardTitle>
+            </div>
             {isConnected ? (
-              <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-semibold px-2.5 py-0.5">
+              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-medium">
                 ● Connected & Active
               </Badge>
             ) : (
@@ -268,6 +290,17 @@ export default function MetaAdsSettingsPage() {
             </div>
             
             <div className="flex items-center gap-2">
+              {isConnected && (
+                <Button 
+                  onClick={handleDisconnectMetaAccount}
+                  disabled={disconnecting}
+                  variant="outline"
+                  className="text-destructive hover:bg-destructive/10 border-destructive/30 gap-1.5 text-xs font-semibold"
+                >
+                  {disconnecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Disconnect / Detach"}
+                </Button>
+              )}
+
               <Button 
                 onClick={handleFacebookOAuthLogin} 
                 className={isConnected 
@@ -276,7 +309,7 @@ export default function MetaAdsSettingsPage() {
               >
                 {isConnected ? (
                   <>
-                    <RefreshCw className="w-3.5 h-3.5" /> Re-Authenticate Facebook
+                    <RefreshCw className="w-3.5 h-3.5" /> Switch / Re-Authenticate
                   </>
                 ) : (
                   <>Connect with Facebook</>
