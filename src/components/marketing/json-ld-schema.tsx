@@ -121,10 +121,10 @@ export function EnterpriseJsonLdSchema() {
       },
       {
         '@type': 'Question',
-        name: `Can ${SITE_CONFIG.name} integrate with Retell AI for Voice Calls?`,
+        name: `Does ${SITE_CONFIG.name} support AI Voice Call Agents?`,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: `Yes! ${SITE_CONFIG.name} features native integration with Retell AI to deploy intelligent AI voice agents for automated inbound call answering and outbound follow-up calls synced directly with your WhatsApp CRM pipeline.`,
+          text: `Yes! ${SITE_CONFIG.name} features a Multi-Provider Voice AI Platform supporting Retell AI and ElevenLabs. Deploy AI voice agents in English or native Hindi (Priya, Arjun voices) for automated inbound and outbound calls. Every call auto-extracts CRM intelligence — sentiment, buying signals, lead score — and syncs to Contacts, Deals, and Tasks.`,
         },
       },
     ],

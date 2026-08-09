@@ -61,7 +61,7 @@ export function FailoverTimelineSection() {
   ];
 
   return (
-    <section className="py-24 bg-slate-950 text-white relative overflow-hidden">
+    <section className="py-12 sm:py-14 bg-background relative overflow-hidden">
       {/* Background glow */}
       <div className="absolute top-1/2 right-0 w-[600px] h-[400px] bg-amber-500/10 blur-[170px] pointer-events-none" />
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, type ReactNode } from 'react';
+import { Suspense, useMemo, type ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useAuth } from '@/hooks/use-auth';
@@ -27,7 +27,9 @@ import {
   type SettingsSection,
 } from '@/components/settings/settings-sections';
 
-export default function SettingsPage() {
+import SecurityDashboardPage from './security/page';
+
+function SettingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { defaultCurrency, canEditSettings } = useAuth();
@@ -39,11 +41,15 @@ export default function SettingsPage() {
   // resolve onto their new home; unknown/empty → the Overview landing.
   let section = resolveSection(searchParams.get('tab'));
   
-  if (SECTION_META[section].adminOnly && !canEditSettings) {
+  if (SECTION_META[section]?.adminOnly && !canEditSettings) {
     section = 'overview';
   }
 
   const go = (next: SettingsSection) => {
+    if (next === 'governance') {
+      router.push('/settings/security');
+      return;
+    }
     const params = new URLSearchParams(searchParams.toString());
     params.set('tab', next);
     router.replace(`/settings?${params.toString()}`, { scroll: false });
@@ -54,8 +60,8 @@ export default function SettingsPage() {
   // already in context.
   const hints: Partial<Record<SettingsSection, ReactNode>> = useMemo(
     () => ({
-      appearance: mode.charAt(0).toUpperCase() + mode.slice(1),
-      deals: defaultCurrency,
+      appearance: mode ? mode.charAt(0).toUpperCase() + mode.slice(1) : 'Dark',
+      deals: defaultCurrency || 'USD',
     }),
     [mode, defaultCurrency],
   );
@@ -64,6 +70,7 @@ export default function SettingsPage() {
     overview: <SettingsOverview onSelect={go} />,
     profile: <ProfileForm />,
     security: <SecurityPanel />,
+    governance: <SecurityDashboardPage />,
     appearance: <AppearancePanel />,
     whatsapp: <WhatsAppConfig />,
     templates: <TemplateManager />,
@@ -92,8 +99,20 @@ export default function SettingsPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[236px_minmax(0,1fr)] lg:items-start">
         <SettingsRail active={section} onSelect={go} hints={hints} />
-        <div className="min-w-0">{panel[section]}</div>
+        <div className="min-w-0">{panel[section] || <SettingsOverview onSelect={go} />}</div>
       </div>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center p-12">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    }>
+      <SettingsContent />
+    </Suspense>
   );
 }

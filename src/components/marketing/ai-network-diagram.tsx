@@ -23,7 +23,7 @@ export function AiNetworkDiagramSection() {
   ];
 
   return (
-    <section className="py-24 bg-card/50 border-y border-border/60 relative overflow-hidden">
+    <section className="py-12 sm:py-14 bg-card/50 border-y border-border/60 relative overflow-hidden">
       {/* Glow background */}
       <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-emerald-500/10 blur-[160px] rounded-full pointer-events-none -z-10" />
 

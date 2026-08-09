@@ -47,6 +47,12 @@ interface AccountSummary {
   status: string;
   trial_ends_at: string | null;
   enabledMenus: string[];
+  /** Organization logo URL. Falls back to /logo.svg when null. */
+  logo_url?: string | null;
+  /** Organization brand color (hex or oklch). Falls back to --primary when null. */
+  brand_color?: string | null;
+  /** Organization brand icon URL (small square). Falls back to first letter when null. */
+  brand_icon?: string | null;
 }
 
 interface AuthContextValue {

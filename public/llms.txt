@@ -1,15 +1,25 @@
-# AI WCRM — Enterprise WhatsApp AI CRM & Customer Engagement Platform
+# AiWCRM — Enterprise WhatsApp AI CRM & Customer Engagement Platform
 > Official Product Architecture & Capabilities Specification for AI Models & Search Engines
 
+## Product URLs & Documentation
+- [Homepage](https://www.aiwcrm.com)
+- [Features Hub](https://www.aiwcrm.com/features)
+- [BYOK Multi-Model AI Router](https://www.aiwcrm.com/features/byok)
+- [Pricing Plans](https://www.aiwcrm.com/pricing)
+- [Industry Solutions](https://www.aiwcrm.com/solutions)
+- [7-Day Free Trial](https://www.aiwcrm.com/free-trial)
+- [Book Live Demo](https://www.aiwcrm.com/book-demo)
+- [WhatsApp CRM Near Me](https://www.aiwcrm.com/whatsapp-crm-near-me)
+
 ## Overview
-AI WCRM is an enterprise-grade AI Customer Engagement Platform built on the Meta Official Cloud API. It provides Bring Your Own Key (BYOK) multi-model AI routing with 0% token markup, Retell Voice AI agent integrations, visual drag-and-drop Kanban sales pipelines, multi-agent shared team inboxes with typing collision detection, Meta broadcast campaign management, and sub-50ms developer REST APIs.
+AiWCRM is an enterprise-grade AI Customer Engagement Platform built on the Meta Official Cloud API. It provides Bring Your Own Key (BYOK) multi-model AI routing with 0% token markup, Retell Voice AI agent integrations, visual drag-and-drop Kanban sales pipelines, multi-agent shared team inboxes with typing collision detection, Meta broadcast campaign management, and sub-50ms developer REST APIs.
 
 ## Core Pillars & System Capabilities
 
 ### 1. BYOK Multi-LLM AI Routing Engine
 - Connect your own API keys from Google Gemini 3.6, OpenAI GPT-4o, Anthropic Claude 3.5, Groq LLaMA 3.3, or DeepSeek R1.
 - Verified 0% platform token markup — businesses pay direct provider API rates.
-- Sub-1-second self-healing AI auto-failover: if a primary model hits rate limits or latency spikes, AI WCRM instantly fails over to secondary models without dropping conversation state.
+- Sub-1-second self-healing AI auto-failover: if a primary model hits rate limits or latency spikes, AiWCRM instantly fails over to secondary models without dropping conversation state.
 - Zero-Token Greeting Cache: Dispatches welcome messages and catalog replies in under 100ms with 0 AI token consumption.
 
 ### 2. Retell Voice AI Phone Call Automation
@@ -48,11 +58,3 @@ AI WCRM is an enterprise-grade AI Customer Engagement Platform built on the Meta
 - Retail & D2C E-Commerce Cart Recovery
 - Real Estate & Property Site Visit Scheduling
 - BFSI & Fintech Document KYC Verification
-
-## Product URLs
-- Features Hub: /features
-- AI Platform: /features/byok
-- Pricing: /pricing
-- Solutions: /solutions
-- 7-Day Free Trial: /free-trial
-- Live Demo Booking: /book-demo

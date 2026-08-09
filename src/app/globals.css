@@ -276,8 +276,8 @@ html[data-theme="rose"] {
   --space-16: clamp(2.5rem,   4vw,    4rem);
 
   /* ── Layout sizes ── */
-  --sidebar-width:      240px;
-  --sidebar-rail-width: 60px;
+  --sidebar-width:      268px;
+  --sidebar-rail-width: 64px;
   --sidebar-mobile-width: 280px;
   --panel-left-width:   320px;
   --panel-left-laptop:  280px;
@@ -905,4 +905,40 @@ html[data-theme="rose"] {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Premium Keyframe Animations */
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes signalPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.98); }
+  50% { opacity: 0.9; transform: scale(1.05); }
+}
+
+@keyframes floatHeroCard {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes flowDash {
+  to { stroke-dashoffset: -20; }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 14s linear infinite;
+}
+
+.animate-signal-pulse {
+  animation: signalPulse 3s ease-in-out infinite;
+}
+
+.animate-float-hero {
+  animation: floatHeroCard 4s ease-in-out infinite;
+}
+
+.animate-flow-dash {
+  animation: flowDash 1.2s linear infinite;
 }

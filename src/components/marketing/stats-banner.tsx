@@ -38,7 +38,7 @@ export function StripeStatsBanner() {
   ];
 
   return (
-    <section className="py-16 bg-slate-950 text-white border-y border-slate-800/80 relative overflow-hidden">
+    <section className="py-10 sm:py-12 bg-slate-950 text-white border-y border-slate-800/80 relative overflow-hidden">
       {/* Background glow lines */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b20_1px,transparent_1px),linear-gradient(to_bottom,#1e293b20_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] bg-emerald-500/10 blur-[150px] pointer-events-none" />

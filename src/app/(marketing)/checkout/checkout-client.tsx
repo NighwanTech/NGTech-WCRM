@@ -67,9 +67,20 @@ export default function CheckoutClient() {
 
   const isAnnual = billing === 'annual'
   
+  // Override starter plan base price to 5000 if fetched from DB
+  if (planData && (planData.slug === 'starter' || planData.name.toLowerCase().includes('starter'))) {
+    planData.monthly_price = 5000;
+    planData.annual_price = 5000;
+    planData.price_monthly = 5000;
+    planData.price_yearly = 5000;
+  }
+  
   const originalPrice = isAnnual ? planData.annual_price : planData.monthly_price
   const discountMultiplier = planData.discount_percent > 0 ? (1 - (planData.discount_percent / 100)) : 1
-  const price = Math.round(originalPrice * discountMultiplier)
+  const basePrice = Math.round(originalPrice * discountMultiplier)
+
+  const urlPrice = searchParams.get('price')
+  const price = urlPrice ? Number(urlPrice) : basePrice
 
   const subtotal = price
   const tax = 0
@@ -178,15 +189,21 @@ export default function CheckoutClient() {
           <div className="p-6">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-foreground">NGTech WCRM {planData.name}</h3>
+                <h3 className="text-lg font-semibold text-foreground">AIWCRM {planData.name}</h3>
                 <p className="text-sm text-muted-foreground capitalize">{billing || 'monthly'} Subscription</p>
                 <ul className="mt-2 text-sm text-muted-foreground space-y-1">
                   <li>• {planData.max_contacts === -1 ? 'Unlimited' : planData.max_contacts.toLocaleString()} Contacts</li>
                   <li>• {planData.max_messages_pm === -1 ? 'Unlimited' : planData.max_messages_pm.toLocaleString()} Messages / mo</li>
+                  {searchParams.get('seats') && Number(searchParams.get('seats')) > (planData.max_users || 3) && (
+                    <li>• {searchParams.get('seats')} Team Seats</li>
+                  )}
+                  {searchParams.get('addons') && searchParams.get('addons')!.split(',').map(addon => (
+                    <li key={addon}>• {addon.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Add-on</li>
+                  ))}
                 </ul>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-foreground">₹{price.toLocaleString()}</p>
+                <p className="text-lg font-bold text-foreground">₹{basePrice.toLocaleString()}</p>
               </div>
             </div>
             

@@ -80,7 +80,7 @@ export function DemoBookingForm() {
         </div>
         <h3 className="text-2xl font-bold text-foreground">Request Received!</h3>
         <p className="text-muted-foreground max-w-sm">
-          Thank you for your interest in NGTech WCRM. One of our WhatsApp automation experts will contact you shortly to schedule your personalized demo.
+          Thank you for your interest in AIWCRM. One of our WhatsApp automation experts will contact you shortly to schedule your personalized demo.
         </p>
         <button className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground hover:bg-primary-hover transition-colors" onClick={() => router.push('/')}>
           Return to Homepage

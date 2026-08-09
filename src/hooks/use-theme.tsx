@@ -62,7 +62,10 @@ function isMarketingPath(pathname: string): boolean {
     "/sequences",
     "/settings",
     "/team-performance",
-    "/ai-assistant"
+    "/ai-assistant",
+    "/decisions",
+    "/intelligence",
+    "/meta-ads"
   ];
   return !appPrefixes.some(prefix => pathname === prefix || pathname.startsWith(prefix + "/"));
 }

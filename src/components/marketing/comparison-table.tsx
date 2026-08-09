@@ -26,7 +26,7 @@ export function EnterpriseComparisonTable() {
     {
       feature: 'Voice AI Integration',
       typical: 'No Voice Call Capabilities',
-      wcrm: 'Integrated Retell Voice AI Agents (Inbound/Outbound)',
+      wcrm: 'Multi-Provider Voice AI: Retell AI + ElevenLabs (native Hindi voices, sub-310ms latency)',
     },
     {
       feature: 'Workflow Automation',

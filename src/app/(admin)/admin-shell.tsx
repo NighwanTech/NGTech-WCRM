@@ -21,14 +21,16 @@ export function AdminShell({ children }: AdminShellProps) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       setLoading(false)
-      if (!session?.user) router.push('/login?next=/admin')
+      if (!session?.user) {
+        window.location.href = '/login?next=/admin'
+      }
     })
-  }, [router])
+  }, [])
 
   const handleSignOut = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/login')
+    window.location.href = '/login'
   }
 
   if (loading) {
@@ -175,6 +177,12 @@ export function AdminShell({ children }: AdminShellProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M8.25 19.5V21m-3-3.75H3.75m16.5 0h-1.5M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25z" />
               </svg>
             }>AI Analytics</NavItem>
+
+            <NavItem href="/admin/meta-ads" pathname={pathname} badge="ADS" icon={
+              <svg className="h-4 w-4 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.684A1.76 1.76 0 014.2 12a1.76 1.76 0 011.236-1.684l2.147-6.15A1.76 1.76 0 0111 4.76v1.122m.8 12.02A12.03 12.03 0 0019 19m-7.2-12.02a12.03 12.03 0 017.2-6" />
+              </svg>
+            }>Meta Ads Control</NavItem>
           </div>
 
         </nav>

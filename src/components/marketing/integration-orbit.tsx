@@ -29,7 +29,7 @@ export function IntegrationOrbitSection() {
   ];
 
   return (
-    <section className="py-24 bg-card/40 border-y border-border/50 relative overflow-hidden text-center">
+    <section className="py-12 sm:py-14 bg-card/40 border-y border-border/50 relative overflow-hidden text-center">
       {/* Background spotlights */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-emerald-500/10 blur-[170px] pointer-events-none -z-10" />
 

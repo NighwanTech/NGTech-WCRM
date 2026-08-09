@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Return & Refund Policy | NGTech WCRM',
-  description: 'Return and Refund Policy for NGTech WCRM subscription services.',
+  title: 'Return & Refund Policy | AIWCRM',
+  description: 'Return and Refund Policy for AIWCRM subscription services.',
 }
 
 export default function ReturnRefundPage() {
@@ -16,15 +16,15 @@ export default function ReturnRefundPage() {
 
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-6">
           <p>
-            Thank you for choosing NGTech WCRM. We want to ensure that you have a rewarding experience while exploring, evaluating, and purchasing our platform.
+            Thank you for choosing AIWCRM. We want to ensure that you have a rewarding experience while exploring, evaluating, and purchasing our platform.
           </p>
           <p>
-            As with any online purchase experience, there are terms and conditions that apply to transactions at NGTech WCRM. By subscribing to our platform, you agree to our Return and Refund Policy.
+            As with any online purchase experience, there are terms and conditions that apply to transactions at AIWCRM. By subscribing to our platform, you agree to our Return and Refund Policy.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">1. Subscription Cancellations</h2>
           <p>
-            NGTech WCRM is a Software as a Service (SaaS) platform. You may cancel your subscription at any time. When you cancel, your subscription will remain active until the end of your current billing cycle (monthly or annually). After that, your account will be downgraded to the free tier (if applicable) or suspended, and you will not be charged again.
+            AIWCRM is a Software as a Service (SaaS) platform. You may cancel your subscription at any time. When you cancel, your subscription will remain active until the end of your current billing cycle (monthly or annually). After that, your account will be downgraded to the free tier (if applicable) or suspended, and you will not be charged again.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">2. Refund Policy</h2>
@@ -44,7 +44,7 @@ export default function ReturnRefundPage() {
 
           <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">4. Exceptions</h2>
           <p>
-            Exceptions to this policy will be considered on a case-by-case basis at the sole discretion of NGTech WCRM management. If you experience technical difficulties or prolonged downtime caused directly by our systems that severely impacts your business, please contact our support team.
+            Exceptions to this policy will be considered on a case-by-case basis at the sole discretion of AIWCRM management. If you experience technical difficulties or prolonged downtime caused directly by our systems that severely impacts your business, please contact our support team.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">5. Contact Us</h2>

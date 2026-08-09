@@ -249,7 +249,7 @@ let memoryKB: KnowledgeDocument[] = [
     title: 'WooCommerce & E-Commerce Webhook Integration',
     category: 'feature',
     sourceUrl: '/settings?tab=api-keys',
-    content: 'To integrate WooCommerce or Shopify with WhatsApp in NGTech WCRM, go to Settings -> Developer API Keys & Webhooks (/settings?tab=api-keys). Copy your Webhook Endpoint URL and secret API key to trigger automated WhatsApp order updates, abandoned cart recovery, and shipping notifications.',
+    content: 'To integrate WooCommerce or Shopify with WhatsApp in AIWCRM, go to Settings -> Developer API Keys & Webhooks (/settings?tab=api-keys). Copy your Webhook Endpoint URL and secret API key to trigger automated WhatsApp order updates, abandoned cart recovery, and shipping notifications.',
     publishStatus: 'published',
     checksum: 'w22029205',
     crawledAt: new Date().toISOString(),

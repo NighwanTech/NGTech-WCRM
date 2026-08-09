@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import { LogOut, Menu, Settings as SettingsIcon, User, LayoutGrid, FileText, Shield } from "lucide-react";
+import { LogOut, Menu, Settings as SettingsIcon, User, LayoutGrid, FileText, Shield, ChevronRight } from "lucide-react";
 import {
   Avatar,
   AvatarFallback,
@@ -18,24 +18,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/layout/mode-toggle";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { useNavigation } from "./navigation-provider";
 
-const pageTitles: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/inbox": "Inbox",
-  "/contacts": "Contacts",
-  "/pipelines": "Pipelines",
-  "/broadcasts": "Broadcasts",
-  "/automations": "Automations",
-  "/settings": "Settings",
-};
 
-function getPageTitle(pathname: string): string {
-  if (pageTitles[pathname]) return pageTitles[pathname];
-  const match = Object.entries(pageTitles).find(([path]) =>
-    pathname.startsWith(path),
-  );
-  return match ? match[1] : "Dashboard";
-}
 
 interface HeaderProps {
   /** Wired to the shell's drawer state. Used only on mobile — the
@@ -45,8 +30,24 @@ interface HeaderProps {
 
 export function Header({ onOpenSidebar }: HeaderProps) {
   const pathname = usePathname();
-  const { profile, signOut } = useAuth();
-  const title = getPageTitle(pathname);
+  const { profile, isOwner, signOut } = useAuth();
+  const { groups } = useNavigation();
+
+  // Find current breadcrumb
+  let currentGroup: { label: string; icon?: React.ElementType; color?: string } | null = null
+  let currentItem: { label: string; icon?: React.ElementType } | null = null
+  
+  for (const group of groups) {
+    const item = group.items.find(i => pathname === i.href || (i.href !== '/dashboard' && pathname.startsWith(i.href)))
+    if (item) {
+      currentGroup = { label: group.label, icon: group.groupIcon, color: group.colorClass }
+      currentItem = { label: item.label, icon: item.icon }
+      break
+    }
+  }
+
+  // Fallback
+  if (!currentItem) currentItem = { label: "Dashboard" }
 
   const initial =
     profile?.full_name?.charAt(0)?.toUpperCase() ??
@@ -54,7 +55,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
     "U";
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background px-4 lg:px-6">
+    <header className="flex h-[52px] shrink-0 items-center justify-between gap-3 border-b border-border bg-background px-4 lg:px-5">
       <div className="flex min-w-0 items-center gap-2">
         {/* Hamburger — mobile only. 44×44 hit target per Apple HIG. */}
         <button
@@ -65,19 +66,37 @@ export function Header({ onOpenSidebar }: HeaderProps) {
         >
           <Menu className="h-5 w-5" />
         </button>
-        <h1 className="truncate text-base font-semibold text-foreground sm:text-lg">
-          {title}
-        </h1>
+        <div className="flex items-center gap-2 overflow-hidden">
+          {currentGroup && (
+            <>
+              <div className="hidden sm:flex items-center gap-1.5 text-muted-foreground/80">
+                {currentGroup.icon && <currentGroup.icon className={`w-[14px] h-[14px] ${currentGroup.color?.split(' ')[0]}`} />}
+                <span className="truncate text-[13px] font-medium tracking-tight">
+                  {currentGroup.label}
+                </span>
+              </div>
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 hidden sm:inline-block" />
+            </>
+          )}
+          <div className="flex items-center gap-1.5 text-foreground">
+            {currentItem.icon && <currentItem.icon className="w-4 h-4 opacity-80" />}
+            <h1 className="truncate text-[15px] font-semibold tracking-tight">
+              {currentItem.label}
+            </h1>
+          </div>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
-        <Link
-          href="/admin"
-          className="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 shadow-sm transition-all"
-        >
-          <Shield className="size-3.5" />
-          <span>Super Admin</span>
-        </Link>
+        {isOwner && (
+          <Link
+            href="/admin"
+            className="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 shadow-sm transition-all"
+          >
+            <Shield className="size-3.5" />
+            <span>Super Admin</span>
+          </Link>
+        )}
 
         <LanguageSwitcher />
         <ModeToggle />
@@ -116,17 +135,19 @@ export function Header({ onOpenSidebar }: HeaderProps) {
             </p>
           </div>
           <DropdownMenuSeparator className="bg-border" />
-          <DropdownMenuItem
-            render={
-              <Link
-                href="/admin"
-                className="text-emerald-400 font-bold focus:bg-accent focus:text-accent-foreground"
-              />
-            }
-          >
-            <Shield className="size-4 text-emerald-400" />
-            Super Admin Portal
-          </DropdownMenuItem>
+          {isOwner && (
+            <DropdownMenuItem
+              render={
+                <Link
+                  href="/admin"
+                  className="text-emerald-400 font-bold focus:bg-accent focus:text-accent-foreground"
+                />
+              }
+            >
+              <Shield className="size-4 text-emerald-400" />
+              Super Admin Portal
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem
             render={
               <Link

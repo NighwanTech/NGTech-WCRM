@@ -78,41 +78,53 @@ export default async function DocsIndexPage() {
         </p>
 
         {/* Quickstart Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto pt-4 text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto pt-4 text-left">
           <Link
-            href="/docs/ai-copilot/byok-configuration-guide"
+            href="/docs/ai-copilot/multi-provider-voice-ai-guide"
             className="p-4 rounded-2xl bg-muted/40 hover:bg-emerald-500/10 border border-border/60 hover:border-emerald-500/40 transition-all group"
           >
             <div className="flex items-center justify-between mb-2">
               <Bot className="h-5 w-5 text-emerald-400" />
               <ArrowRight className="h-4 w-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <h4 className="text-xs font-extrabold text-foreground">BYOK AI Setup</h4>
-            <p className="text-[11px] text-muted-foreground pt-0.5">Configure 0% markup AI keys</p>
+            <h4 className="text-xs font-extrabold text-foreground">Voice AI (ElevenLabs & Retell)</h4>
+            <p className="text-[11px] text-muted-foreground pt-0.5">Hindi voices & 10-field CRM sync</p>
           </Link>
 
           <Link
-            href="/docs/whatsapp-cloud-api/meta-waba-setup-guide"
+            href="/docs/campaign-management/ai-meta-ads-guide"
             className="p-4 rounded-2xl bg-muted/40 hover:bg-emerald-500/10 border border-border/60 hover:border-emerald-500/40 transition-all group"
           >
             <div className="flex items-center justify-between mb-2">
-              <MessageSquare className="h-5 w-5 text-blue-400" />
+              <Send className="h-5 w-5 text-blue-400" />
               <ArrowRight className="h-4 w-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <h4 className="text-xs font-extrabold text-foreground">Meta WABA API</h4>
-            <p className="text-[11px] text-muted-foreground pt-0.5">Connect Cloud API & webhooks</p>
+            <h4 className="text-xs font-extrabold text-foreground">AI Meta Ads & Lead Sync</h4>
+            <p className="text-[11px] text-muted-foreground pt-0.5">0-latency Lead Form WhatsApp sync</p>
           </Link>
 
           <Link
-            href="/docs/developer-platform/api-authentication"
+            href="/docs/administration/pbac-rbac-permission-guide"
             className="p-4 rounded-2xl bg-muted/40 hover:bg-emerald-500/10 border border-border/60 hover:border-emerald-500/40 transition-all group"
           >
             <div className="flex items-center justify-between mb-2">
-              <Code2 className="h-5 w-5 text-purple-400" />
+              <Shield className="h-5 w-5 text-purple-400" />
               <ArrowRight className="h-4 w-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <h4 className="text-xs font-extrabold text-foreground">Developer REST API</h4>
-            <p className="text-[11px] text-muted-foreground pt-0.5">Bearer auth & SDK examples</p>
+            <h4 className="text-xs font-extrabold text-foreground">Enterprise PBAC & RBAC</h4>
+            <p className="text-[11px] text-muted-foreground pt-0.5">Role hierarchy & access policies</p>
+          </Link>
+
+          <Link
+            href="/docs/security-compliance/security-vault-compliance-guide"
+            className="p-4 rounded-2xl bg-muted/40 hover:bg-emerald-500/10 border border-border/60 hover:border-emerald-500/40 transition-all group"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <Lock className="h-5 w-5 text-amber-400" />
+              <ArrowRight className="h-4 w-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <h4 className="text-xs font-extrabold text-foreground">Security & DPDP Vault</h4>
+            <p className="text-[11px] text-muted-foreground pt-0.5">AES-256 vault & SOC-2 logs</p>
           </Link>
         </div>
       </section>
@@ -127,10 +139,21 @@ export default async function DocsIndexPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((cat) => {
             const IconComponent = ICON_MAP[cat.icon] || BookOpen;
+            const categorySlugMap: Record<string, string> = {
+              'ai-copilot': 'multi-provider-voice-ai-guide',
+              'campaign-management': 'ai-meta-ads-guide',
+              'administration': 'pbac-rbac-permission-guide',
+              'security-compliance': 'security-vault-compliance-guide',
+              'whatsapp-cloud-api': 'meta-waba-setup-guide',
+              'developer-platform': 'api-authentication',
+              'migration-guides': 'zoho-bigin-migration-guide'
+            };
+            const defaultSlug = categorySlugMap[cat.slug] || 'overview';
+
             return (
               <Link
                 key={cat.id}
-                href={`/docs/${cat.slug}/byok-configuration-guide`}
+                href={`/docs/${cat.slug}/${defaultSlug}`}
                 className="p-6 rounded-3xl bg-card border border-border/80 hover:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-200 flex flex-col justify-between space-y-4 group"
               >
                 <div className="space-y-3">

@@ -371,8 +371,9 @@ export const FALLBACK_FEATURES_CATALOG: FeatureRecord[] = [
     featured_toggle: true,
     available_in_plans: ['Pro', 'Enterprise'],
     supported_industries: ['Education', 'Healthcare', 'Real Estate', 'BFSI', 'Hospitality', 'Services'],
-    meta_title: 'Retell Voice AI Agent for WhatsApp CRM | WCRM',
-    meta_description: 'Automate incoming and outgoing phone calls with human-like Retell Voice AI agents integrated directly into WhatsApp.',
+    meta_title: 'Multi-Provider Voice AI (Retell + ElevenLabs) for WhatsApp CRM | AIWCRM',
+    meta_description: 'Deploy AI voice agents using Retell AI or ElevenLabs with native Hindi voices. Every call extracts CRM intelligence and syncs to Contacts, Deals & Tasks.',
+    meta_keywords: ['Retell AI Voice Agent', 'ElevenLabs Voice Agent', 'Hindi Voice AI', 'Multi-Provider Voice AI', 'WhatsApp Voice CRM'],
     sections_config: [
       {
         id: 'sec_hero_voice',
@@ -382,8 +383,8 @@ export const FALLBACK_FEATURES_CATALOG: FeatureRecord[] = [
         theme: 'glass',
         animation: 'zoom',
         content: {
-          title: 'Retell Voice AI Agent Integration',
-          subheadline: 'Combine text and voice seamlessly. Deploy human-grade Retell Voice AI agents that answer phone calls, record transcripts, and trigger WhatsApp follow-ups.',
+          title: 'Multi-Provider Voice AI — Retell & ElevenLabs',
+          subheadline: 'Combine text and voice seamlessly. Deploy AI voice agents (Retell or ElevenLabs with native Hindi voices) that answer phone calls, extract CRM intelligence, and trigger WhatsApp follow-ups automatically.',
           cta_primary: 'Try Voice AI Now',
           cta_primary_url: '/free-trial?feature=voice-ai',
           cta_secondary: 'Listen to Call Samples',
@@ -415,7 +416,7 @@ export const FALLBACK_FEATURES_CATALOG: FeatureRecord[] = [
         theme: 'gradient',
         animation: 'zoom',
         content: {
-          title: 'Deploy Retell Voice AI for Your Business',
+          title: 'Deploy Multi-Provider Voice AI for Your Business',
           subheadline: 'Never miss an inbound phone call or WhatsApp inquiry again.',
           button_text: 'Activate Voice AI Trial →',
           button_url: '/free-trial?feature=voice-ai'

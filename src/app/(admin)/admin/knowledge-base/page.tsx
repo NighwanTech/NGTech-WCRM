@@ -462,7 +462,7 @@ export default function AdminKnowledgeBasePage() {
                       if (!editingDoc.title) return
                       setEditingDoc({
                         ...editingDoc,
-                        content: `In NGTech WCRM, to resolve "${editingDoc.title.replace('FAQ: ', '')}", navigate to the corresponding feature page. You can configure automated webhooks, export data, or manage workflows directly from your user dashboard.`,
+                        content: `In AIWCRM, to resolve "${editingDoc.title.replace('FAQ: ', '')}", navigate to the corresponding feature page. You can configure automated webhooks, export data, or manage workflows directly from your user dashboard.`,
                       })
                     }}
                     className="text-[11px] font-bold text-emerald-400 hover:underline flex items-center gap-1"

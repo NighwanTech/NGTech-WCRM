@@ -47,7 +47,8 @@ import {
   X,
   Star,
   ExternalLink,
-  ArrowDown
+  ArrowDown,
+  Presentation
 } from 'lucide-react';
 import { FALLBACK_FEATURES_CATALOG } from '@/lib/services/features-cms.service';
 
@@ -210,19 +211,19 @@ export function EnterpriseFeaturesClient() {
     {
       id: 'voice',
       label: 'Voice AI',
-      tag: 'Retell Integration',
+      tag: 'Multi-Provider Voice AI',
       icon: Mic,
-      title: 'Retell Voice AI Agent Phone Call Automation',
-      desc: 'Deploy human-like Retell Voice AI agents to handle phone calls, record transcripts, score sentiment, and log follow-ups directly in WhatsApp.',
+      title: 'Multi-Provider Voice AI — Retell & ElevenLabs',
+      desc: 'Deploy AI voice agents using Retell AI or ElevenLabs (native Hindi voices). Every call extracts structured CRM intelligence — sentiment, buying signals, lead score — and syncs to Contacts, Deals, and Tasks automatically.',
       image: '/crm-mockup.png',
       highlights: [
-        'Sub-600ms Voice Agent Latency',
-        'Automated Call Audio Transcripts',
-        'Real-Time Sentiment Analysis',
-        'WhatsApp Text & Voice Sync'
+        'Retell AI & ElevenLabs — switchable providers',
+        'Native Hindi voices: Priya & Arjun (ElevenLabs)',
+        'Post-call AI intelligence → Lead Score, Sentiment, Stage',
+        'WhatsApp follow-up auto-triggered after every call'
       ],
       slug: '/features/voice-ai',
-      interactiveBadge: '🎙️ Retell Voice Call Synced (Sentiment: 94%)'
+      interactiveBadge: '✨ ElevenLabs Call Complete · Lead Score: 87 · Buying Signal Detected'
     },
     {
       id: 'marketing',
@@ -240,6 +241,23 @@ export function EnterpriseFeaturesClient() {
       ],
       slug: '/features/broadcast-campaigns',
       interactiveBadge: '🚀 50,000 Broadcast Delivered • 98% Open Rate'
+    },
+    {
+      id: 'meta-ads',
+      label: 'Meta Ads',
+      tag: 'AI Ad Creation',
+      icon: Presentation,
+      title: 'AI Meta Ads & Direct Lead Sync',
+      desc: 'Generate high-converting Facebook and Instagram ads using AI. Connect Lead Ads directly to your WhatsApp CRM so incoming prospects receive instant personalized replies.',
+      image: '/pipeline-mockup.png',
+      highlights: [
+        'AI Ad Copy & Creative Generation',
+        'Instant Facebook Lead Ad Sync',
+        'Automated First-Touch WhatsApp Reply',
+        'Campaign ROI Attribution'
+      ],
+      slug: '/features/meta-ads',
+      interactiveBadge: '✨ AI Ad Generated & 42 Leads Synced'
     },
     {
       id: 'automation',
@@ -280,34 +298,34 @@ export function EnterpriseFeaturesClient() {
       label: 'Developer Platform',
       tag: 'APIs & Webhooks',
       icon: Code2,
-      title: 'Sub-50ms REST Developer APIs & Webhooks',
-      desc: 'Programmatic access to send templates, query CRM deals, execute AI routing, and receive sub-50ms real-time webhook events.',
+      title: 'Sub-50ms REST Developer APIs & Webhook Verification',
+      desc: 'Programmatic access to send templates, query CRM deals, execute AI routing, and receive sub-50ms real-time webhook events with HMAC-SHA256 cryptographic signature verification and exponential backoff retries.',
       image: '/automation-mockup.png',
       highlights: [
-        'Sub-50ms Event Delivery',
+        'HMAC-SHA256 Signature Verification',
+        'Automatic Exponential Backoff Retries',
         'SDKs for Node.js, Python, cURL, Go',
-        '99.99% Uptime SLA',
-        'AES-256 Encryption'
+        'Sub-50ms Event Delivery & Latency Logs'
       ],
       slug: '/features/api',
-      interactiveBadge: '⚡ API Latency: 32ms Average Dispatch'
+      interactiveBadge: '⚡ API Latency: 32ms Average Dispatch · HMAC Verified'
     },
     {
       id: 'security',
-      label: 'Security',
-      tag: 'Enterprise Compliance',
+      label: 'Security & Governance',
+      tag: 'Enterprise Governance',
       icon: ShieldCheck,
-      title: 'Enterprise Security, RBAC & Meta Compliance',
-      desc: 'Role-Based Access Control, single sign-on, full audit logging, and 100% Meta Cloud API compliance with zero number ban risk.',
+      title: 'Enterprise RBAC, Audit Logging & Governance',
+      desc: '6-tier Role-Based Access Control (Owner, Admin, Manager, Agent, Client, Viewer), immutable audit trail with IP metadata, effective permission inspector, and 100% Meta Cloud API compliance.',
       image: '/dashboard-mockup.png',
       highlights: [
-        'Role-Based Access Control (RBAC)',
-        '100% Meta Official API Ban Protection',
-        'Audit Logging & Session Telemetry',
-        'SOC2 & GDPR Data Security'
+        '6-Tier Role-Based Access Control (RBAC)',
+        'Immutable Real-Time Audit Trail (IP & UA)',
+        'Effective Permission Matrix Inspector',
+        '100% Meta Official Cloud API Ban Protection'
       ],
       slug: '/features/security',
-      interactiveBadge: '🛡️ SOC2 & Meta Official Compliance Verified'
+      interactiveBadge: '🛡️ Enterprise RBAC & SOC2-Ready Audit Logging'
     }
   ];
 
@@ -325,6 +343,7 @@ export function EnterpriseFeaturesClient() {
     'Sales CRM',
     'Customer Support',
     'Marketing',
+    'Meta Ads',
     'Automation',
     'Analytics',
     'Developer Platform',
@@ -336,6 +355,7 @@ export function EnterpriseFeaturesClient() {
     'Sales CRM': Kanban,
     'Customer Support': MessageSquare,
     'Marketing': Send,
+    'Meta Ads': Presentation,
     'Automation': GitBranch,
     'Analytics': BarChart3,
     'Developer Platform': Code2,
@@ -373,7 +393,7 @@ export function EnterpriseFeaturesClient() {
       desc: 'AI counseling chatbots, campus visit scheduling, fee payment alerts, and automated admissions counseling.',
       outcome: '80% Faster Lead Response',
       workflowSteps: ['Student Inbound Chat', 'AI Counselor Screening', 'Campus Tour Scheduling', 'Fee Payment Link'],
-      testimonial: 'WCRM handled over 50,000 student admission inquiries with an 80% response speed improvement.',
+      testimonial: 'AIWCRM handled over 50,000 student admission inquiries with an 80% response speed improvement.',
       image: '/ai-mockup.png'
     },
     {
@@ -421,13 +441,13 @@ export function EnterpriseFeaturesClient() {
       region: 'Delhi NCR & Pan-India',
       roi: '120x Net ROI',
       revenue: '₹6.5 Lakhs/mo Lift',
-      quote: "WCRM's AI auto-responder and Retell Voice agents transformed our peak admission season — 80% faster response times and a ₹6.5 Lakh monthly revenue lift.",
+      quote: "AIWCRM's AI auto-responder and Voice AI agents transformed our peak admission season — 80% faster response times and a ₹6.5 Lakh monthly revenue lift.",
       challenge: 'High lead drop-offs on student inquiries during peak admission season across 12 campus locations.',
-      solution: 'Deployed Gemini AI auto-responder & Retell Voice call agents for 24/7 student engagement & instant campus tour booking.',
+      solution: 'Deployed Gemini AI auto-responder & Multi-Provider Voice AI (Retell + ElevenLabs with Hindi voices) for 24/7 student engagement & instant campus tour booking.',
       results: [
         { metric: '80%', label: 'Faster Lead Response' },
         { metric: '₹6.5L', label: 'Monthly Revenue Lift' },
-        { metric: '120x', label: 'Verified Net ROI' }
+        { metric: '100%', label: 'Official Meta Compliance' }
       ],
       image: '/ai-mockup.png'
     },
@@ -438,7 +458,7 @@ export function EnterpriseFeaturesClient() {
       region: 'Pune & Mumbai',
       roi: '95x Net ROI',
       revenue: '45% Order Speedup',
-      quote: 'With WCRM BYOK AI routing, our distributors check catalog availability and place PO orders directly on WhatsApp 24/7.',
+      quote: 'With AIWCRM BYOK AI routing, our distributors check catalog availability and place PO orders directly on WhatsApp 24/7.',
       challenge: 'Distributor orders took up to 24 hours to process through scattered phone calls and manual emails.',
       solution: 'Implemented WhatsApp Catalog Automation + BYOK Gemini AI with 0% token markup and sub-50ms webhooks.',
       results: [
@@ -455,7 +475,7 @@ export function EnterpriseFeaturesClient() {
       region: 'Bangalore',
       roi: '140x Net ROI',
       revenue: '32% Cart Recovery',
-      quote: 'Meta Official Broadcast campaigns on WCRM generated 98% open rates and recovered ₹18 Lakhs in cart revenue.',
+      quote: 'Meta Official Broadcast campaigns on AIWCRM generated 98% open rates and recovered ₹18 Lakhs in cart revenue.',
       challenge: 'High abandoned cart rates on Shopify with traditional SMS marketing delivering sub-5% open rates.',
       solution: 'Meta official WhatsApp broadcast campaigns with interactive action buttons and automated cart dispatches.',
       results: [
@@ -488,7 +508,7 @@ export function EnterpriseFeaturesClient() {
           
           <div className="max-w-4xl mx-auto space-y-8">
             {/* Eyebrow Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-5 py-2 text-xs font-bold text-blue-400 backdrop-blur-sm shadow-sm">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-5 py-2 text-xs font-bold text-blue-600 dark:text-blue-400 backdrop-blur-sm shadow-sm">
               <Sparkles className="h-4 w-4" aria-hidden="true" />
               <span>Enterprise-Grade WhatsApp AI Platform</span>
             </div>
@@ -502,8 +522,8 @@ export function EnterpriseFeaturesClient() {
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-              Unify sales, marketing, and customer support on WhatsApp with BYOK multi-model AI routing, 
-              Retell Voice AI agents, visual Kanban pipelines, and Meta official broadcast campaigns — 
+              Unify sales, marketing, and customer support on WhatsApp with BYOK multi-model AI routing,
+              Multi-Provider Voice AI (Retell + ElevenLabs), visual Kanban pipelines, and Meta official broadcast campaigns —
               all with zero platform token markup.
             </p>
 
@@ -512,7 +532,7 @@ export function EnterpriseFeaturesClient() {
               <Link
                 href="/free-trial"
                 className="feat-cta-shimmer flex h-14 items-center justify-center rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-10 text-sm transition-all shadow-xl shadow-emerald-500/25 gap-2 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
-                aria-label="Start your free 7-day trial of WCRM"
+                aria-label="Start your free 7-day trial of AIWCRM"
               >
                 Start 7-Day Free Trial <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
@@ -527,10 +547,10 @@ export function EnterpriseFeaturesClient() {
 
             {/* Trust Bar */}
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 pt-4 text-xs text-muted-foreground font-medium">
-              <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-400" aria-hidden="true" /> Meta Official Partner</span>
-              <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-emerald-400" aria-hidden="true" /> 99.99% Uptime SLA</span>
-              <span className="flex items-center gap-1.5"><Lock className="h-4 w-4 text-emerald-400" aria-hidden="true" /> SOC2 & GDPR Compliant</span>
-              <span className="flex items-center gap-1.5"><DollarSign className="h-4 w-4 text-emerald-400" aria-hidden="true" /> 0% Token Markup</span>
+              <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" /> Meta Official Partner</span>
+              <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" /> 99.99% Uptime SLA</span>
+              <span className="flex items-center gap-1.5"><Lock className="h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" /> SOC2 & GDPR Compliant</span>
+              <span className="flex items-center gap-1.5"><DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" /> 0% Token Markup</span>
             </div>
           </div>
 
@@ -540,7 +560,7 @@ export function EnterpriseFeaturesClient() {
             {/* Floating Glass Badges */}
             <div className="hidden lg:flex absolute -top-2 -left-8 z-20 p-4 rounded-2xl bg-card/90 backdrop-blur-xl border border-border/80 shadow-2xl space-y-1.5 text-left w-60 feat-animate-float">
               <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
+                <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                   <Zap className="h-4 w-4" aria-hidden="true" /> 0-Token Greeting Cache
                 </div>
                 <p className="text-[11px] text-muted-foreground font-mono mt-1">&lt;100ms instant reply dispatch</p>
@@ -549,7 +569,7 @@ export function EnterpriseFeaturesClient() {
 
             <div className="hidden lg:flex absolute top-1/3 -right-10 z-20 p-4 rounded-2xl bg-card/90 backdrop-blur-xl border border-border/80 shadow-2xl space-y-1.5 text-left w-64 feat-animate-float-delayed">
               <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-blue-400">
+                <div className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400">
                   <Bot className="h-4 w-4" aria-hidden="true" /> BYOK AI Auto-Failover
                 </div>
                 <p className="text-[11px] text-muted-foreground font-mono mt-1">Gemini 3.6 → Groq LLaMA 3.3 in &lt;1s</p>
@@ -558,7 +578,7 @@ export function EnterpriseFeaturesClient() {
 
             <div className="hidden lg:flex absolute bottom-12 -left-4 z-20 p-4 rounded-2xl bg-card/90 backdrop-blur-xl border border-border/80 shadow-2xl space-y-1.5 text-left w-56 feat-animate-float" style={{ animationDelay: '3s' }}>
               <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
+                <div className="flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400">
                   <TrendingUp className="h-4 w-4" aria-hidden="true" /> Live Revenue Tracking
                 </div>
                 <p className="text-[11px] text-muted-foreground font-mono mt-1">₹12.4L pipeline this month</p>
@@ -577,7 +597,7 @@ export function EnterpriseFeaturesClient() {
                 <div className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-lg bg-muted/50 border border-border/40 text-xs text-muted-foreground font-mono">
                   <Lock className="h-3 w-3" aria-hidden="true" /> app.aiwcrm.com/dashboard
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-extrabold border border-emerald-500/30">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-extrabold border border-emerald-500/30">
                   ● Live
                 </span>
               </div>
@@ -585,7 +605,7 @@ export function EnterpriseFeaturesClient() {
               <figure className="overflow-hidden rounded-xl sm:rounded-2xl border border-border/30 relative">
                 <img
                   src="/dashboard-mockup.png"
-                  alt="WCRM Enterprise Command Center Dashboard showing multi-agent inbox, AI routing panel, and sales pipeline overview"
+                  alt="AIWCRM Enterprise Command Center Dashboard showing multi-agent inbox, AI routing panel, and sales pipeline overview"
                   className="w-full h-auto object-cover group-hover:scale-[1.02] transition-transform duration-700"
                   loading="eager"
                   width={1920}
@@ -611,7 +631,7 @@ export function EnterpriseFeaturesClient() {
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           
           <header className="text-center max-w-3xl mx-auto space-y-4">
-            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-500">Interactive Product Explorer</span>
+            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Interactive Product Explorer</span>
             <h2 id="explorer-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
               Explore Every Platform Module
             </h2>
@@ -649,7 +669,7 @@ export function EnterpriseFeaturesClient() {
             
             {/* Left: Description & Highlights */}
             <div className="lg:col-span-4 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono text-[10px] font-extrabold uppercase border border-emerald-500/30">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-extrabold uppercase border border-emerald-500/30">
                 {currentModule.tag}
               </div>
 
@@ -664,7 +684,7 @@ export function EnterpriseFeaturesClient() {
               <div className="space-y-3 pt-2">
                 {currentModule.highlights.map((h, i) => (
                   <div key={i} className="flex items-start gap-3 text-sm">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" aria-hidden="true" />
+                    <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" aria-hidden="true" />
                     <span className="font-semibold text-foreground">{h}</span>
                   </div>
                 ))}
@@ -691,7 +711,7 @@ export function EnterpriseFeaturesClient() {
                     <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/70" aria-hidden="true" />
                     <span className="ml-2 text-[10px] font-mono text-muted-foreground font-bold">{currentModule.label} Module</span>
                   </div>
-                  <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold border border-emerald-500/30">
+                  <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold border border-emerald-500/30">
                     {currentModule.interactiveBadge}
                   </span>
                 </div>
@@ -721,12 +741,12 @@ export function EnterpriseFeaturesClient() {
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           
           <header className="text-center max-w-3xl mx-auto space-y-4">
-            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-500">System Architecture</span>
+            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">System Architecture</span>
             <h2 id="dataflow-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
               End-to-End Enterprise Data Flow
             </h2>
             <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-              See how WCRM routes incoming customer messages through zero-latency AI engines into your CRM pipeline — in real time.
+              See how AIWCRM routes incoming customer messages through zero-latency AI engines into your CRM pipeline — in real time.
             </p>
           </header>
 
@@ -802,7 +822,7 @@ export function EnterpriseFeaturesClient() {
       >
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-16">
           <header className="text-center max-w-3xl mx-auto space-y-4">
-            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-500">Automation Lifecycle</span>
+            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Automation Lifecycle</span>
             <h2 id="journey-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
               8-Step Automated Customer Journey
             </h2>
@@ -823,7 +843,7 @@ export function EnterpriseFeaturesClient() {
                 { step: '03', title: 'AI Intent Scoring', desc: 'Multi-LLM engine evaluates intent and tags buyer score (HOT 🔥).', icon: Bot },
                 { step: '04', title: 'Kanban Auto-Creation', desc: 'Creates a deal card on your sales Kanban with custom fields.', icon: Kanban },
                 { step: '05', title: 'Agent Assignment', desc: 'Round-robin routes high-intent lead to senior sales rep.', icon: Users },
-                { step: '06', title: 'Retell Voice Call', desc: 'Triggers human-like voice call for complex queries.', icon: PhoneCall },
+                { step: '06', title: 'Voice AI Call (Retell / ElevenLabs)', desc: 'Triggers AI voice call — choose Retell or ElevenLabs with native Hindi support.', icon: PhoneCall },
                 { step: '07', title: 'Automated Invoice', desc: 'Generates Razorpay payment link directly inside WhatsApp.', icon: FileCheck },
                 { step: '08', title: '24/7 Retention', desc: 'AI auto-responder handles repeat support queries 24/7.', icon: RefreshCw },
               ].map((j, i) => {
@@ -838,14 +858,14 @@ export function EnterpriseFeaturesClient() {
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
-                          <StepIcon className="h-5 w-5 text-emerald-400" aria-hidden="true" />
+                          <StepIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                         </div>
                         <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-emerald-600 text-white text-[9px] font-black flex items-center justify-center">
                           {j.step}
                         </span>
                       </div>
                     </div>
-                    <h3 className="font-extrabold text-foreground text-base group-hover:text-emerald-400 transition-colors">{j.title}</h3>
+                    <h3 className="font-extrabold text-foreground text-base group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{j.title}</h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">{j.desc}</p>
                   </div>
                 );
@@ -863,7 +883,7 @@ export function EnterpriseFeaturesClient() {
       >
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           <header className="text-center max-w-3xl mx-auto space-y-4">
-            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-500">Interactive Hotspot Tour</span>
+            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Interactive Hotspot Tour</span>
             <h2 id="tour-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
               Click to Explore the Command Center
             </h2>
@@ -878,13 +898,13 @@ export function EnterpriseFeaturesClient() {
               <span className="h-2.5 w-2.5 rounded-full bg-rose-500/70" aria-hidden="true" />
               <span className="h-2.5 w-2.5 rounded-full bg-amber-500/70" aria-hidden="true" />
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/70" aria-hidden="true" />
-              <span className="ml-3 text-[10px] font-mono text-muted-foreground">WCRM Command Center — Interactive Tour</span>
+              <span className="ml-3 text-[10px] font-mono text-muted-foreground">AIWCRM Command Center — Interactive Tour</span>
             </div>
 
             <figure className="relative overflow-hidden rounded-2xl">
               <img
                 src="/dashboard-mockup.png"
-                alt="WCRM interactive dashboard tour with clickable hotspots highlighting Shared Inbox, Kanban CRM, Meta Broadcasts, and BYOK AI Router"
+                alt="AIWCRM interactive dashboard tour with clickable hotspots highlighting Shared Inbox, Kanban CRM, Meta Broadcasts, and BYOK AI Router"
                 className="w-full h-auto object-cover rounded-2xl"
                 loading="lazy"
               />
@@ -915,7 +935,7 @@ export function EnterpriseFeaturesClient() {
                   {/* Tooltip on active */}
                   {activeHotspot === h.id && (
                     <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 px-4 py-2.5 rounded-xl bg-card border border-emerald-500/30 shadow-2xl whitespace-nowrap z-30 text-left">
-                      <p className="text-xs font-black text-emerald-400">{h.label}</p>
+                      <p className="text-xs font-black text-emerald-600 dark:text-emerald-400">{h.label}</p>
                       <p className="text-[10px] text-muted-foreground mt-0.5 max-w-[200px] whitespace-normal">{h.desc}</p>
                     </div>
                   )}
@@ -925,7 +945,7 @@ export function EnterpriseFeaturesClient() {
 
             {/* Active Hotspot Status Bar */}
             <div className="p-4 mt-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2" role="status" aria-live="polite">
-              <span className="font-bold text-emerald-400 text-xs flex items-center gap-2">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" aria-hidden="true" />
                 {hotspots.find((h) => h.id === activeHotspot)?.label}
               </span>
@@ -945,7 +965,7 @@ export function EnterpriseFeaturesClient() {
       >
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           <header className="text-center max-w-3xl mx-auto space-y-4">
-            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-500">Product Architecture</span>
+            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Product Architecture</span>
             <h2 id="pillars-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
               8 Enterprise Product Pillars
             </h2>
@@ -961,64 +981,63 @@ export function EnterpriseFeaturesClient() {
             <div className="lg:col-span-2 rounded-3xl bg-card border border-border/80 p-8 shadow-xl space-y-6 flex flex-col justify-between hover:border-emerald-500/40 transition-all group relative overflow-hidden">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/30">
-                    <Bot className="h-4 w-4" aria-hidden="true" /> BYOK Multi-LLM + Retell Voice AI
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-xs font-bold border border-emerald-500/30">
+                    <Bot className="h-4 w-4" aria-hidden="true" /> BYOK Multi-LLM + Multi-Provider Voice AI
                   </div>
-                  <span className="text-[10px] font-mono font-extrabold text-emerald-400 uppercase bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">0% Token Markup</span>
+                  <span className="text-[10px] font-mono font-extrabold text-emerald-600 dark:text-emerald-400 uppercase bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">0% Token Markup</span>
                 </div>
 
-                <h3 className="text-2xl sm:text-3xl font-black text-foreground group-hover:text-emerald-400 transition-colors">
+                <h3 className="text-2xl sm:text-3xl font-black text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                   Multi-Model AI Engine & Voice Agents
                 </h3>
 
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Route customer conversations through Gemini 3.6, OpenAI GPT-4o, Claude 3.5, Groq LLaMA, or DeepSeek R1 with zero vendor markup. Trigger human-like Retell Voice phone calls with sub-600ms latency.
+                  Route customer conversations through Gemini 3.6, OpenAI GPT-4o, Claude 3.5, Groq LLaMA, or DeepSeek R1 with zero vendor markup. Trigger AI voice calls via Retell AI or ElevenLabs (native Hindi voices, sub-310ms latency).
                 </p>
               </div>
 
               <figure className="rounded-2xl border border-border/60 overflow-hidden bg-background relative mt-4">
                 <img
-                  src="/ai-mockup.png"
-                  alt="WCRM BYOK Multi-Model AI Routing Interface"
-                  className="w-full h-56 sm:h-64 object-cover group-hover:scale-[1.02] transition-transform duration-500"
-                  loading="lazy"
+                  src="/crm-mockup.png"
+                  alt="AIWCRM BYOK Multi-Model AI Routing Interface"
+                  className="w-full h-auto object-cover rounded-2xl group-hover:scale-[1.01] transition-transform duration-500"
                 />
               </figure>
 
               <div className="pt-4 flex items-center justify-between border-t border-border/40">
-                <Link href="/features/byok" className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 hover:underline">
+                <Link href="/features/byok" className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 hover:underline">
                   Explore BYOK AI Platform <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
-                <Link href="/features/voice-ai" className="text-xs font-bold text-blue-400 flex items-center gap-1.5 hover:underline">
+                <Link href="/features/voice-ai" className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5 hover:underline">
                   Explore Voice AI <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </div>
             </div>
 
             {/* Bento Card 2: Visual Sales Kanban */}
-            <div className="rounded-3xl bg-card border border-border/80 p-8 shadow-xl space-y-6 flex flex-col justify-between hover:border-amber-500/40 transition-all group">
+            <div className="rounded-3xl bg-card border border-border/80 p-8 shadow-xl space-y-6 flex flex-col justify-between hover:border-emerald-500/40 transition-all group relative overflow-hidden">
               <div className="space-y-4">
-                <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-400 w-fit">
-                  <Kanban className="h-6 w-6" aria-hidden="true" />
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-xs font-bold border border-emerald-500/30">
+                  <Kanban className="h-4 w-4" aria-hidden="true" /> Visual Deals Kanban
                 </div>
-                <h3 className="text-xl font-black text-foreground group-hover:text-amber-400 transition-colors">
-                  Visual Sales Kanban Pipeline
+                <h3 className="text-2xl font-black text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                  Visual Pipeline Tracking
                 </h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Drag-and-drop lead stages from Inbound to Closed Won. Automate follow-up reminders and track revenue attribution per rep.
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Drag and drop lead cards across custom stages. Auto-sync lead sentiment scores and conversation logs directly into contact profiles.
                 </p>
               </div>
 
-              <figure className="rounded-2xl border border-border/60 overflow-hidden bg-background">
+              <figure className="rounded-2xl border border-border/60 overflow-hidden bg-background relative mt-4">
                 <img
                   src="/pipeline-mockup.png"
-                  alt="WCRM Visual Sales Kanban Pipeline"
+                  alt="AIWCRM Visual Sales Kanban Pipeline"
                   className="w-full h-44 object-cover group-hover:scale-[1.02] transition-transform duration-500"
                   loading="lazy"
                 />
               </figure>
 
-              <Link href="/features/crm-pipeline" className="text-xs font-bold text-amber-400 flex items-center gap-1.5 pt-2 border-t border-border/40 hover:underline">
+              <Link href="/features/crm-pipeline" className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 pt-2 border-t border-border/40 hover:underline">
                 Explore Sales Kanban <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </Link>
             </div>
@@ -1026,17 +1045,17 @@ export function EnterpriseFeaturesClient() {
             {/* Bento Card 3: Multi-Agent Shared Inbox */}
             <div className="rounded-3xl bg-card border border-border/80 p-6 sm:p-8 shadow-xl space-y-4 hover:border-emerald-500/40 transition-all group flex flex-col justify-between">
               <div className="space-y-3">
-                <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 w-fit">
+                <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 w-fit">
                   <MessageSquare className="h-5 w-5" aria-hidden="true" />
                 </div>
-                <h3 className="text-lg font-extrabold text-foreground group-hover:text-emerald-400 transition-colors">
+                <h3 className="text-lg font-extrabold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                   Shared Team Inbox
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Real-time agent typing collision detection, private internal notes, and round-robin auto-assignment across unlimited reps.
                 </p>
               </div>
-              <Link href="/features/shared-inbox" className="text-xs font-mono font-bold text-emerald-400 flex items-center justify-between border-t border-border/40 pt-3">
+              <Link href="/features/shared-inbox" className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-between border-t border-border/40 pt-3">
                 <span>Collision Prevention</span>
                 <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
               </Link>
@@ -1045,17 +1064,17 @@ export function EnterpriseFeaturesClient() {
             {/* Bento Card 4: Meta Official Broadcasts */}
             <div className="rounded-3xl bg-card border border-border/80 p-6 sm:p-8 shadow-xl space-y-4 hover:border-blue-500/40 transition-all group flex flex-col justify-between">
               <div className="space-y-3">
-                <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-400 w-fit">
+                <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 w-fit">
                   <Send className="h-5 w-5" aria-hidden="true" />
                 </div>
-                <h3 className="text-lg font-extrabold text-foreground group-hover:text-blue-400 transition-colors">
+                <h3 className="text-lg font-extrabold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                   Meta Broadcast Campaigns
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   High-volume WhatsApp template campaigns with 98% open rates, rich interactive buttons, and real-time conversation tracking.
                 </p>
               </div>
-              <Link href="/features/broadcast-campaigns" className="text-xs font-mono font-bold text-blue-400 flex items-center justify-between border-t border-border/40 pt-3">
+              <Link href="/features/broadcast-campaigns" className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400 flex items-center justify-between border-t border-border/40 pt-3">
                 <span>98% Open Rate</span>
                 <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
               </Link>
@@ -1064,17 +1083,17 @@ export function EnterpriseFeaturesClient() {
             {/* Bento Card 5: Visual Workflow Automation */}
             <div className="rounded-3xl bg-card border border-border/80 p-6 sm:p-8 shadow-xl space-y-4 hover:border-purple-500/40 transition-all group flex flex-col justify-between">
               <div className="space-y-3">
-                <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-400 w-fit">
+                <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 w-fit">
                   <GitBranch className="h-5 w-5" aria-hidden="true" />
                 </div>
-                <h3 className="text-lg font-extrabold text-foreground group-hover:text-purple-400 transition-colors">
+                <h3 className="text-lg font-extrabold text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                   No-Code Workflows
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Visual trigger-action builder with AI evaluation nodes, webhooks, and conditional customer journey branching.
                 </p>
               </div>
-              <Link href="/features/workflow-automation" className="text-xs font-mono font-bold text-purple-400 flex items-center justify-between border-t border-border/40 pt-3">
+              <Link href="/features/workflow-automation" className="text-xs font-mono font-bold text-purple-600 dark:text-purple-400 flex items-center justify-between border-t border-border/40 pt-3">
                 <span>No-Code Builder</span>
                 <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
               </Link>
@@ -1084,13 +1103,13 @@ export function EnterpriseFeaturesClient() {
             <div className="lg:col-span-2 rounded-3xl bg-card border border-border/80 p-8 shadow-xl space-y-6 flex flex-col justify-between hover:border-emerald-500/40 transition-all group">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/30">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-xs font-bold border border-emerald-500/30">
                     <Code2 className="h-4 w-4" aria-hidden="true" /> Sub-50ms REST APIs & Executive Telemetry
                   </div>
-                  <span className="text-[10px] font-mono font-extrabold text-emerald-400 uppercase bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">99.99% SLA</span>
+                  <span className="text-[10px] font-mono font-extrabold text-emerald-600 dark:text-emerald-400 uppercase bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">99.99% SLA</span>
                 </div>
 
-                <h3 className="text-xl sm:text-2xl font-black text-foreground group-hover:text-emerald-400 transition-colors">
+                <h3 className="text-xl sm:text-2xl font-black text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                   Developer Platform & Executive SLA Telemetry
                 </h3>
 
@@ -1100,10 +1119,10 @@ export function EnterpriseFeaturesClient() {
               </div>
 
               <div className="pt-4 flex items-center justify-between border-t border-border/40">
-                <Link href="/features/api" className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 hover:underline">
+                <Link href="/features/api" className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 hover:underline">
                   Developer API Docs <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
-                <Link href="/features/analytics" className="text-xs font-bold text-teal-400 flex items-center gap-1.5 hover:underline">
+                <Link href="/features/analytics" className="text-xs font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1.5 hover:underline">
                   Telemetry Dashboards <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </div>
@@ -1170,7 +1189,7 @@ export function EnterpriseFeaturesClient() {
       >
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           <header className="text-center max-w-3xl mx-auto space-y-4">
-            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-500">Industry Solutions</span>
+            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Industry Solutions</span>
             <h2 id="industry-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
               Purpose-Built Workflows per Vertical
             </h2>
@@ -1208,7 +1227,7 @@ export function EnterpriseFeaturesClient() {
             
             {/* Left Column: Details & Workflow Steps */}
             <div className="lg:col-span-5 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono text-[10px] font-extrabold uppercase border border-emerald-500/30">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-extrabold uppercase border border-emerald-500/30">
                 {currentIndustry.tag}
               </div>
 
@@ -1222,9 +1241,9 @@ export function EnterpriseFeaturesClient() {
 
               {/* Quantifiable Impact Badge */}
               <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3">
-                <TrendingUp className="h-6 w-6 text-emerald-400 shrink-0" aria-hidden="true" />
+                <TrendingUp className="h-6 w-6 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
                 <div>
-                  <p className="text-xs font-mono font-bold text-emerald-400 uppercase">Impact Metric</p>
+                  <p className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase">Impact Metric</p>
                   <p className="text-base sm:text-lg font-black text-foreground">{currentIndustry.outcome}</p>
                 </div>
               </div>
@@ -1235,7 +1254,7 @@ export function EnterpriseFeaturesClient() {
                 <div className="space-y-2">
                   {currentIndustry.workflowSteps.map((step, idx) => (
                     <div key={idx} className="flex items-center gap-3 text-xs font-semibold text-foreground p-2.5 rounded-xl bg-background border border-border/60">
-                      <span className="h-5 w-5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-black flex items-center justify-center shrink-0">
+                      <span className="h-5 w-5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-black flex items-center justify-center shrink-0">
                         {idx + 1}
                       </span>
                       <span>{step}</span>
@@ -1266,7 +1285,7 @@ export function EnterpriseFeaturesClient() {
 
               {/* Testimonial Quote Pill */}
               <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 flex items-center gap-3">
-                <Quote className="h-5 w-5 text-emerald-400 shrink-0" aria-hidden="true" />
+                <Quote className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
                 <p className="text-xs italic text-muted-foreground font-medium">{currentIndustry.testimonial}</p>
               </div>
             </div>
@@ -1283,9 +1302,9 @@ export function EnterpriseFeaturesClient() {
       >
         <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 space-y-12">
           <header className="max-w-3xl mx-auto space-y-4">
-            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-500">Integrations Ecosystem</span>
+            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Integrations Ecosystem</span>
             <h2 id="integrations-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-              Everything Connects to WCRM
+              Everything Connects to AIWCRM
             </h2>
             <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
               Seamlessly connect with your existing tools, AI models, and payment gateways.
@@ -1383,12 +1402,12 @@ export function EnterpriseFeaturesClient() {
       >
         <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 space-y-12">
           <header className="text-center max-w-3xl mx-auto space-y-4">
-            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-500">Customer Success Stories</span>
+            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Customer Success Stories</span>
             <h2 id="success-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
               Real Results from Enterprise Clients
             </h2>
             <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-              Read how leading enterprises scale WhatsApp revenue and customer engagement with WCRM.
+              Read how leading enterprises scale WhatsApp revenue and customer engagement with AIWCRM.
             </p>
           </header>
 
@@ -1415,18 +1434,18 @@ export function EnterpriseFeaturesClient() {
             <div className="p-6 sm:p-8 border-b border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
-                  <Award className="h-7 w-7 text-emerald-400" aria-hidden="true" />
+                  <Award className="h-7 w-7 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                 </div>
                 <div>
                   <h3 className="text-xl font-extrabold text-foreground">{currentCaseStudy.client}</h3>
-                  <p className="text-xs text-emerald-400 font-mono">{currentCaseStudy.vertical} • {currentCaseStudy.region}</p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-mono">{currentCaseStudy.vertical} • {currentCaseStudy.region}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/30">
+                <span className="px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-xs font-bold border border-emerald-500/30">
                   {currentCaseStudy.roi}
                 </span>
-                <span className="px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-400 font-mono text-xs font-bold border border-blue-500/30">
+                <span className="px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono text-xs font-bold border border-blue-500/30">
                   {currentCaseStudy.revenue}
                 </span>
               </div>
@@ -1449,7 +1468,7 @@ export function EnterpriseFeaturesClient() {
                 <p className="text-xs text-foreground font-semibold leading-relaxed">{currentCaseStudy.challenge}</p>
               </div>
               <div className="p-6 sm:p-8 md:col-span-4 space-y-2">
-                <p className="text-emerald-400 font-mono text-[10px] uppercase font-bold tracking-wider">WCRM Solution</p>
+                <p className="text-emerald-600 dark:text-emerald-400 font-mono text-[10px] uppercase font-bold tracking-wider">AIWCRM Solution</p>
                 <p className="text-xs text-foreground font-semibold leading-relaxed">{currentCaseStudy.solution}</p>
               </div>
               <div className="p-6 sm:p-8 md:col-span-4 space-y-3 bg-emerald-500/5">
@@ -1458,7 +1477,7 @@ export function EnterpriseFeaturesClient() {
                   {currentCaseStudy.results.map((res, i) => (
                     <div key={i} className="flex items-center justify-between text-xs">
                       <span className="text-muted-foreground">{res.label}</span>
-                      <span className="font-mono font-black text-emerald-400">{res.metric}</span>
+                      <span className="font-mono font-black text-emerald-600 dark:text-emerald-400">{res.metric}</span>
                     </div>
                   ))}
                 </div>
@@ -1476,7 +1495,7 @@ export function EnterpriseFeaturesClient() {
       >
         <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 space-y-12">
           <header className="text-center max-w-3xl mx-auto space-y-5">
-            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-500">Feature Catalog</span>
+            <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Feature Catalog</span>
             <h2 id="catalog-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
               Explore All 40+ Enterprise Features
             </h2>
@@ -1537,12 +1556,12 @@ export function EnterpriseFeaturesClient() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-xl bg-emerald-500/10">
-                        <CatIcon className="h-4 w-4 text-emerald-400" aria-hidden="true" />
+                        <CatIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                       </div>
                       <h3 className="text-lg sm:text-xl font-extrabold text-foreground">{cat}</h3>
                       <span className="text-xs font-mono text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full font-bold">{catFeats.length}</span>
                     </div>
-                    <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-300 ${isOpen ? 'rotate-180 text-emerald-400' : ''}`} aria-hidden="true" />
+                    <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-300 ${isOpen ? 'rotate-180 text-emerald-600 dark:text-emerald-400' : ''}`} aria-hidden="true" />
                   </button>
 
                   <div
@@ -1561,7 +1580,7 @@ export function EnterpriseFeaturesClient() {
                             className="p-4 rounded-2xl bg-background border border-border/80 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all text-xs space-y-1.5 block group"
                           >
                             <div className="flex items-center justify-between">
-                              <span className="font-extrabold text-foreground group-hover:text-emerald-400 transition-colors">{feat.name}</span>
+                              <span className="font-extrabold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{feat.name}</span>
                               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
                             </div>
                             <p className="text-[11px] text-muted-foreground line-clamp-2">{feat.short_description}</p>
@@ -1586,14 +1605,14 @@ export function EnterpriseFeaturesClient() {
         <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 space-y-12">
           
           <header className="text-center space-y-4 max-w-3xl mx-auto">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
               <Activity className="h-4 w-4" aria-hidden="true" /> Performance Comparison
             </span>
             <h2 id="comparison-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-              Traditional Legacy vs WCRM Enterprise
+              Traditional Legacy vs AIWCRM Enterprise
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground">
-              See why modern businesses choose WCRM for sub-100ms response speed, 0% AI cost markups, and enterprise-grade reliability.
+              See why modern businesses choose AIWCRM for sub-100ms response speed, 0% AI cost markups, and enterprise-grade reliability.
             </p>
           </header>
 
@@ -1610,7 +1629,7 @@ export function EnterpriseFeaturesClient() {
             {/* Left: Traditional Business */}
             <div className="p-6 sm:p-8 rounded-3xl bg-rose-950/10 border border-rose-500/20 space-y-6 flex flex-col justify-between shadow-xl">
               <div className="space-y-5">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-extrabold uppercase font-mono">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-extrabold uppercase font-mono">
                   <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" /> Traditional Stack
                 </div>
                 <h3 className="text-2xl font-black text-foreground">Scattered & Manual Operations</h3>
@@ -1626,10 +1645,10 @@ export function EnterpriseFeaturesClient() {
                     const RowIcon = item.icon;
                     return (
                       <div key={idx} className="flex items-center gap-3 p-3.5 rounded-2xl bg-rose-500/5 border border-rose-500/10">
-                        <RowIcon className="h-4 w-4 text-rose-400 shrink-0" aria-hidden="true" />
+                        <RowIcon className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" aria-hidden="true" />
                         <div className="flex-1">
                           <span className="text-[10px] text-muted-foreground uppercase block font-bold">{item.label}</span>
-                          <span className="text-rose-300 font-extrabold">{item.val}</span>
+                          <span className="text-rose-600 dark:text-rose-300 font-extrabold">{item.val}</span>
                         </div>
                         <span className="text-rose-400 font-bold" aria-hidden="true">✕</span>
                       </div>
@@ -1639,15 +1658,15 @@ export function EnterpriseFeaturesClient() {
               </div>
             </div>
 
-            {/* Right: WCRM Enterprise */}
+            {/* Right: AIWCRM Enterprise */}
             <div className="p-6 sm:p-8 pt-10 rounded-3xl bg-gradient-to-br from-emerald-950/40 via-card to-emerald-950/20 border-2 border-emerald-500/50 shadow-2xl shadow-emerald-500/10 space-y-6 flex flex-col justify-between relative">
               <div className="absolute top-4 right-5 px-3.5 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider shadow-lg">
                 RECOMMENDED
               </div>
 
               <div className="space-y-5">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-extrabold uppercase font-mono">
-                  <Zap className="h-3.5 w-3.5" aria-hidden="true" /> WCRM Enterprise Engine
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300 text-xs font-extrabold uppercase font-mono">
+                  <Zap className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" /> AIWCRM Enterprise Engine
                 </div>
                 <h3 className="text-2xl font-black text-foreground">Instant, Unified & Automated</h3>
 
@@ -1662,12 +1681,12 @@ export function EnterpriseFeaturesClient() {
                     const RowIcon = item.icon;
                     return (
                       <div key={idx} className="flex items-center gap-3 p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-                        <RowIcon className="h-4 w-4 text-emerald-400 shrink-0" aria-hidden="true" />
+                        <RowIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
                         <div className="flex-1">
-                          <span className="text-[10px] text-emerald-400 uppercase block font-bold">{item.label}</span>
+                          <span className="text-[10px] text-emerald-700 dark:text-emerald-400 uppercase block font-bold">{item.label}</span>
                           <span className="text-foreground font-extrabold">{item.val}</span>
                         </div>
-                        <span className="text-emerald-400 font-bold" aria-hidden="true">✓</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold" aria-hidden="true">✓</span>
                       </div>
                     );
                   })}
@@ -1678,7 +1697,7 @@ export function EnterpriseFeaturesClient() {
                 href="/free-trial"
                 className="feat-cta-shimmer w-full flex h-12 items-center justify-center rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs transition-all shadow-lg shadow-emerald-500/25 gap-2 focus-visible:ring-2 focus-visible:ring-emerald-400"
               >
-                Switch to WCRM Enterprise →
+                Switch to AIWCRM Enterprise →
               </Link>
             </div>
 
@@ -1713,25 +1732,20 @@ export function EnterpriseFeaturesClient() {
             and enterprise-grade security — completely free for 7 days.
           </p>
 
-          {/* Social Proof */}
-          <p className="text-xs text-slate-500 font-medium">
-            Trusted by <span className="text-emerald-400 font-bold">500+</span> businesses across India
-          </p>
-
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
             <Link
               href="/free-trial"
               className="feat-cta-shimmer flex h-14 sm:h-16 items-center justify-center rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-10 sm:px-12 text-sm sm:text-base transition-all shadow-xl shadow-emerald-500/25 gap-2 focus-visible:ring-2 focus-visible:ring-emerald-400"
-              aria-label="Start your free 7-day trial"
+              aria-label="Start your free 7-day trial of AIWCRM"
             >
               Start Free Trial <ArrowRight className="h-5 w-5" aria-hidden="true" />
             </Link>
             <Link
               href="/book-demo"
-              className="flex h-14 sm:h-16 items-center justify-center rounded-full border border-slate-700 bg-slate-900 hover:bg-slate-800 px-8 sm:px-10 text-sm font-bold text-white transition-all focus-visible:ring-2 focus-visible:ring-emerald-400"
-              aria-label="Book a live technical demo"
+              className="flex h-14 sm:h-16 items-center justify-center rounded-full border border-slate-700 bg-slate-900/80 hover:bg-slate-800 hover:border-slate-600 text-white font-bold px-10 sm:px-12 text-sm sm:text-base transition-all gap-2"
+              aria-label="Book a live demo with our AIWCRM specialists"
             >
-              Book Live Demo
+              Book Live Demo <Presentation className="h-5 w-5 text-emerald-400" aria-hidden="true" />
             </Link>
           </div>
 

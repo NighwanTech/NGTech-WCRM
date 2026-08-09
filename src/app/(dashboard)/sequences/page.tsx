@@ -51,9 +51,16 @@ export default function SequencesPage() {
   async function load() {
     try {
       const supabase = createClient()
+      const { data: userRes } = await supabase.auth.getUser()
+      if (!userRes.user) return
+
+      const { data: profile } = await supabase.from('profiles').select('account_id').eq('user_id', userRes.user.id).single()
+      if (!profile?.account_id) return
+
       const { data, error } = await supabase
         .from("sequences")
         .select("*, enrollments:sequence_enrollments(count)")
+        .eq("account_id", profile.account_id)
         .order("created_at", { ascending: false })
 
       if (error) throw error

@@ -34,11 +34,23 @@ export const ROLE_META: Record<
     variant: 'admin',
     className: 'border-primary/40 bg-primary/10 text-primary',
   },
+  manager: {
+    icon: UserCog,
+    label: 'Manager',
+    variant: 'admin',
+    className: 'border-blue-500/40 bg-blue-500/10 text-blue-400',
+  },
   agent: {
     icon: UserCog,
     label: 'Agent',
     variant: 'muted',
     className: 'border-border bg-muted text-muted-foreground',
+  },
+  client: {
+    icon: UserIcon,
+    label: 'Client',
+    variant: 'muted',
+    className: 'border-purple-500/40 bg-purple-500/10 text-purple-400',
   },
   viewer: {
     icon: UserIcon,

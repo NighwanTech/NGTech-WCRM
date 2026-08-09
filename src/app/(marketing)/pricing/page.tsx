@@ -9,30 +9,53 @@ import { createClient } from '@/lib/supabase/server';
 import { type Testimonial } from '@/components/marketing/testimonial-carousel';
 
 export const metadata: Metadata = {
-  title: 'Transparent Pricing & BYOK AI Costs | WCRM WhatsApp CRM',
-  description: 'Simple, transparent pricing with 0% platform token markup. All plans include official Meta Cloud API, BYOK multi-model AI, Shared Team Inbox, and Voice AI.',
+  title: 'Transparent Pricing & BYOK AI Costs | AIWCRM WhatsApp CRM',
+  description: 'Simple, transparent pricing with 0% platform token markup. All plans include official Meta Cloud API, AI Meta Ads Add-on, BYOK multi-model AI, Enterprise RBAC, Shared Team Inbox, and Voice AI.',
   keywords: [
+    'AIWCRM Pricing',
     'WhatsApp CRM Pricing India',
+    'AI Meta Ads Add-on Pricing',
     'BYOK WhatsApp AI Pricing',
+    'Enterprise RBAC WhatsApp Pricing',
     'WhatsApp Business API Costs',
     'WhatsApp Shared Inbox Pricing',
     'Zero Markup WhatsApp API'
   ],
   openGraph: {
-    title: 'Transparent Pricing & BYOK AI Costs | WCRM',
-    description: 'Simple, transparent pricing with 0% platform token markup. BYOK multi-model AI routing with 7-day free trial.',
-    url: 'https://wacrm.in/pricing',
-    siteName: 'WCRM',
+    title: 'Transparent Pricing & BYOK AI Costs | AIWCRM',
+    description: 'Simple, transparent pricing with 0% token markup. AI Meta Ads, Enterprise RBAC, BYOK multi-model AI with 7-day free trial.',
+    url: 'https://www.aiwcrm.com/pricing',
+    siteName: 'AIWCRM',
     locale: 'en_IN',
     type: 'website',
   },
   alternates: {
-    canonical: 'https://wacrm.in/pricing',
+    canonical: 'https://www.aiwcrm.com/pricing',
   },
 };
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function PricingPage() {
-  const plans = await getPricingPlansFromDB();
+  let plans = await getPricingPlansFromDB();
+  
+  // Override Starter plan price to 5000 INR per user request
+  plans = plans.map(plan => {
+    if (plan.slug === 'starter' || plan.name.toLowerCase().includes('starter')) {
+      return {
+        ...plan,
+        price_monthly: 5000,
+        price_yearly: 5000,
+        monthly_price: 5000,
+        annual_price: 5000,
+        original_price_monthly: 6500,
+        original_price_yearly: 6500,
+      };
+    }
+    return plan;
+  });
+
   const faqs = await getPricingFaqsFromDB();
 
   const supabase = await createClient();

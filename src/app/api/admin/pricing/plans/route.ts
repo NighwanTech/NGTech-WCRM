@@ -14,7 +14,23 @@ export async function GET() {
       return NextResponse.json({ success: true, plans: FALLBACK_PRICING_PLANS, source: 'fallback' });
     }
 
-    return NextResponse.json({ success: true, plans, source: 'database' });
+    // Override Starter price to 5000 INR
+    const overriddenPlans = plans.map(p => {
+      if (p.slug === 'starter' || p.name.toLowerCase().includes('starter')) {
+        return {
+          ...p,
+          price_monthly: 5000,
+          price_yearly: 5000,
+          monthly_price: 5000,
+          annual_price: 5000,
+          original_price_monthly: 6500,
+          original_price_yearly: 6500,
+        };
+      }
+      return p;
+    });
+
+    return NextResponse.json({ success: true, plans: overriddenPlans, source: 'database' });
   } catch (err: any) {
     return NextResponse.json({ success: true, plans: FALLBACK_PRICING_PLANS, error: err.message }, { status: 200 });
   }

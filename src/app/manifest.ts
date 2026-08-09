@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'NGTech WCRM',
-    short_name: 'NGTech WCRM',
+    name: 'AIWCRM',
+    short_name: 'AIWCRM',
     description: 'WhatsApp CRM, Shared Inbox, Automations, & AI Assistant',
     start_url: '/',
     display: 'standalone',

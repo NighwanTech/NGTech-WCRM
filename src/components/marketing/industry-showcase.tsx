@@ -92,7 +92,7 @@ export function IndustryShowcaseSection() {
   const CurrentIcon = currentInd.icon;
 
   return (
-    <section className="py-24 bg-background relative overflow-hidden">
+    <section className="py-12 sm:py-14 bg-background relative overflow-hidden">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Header */}

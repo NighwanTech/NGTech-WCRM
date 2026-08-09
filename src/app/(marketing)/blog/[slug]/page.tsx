@@ -20,11 +20,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     .single()
 
   if (!post) {
-    return { title: 'Post Not Found | NGTech WCRM' }
+    return { title: 'Post Not Found | AIWCRM' }
   }
 
   return {
-    title: post.seo_title || `${post.title} | NGTech WCRM`,
+    title: post.seo_title || `${post.title} | AIWCRM`,
     description: post.seo_description || post.excerpt,
   }
 }
@@ -120,7 +120,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         {/* CTA */}
         <div className="rounded-2xl bg-primary/5 border border-primary/20 p-8 text-center mb-16">
           <h3 className="text-2xl font-bold text-foreground mb-4">Ready to automate your business?</h3>
-          <p className="text-muted-foreground mb-6 max-w-lg mx-auto">Join thousands of businesses using NGTech WCRM to scale their sales and support on WhatsApp.</p>
+          <p className="text-muted-foreground mb-6 max-w-lg mx-auto">Join thousands of businesses using AIWCRM to scale their sales and support on WhatsApp.</p>
           <Link href="/free-trial" className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-8 font-semibold text-primary-foreground hover:bg-primary-hover transition-colors">
             Start Your Free Trial
           </Link>

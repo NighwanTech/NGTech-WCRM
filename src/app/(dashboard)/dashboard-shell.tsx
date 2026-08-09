@@ -10,13 +10,14 @@ import { TrialBanner } from "@/components/layout/trial-banner";
 import { AppShell } from "@/components/ui/responsive-layout";
 import { DashboardMobileBottomNav } from "@/components/layout/dashboard-mobile-bottom-nav";
 import { CopilotGuidanceAgent } from "@/components/dashboard/copilot-guidance-agent";
+import { NavigationProvider } from "@/components/layout/navigation-provider";
 
 // Auth-gated dashboard shell. Extracted from the layout so the layout
 // itself can stay a server component and export metadata (noindex) —
 // client components can't export Next's metadata object.
 
 function DashboardShellInner({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, account, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -29,7 +30,7 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login");
+      window.location.href = "/login";
     }
   }, [user, loading, router]);
 
@@ -47,7 +48,15 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <>
+    <NavigationProvider
+      tenantId={account?.id || 'default'}
+      userId={user.id}
+      accountName={account?.name}
+      accountId={account?.id}
+      accountLogoUrl={account?.logo_url}
+      accountBrandColor={account?.brand_color}
+      accountBrandIcon={account?.brand_icon}
+    >
       {/* Reports this tab's online/away presence once we know a user is
           signed in. Headless — renders nothing. */}
       <PresenceHeartbeat />
@@ -67,7 +76,7 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </AppShell>
-    </>
+    </NavigationProvider>
   );
 }
 

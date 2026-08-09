@@ -2,27 +2,27 @@ import { Metadata } from 'next';
 import { EnterpriseFeaturesClient } from '@/components/marketing/enterprise-features-client';
 
 export const metadata: Metadata = {
-  title: "All Platform Features — Enterprise WhatsApp AI CRM | AI WCRM",
-  description: "Explore 40+ enterprise features on AI WCRM: BYOK Multi-LLM AI Router with 0% token markup, multi-agent shared inbox, Retell Voice AI, visual Kanban sales pipeline, Meta broadcast campaigns, no-code workflow automation, and sub-50ms developer APIs. Start your free trial today at aiwcrm.com.",
+  title: "All Platform Features — Enterprise WhatsApp CRM & AI Meta Ads | AIWCRM",
+  description: "Explore 40+ enterprise features on AIWCRM: AI Meta Ads Creation, BYOK Multi-LLM AI Router with 0% token markup, Enterprise RBAC, Multi-Agent Shared Inbox, Retell Voice AI, Kanban Sales Pipeline, Meta broadcast campaigns, and no-code workflow automation.",
   keywords: [
-    "AI WCRM",
-    "AI WCRM Features",
-    "WhatsApp CRM Features",
+    "AIWCRM Features",
+    "AI Meta Ads Creation Platform",
+    "AI-Powered WhatsApp Ads",
+    "Enterprise RBAC WhatsApp CRM",
     "BYOK WhatsApp AI",
     "WhatsApp Shared Team Inbox",
     "Retell Voice AI WhatsApp",
     "WhatsApp Kanban Sales Pipeline",
     "WhatsApp Broadcast Software India",
     "WhatsApp AI Auto Failover",
-    "WhatsApp Business API Platform",
-    "Enterprise WhatsApp CRM India",
-    "0% Token Markup AI",
     "Multi-Model AI Router",
-    "WhatsApp Automation Workflow"
+    "WhatsApp Automation Workflow",
+    "LLM AI Search Optimization AIO",
+    "Geo-Targeted WhatsApp Marketing"
   ],
   openGraph: {
-    title: "All Platform Features — Enterprise WhatsApp AI CRM | AI WCRM",
-    description: "40+ enterprise features on AI WCRM: BYOK Multi-LLM AI with 0% markup, shared team inbox, Voice AI, Kanban pipelines, broadcast campaigns & no-code workflows.",
+    title: "All Platform Features — Enterprise WhatsApp CRM & AI Meta Ads | AIWCRM",
+    description: "40+ enterprise features: AI Meta Ads, BYOK Multi-LLM AI, Enterprise RBAC, shared team inbox, Voice AI, Kanban pipelines & broadcast campaigns.",
     url: "https://aiwcrm.com/features",
     siteName: "AI WCRM",
     locale: "en_IN",

@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { 
@@ -10,12 +12,17 @@ import {
   Users, 
   Send, 
   GitBranch, 
-  Code2,
-  TrendingUp,
-  BarChart3,
-  ArrowRight,
-  CheckCircle2,
-  Sparkles
+  Code2, 
+  TrendingUp, 
+  BarChart3, 
+  ArrowRight, 
+  CheckCircle2, 
+  Sparkles,
+  ShieldCheck,
+  Radio,
+  Presentation,
+  Palette,
+  ShieldAlert
 } from 'lucide-react';
 
 export function EnterpriseUspsSection() {
@@ -32,7 +39,7 @@ export function EnterpriseUspsSection() {
     {
       num: '02',
       title: 'Multi AI Model Support',
-      desc: 'Supports Google Gemini 3.6, OpenAI GPT-4o, Anthropic Claude 3.5, Groq Llama 3.3, DeepSeek R1, Ollama local models, and custom API endpoints.',
+      desc: 'Supports Google Gemini 3.6, OpenAI GPT-4o, Anthropic Claude 3.5/Opus, Groq Llama 3.3, DeepSeek R1, Ollama local models, and custom endpoints.',
       icon: Cpu,
       color: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/30 text-emerald-400',
       badge: '7+ AI Providers',
@@ -49,25 +56,25 @@ export function EnterpriseUspsSection() {
     },
     {
       num: '04',
-      title: 'Zero Token Greeting Cache',
-      desc: 'Automatically reply to standard customer greetings like "Hi", "Hello", "Thanks" using 0 AI tokens and <100ms instant response time.',
-      icon: MessageSquareText,
-      color: 'from-green-500/20 to-emerald-500/10 border-green-500/30 text-green-400',
-      badge: 'Save 60% Costs',
+      title: 'AI Meta Ads & Lead Sync',
+      desc: 'Generate high-converting Facebook & Instagram ads using AI. Instantly sync Lead Ads directly into WhatsApp CRM for immediate personalized outreach.',
+      icon: Presentation,
+      color: 'from-purple-500/20 to-indigo-500/10 border-purple-500/30 text-purple-400',
+      badge: 'AI Ads & Lead Sync',
       link: '/features'
     },
     {
       num: '05',
-      title: 'Voice AI Integration (Retell)',
-      desc: 'Deploy intelligent AI voice agents for automated inbound call answering and outbound phone follow-ups synced directly with your CRM pipeline.',
+      title: 'Multi-Provider Voice AI (Retell + ElevenLabs)',
+      desc: 'Deploy AI voice agents using Retell AI or ElevenLabs — with native Hindi voices. Every call extracts CRM intelligence (intent, sentiment, buying signals) and syncs to Contacts, Deals & Tasks automatically.',
       icon: Mic,
-      color: 'from-purple-500/20 to-pink-500/10 border-purple-500/30 text-purple-400',
-      badge: 'Voice + Chat AI',
-      link: '/contact'
+      color: 'from-pink-500/20 to-rose-500/10 border-pink-500/30 text-pink-400',
+      badge: 'Voice AI Platform',
+      link: '/ai-platform'
     },
     {
       num: '06',
-      title: 'Enterprise CRM Engine',
+      title: 'Enterprise CRM & Pipelines',
       desc: 'Complete lead management, deal tracking, Kanban visual pipelines, task assignments, customer notes, activity timelines, and revenue analytics.',
       icon: Kanban,
       color: 'from-sky-500/20 to-cyan-500/10 border-sky-500/30 text-sky-400',
@@ -103,52 +110,54 @@ export function EnterpriseUspsSection() {
     },
     {
       num: '10',
-      title: 'API First Developer Platform',
-      desc: 'Comprehensive REST APIs, real-time webhooks, custom SDKs, and developer docs to seamlessly integrate WhatsApp into your enterprise stack.',
-      icon: Code2,
-      color: 'from-cyan-500/20 to-blue-500/10 border-cyan-500/30 text-cyan-400',
-      badge: 'REST & Webhooks',
-      link: '/api-docs'
+      title: 'Enterprise RBAC & Governance',
+      desc: '6-tier role hierarchy (Owner, Admin, Manager, Agent, Client, Viewer), immutable audit logs, effective permission inspector, and IP filtering.',
+      icon: ShieldCheck,
+      color: 'from-violet-500/20 to-purple-500/10 border-violet-500/30 text-violet-400',
+      badge: '6-Tier Roles & Audit',
+      link: '/features'
     },
     {
       num: '11',
-      title: 'AI Lead Scoring & Intent',
-      desc: 'Automatically score incoming lead intent (Hot, Warm, Cold) using real-time AI sentiment analysis and dispatch instant notifications to sales reps.',
-      icon: TrendingUp,
-      color: 'from-emerald-500/20 to-lime-500/10 border-emerald-500/30 text-emerald-400',
-      badge: 'Hot Lead Alerts',
-      link: '/contact'
+      title: 'Webhook Signature Verification',
+      desc: 'Production webhook engine with HMAC-SHA256 cryptographic verification, automatic exponential backoff retries, and delivery telemetry.',
+      icon: Radio,
+      color: 'from-cyan-500/20 to-blue-500/10 border-cyan-500/30 text-cyan-400',
+      badge: 'HMAC-SHA256 & Retries',
+      link: '/api-docs'
     },
     {
       num: '12',
-      title: 'Real-Time SLA & Telemetry',
-      desc: 'Track team response times, CSAT feedback ratings, campaign ROI metrics, and AI token consumption from a centralized dashboard.',
-      icon: BarChart3,
-      color: 'from-teal-500/20 to-blue-500/10 border-teal-500/30 text-teal-400',
-      badge: 'SLA Telemetry',
-      link: '/contact'
-    },
+      title: 'Organization Custom Branding',
+      desc: 'If one AI provider fails or hits rate limits (429), AIWCRM automatically switches to a secondary backup provider in <1 second with zero downtime.',
+      icon: ShieldAlert,
+      color: 'from-amber-500/20 to-orange-500/10 border-amber-500/30 text-amber-400',
+      badge: 'Auto-Failover',
+      link: '/features'
+    }
   ];
 
   return (
-    <section className="py-24 bg-background relative overflow-hidden">
+    <section className="py-24 lg:py-32 bg-card/30 border-y border-border/40 relative overflow-hidden">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-16">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="h-3.5 w-3.5" /> Core Product Advantage
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-bold text-emerald-400 backdrop-blur-sm">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>Unmatched Enterprise Value</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tight">
-            Why Businesses Choose WCRM
+
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
+            Why Businesses Choose AIWCRM
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-            The ultimate AI-powered WhatsApp platform combining BYOK cost-savings, zero-downtime auto-failover, and enterprise sales CRM.
+            The ultimate AI-powered WhatsApp platform combining BYOK cost-savings, zero-downtime auto-failover, enterprise RBAC, and sales CRM.
           </p>
         </div>
 
         {/* 12 USP Feature Cards — 4 Cards Per Row Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {usps.map((usp, idx) => {
             const Icon = usp.icon;
             return (

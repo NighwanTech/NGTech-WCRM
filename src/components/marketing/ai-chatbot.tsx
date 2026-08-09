@@ -21,7 +21,7 @@ export function AiChatbot() {
     {
       id: '1',
       role: 'assistant',
-      content: "Hi! I'm the NGTech WCRM AI assistant. How can I help you learn about our WhatsApp CRM platform today?"
+      content: "Hi! I'm the AIWCRM AI assistant. How can I help you learn about our WhatsApp CRM platform today?"
     }
   ])
 
@@ -467,11 +467,13 @@ export function AiChatbot() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask anything about our CRM..."
+                aria-label="Ask anything about our CRM"
                 className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50"
                 disabled={isLoading}
               />
               <button
                 type="submit"
+                aria-label="Send message"
                 disabled={isLoading || !input?.trim()}
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-all duration-200 hover:opacity-90 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
               >

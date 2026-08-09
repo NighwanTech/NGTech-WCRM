@@ -46,10 +46,10 @@ export const FALLBACK_DOC_CATEGORIES: DocCategory[] = [
     id: 'cat_ai',
     name: 'AI Copilot & Engine',
     slug: 'ai-copilot',
-    description: 'BYOK multi-model routing, prompt management, greeting cache, auto-failover, and Voice AI.',
+    description: 'BYOK multi-model routing, ElevenLabs & Retell Multi-Provider Voice AI, cost governance, and post-call CRM intelligence.',
     icon: 'Bot',
     sort_order: 1,
-    article_count: 5
+    article_count: 6
   },
   {
     id: 'cat_waba',
@@ -82,10 +82,10 @@ export const FALLBACK_DOC_CATEGORIES: DocCategory[] = [
     id: 'cat_campaigns',
     name: 'Campaign Management',
     slug: 'campaign-management',
-    description: 'Mass WhatsApp broadcasts, automated audience segmentation, scheduling, and analytics.',
+    description: 'Mass WhatsApp broadcasts, AI Meta Ads copy & creative generation, Lead Form sync, and ROAS tracking.',
     icon: 'Send',
     sort_order: 5,
-    article_count: 3
+    article_count: 4
   },
   {
     id: 'cat_crm',
@@ -127,19 +127,19 @@ export const FALLBACK_DOC_CATEGORIES: DocCategory[] = [
     id: 'cat_admin',
     name: 'Administration',
     slug: 'administration',
-    description: 'Role-Based Access Control (RBAC), user team seats, organization settings, and API keys.',
+    description: 'Enterprise PBAC & RBAC permission assignment, user seats, organization governance, and API token scoping.',
     icon: 'Shield',
     sort_order: 10,
-    article_count: 3
+    article_count: 4
   },
   {
     id: 'cat_security',
     name: 'Security & Compliance',
     slug: 'security-compliance',
-    description: 'AES-256 encryption standards, SOC-2 audit logs, data retention, and privacy controls.',
+    description: 'AES-256 vault key encryption, SOC-2 audit logging, DPDP Act & GDPR compliance, and privacy controls.',
     icon: 'Lock',
     sort_order: 11,
-    article_count: 2
+    article_count: 3
   },
   {
     id: 'cat_releases',
@@ -438,6 +438,367 @@ Migrating your sales pipeline, contact records, and communication history from *
 
 <Callout type="tip">
   **Free White-Glove Support**: Enterprise teams can request free hands-on migration assistance from our dedicated onboarding team.
+</Callout>
+`
+  },
+  {
+    id: 'art_5',
+    category_id: 'cat_ai',
+    category_slug: 'ai-copilot',
+    category_name: 'AI Copilot & Engine',
+    title: 'Multi-Provider Voice AI Setup (ElevenLabs & Retell AI)',
+    slug: 'multi-provider-voice-ai-guide',
+    description: 'Configure Retell AI and ElevenLabs Conversational Voice AI with native Hindi support, cost governance, and post-call CRM intelligence sync.',
+    status: 'published',
+    version: 'v1.0',
+    author_name: 'Voice AI Architecture Team',
+    reading_time_minutes: 7,
+    tags: ['Voice AI', 'ElevenLabs', 'Retell AI', 'Hindi Voice', 'Cost Governance', 'CRM Sync'],
+    created_at: '2026-08-01T00:00:00Z',
+    updated_at: '2026-08-09T00:00:00Z',
+    content_mdx: `
+# Multi-Provider Voice AI Setup (ElevenLabs & Retell AI)
+
+AI WCRM features a provider-agnostic **Multi-Provider Voice AI Architecture**. You can deploy human-grade AI voice agents using **ElevenLabs Conversational AI** or **Retell AI**, with native support for Indian languages (Hindi, Hinglish) and automatic post-call CRM intelligence extraction.
+
+---
+
+### Core Platform Capabilities
+
+<Callout type="tip">
+  **Provider Agnostic**: AI WCRM owns call orchestration, CRM intelligence extraction, and cost governance. Retell AI and ElevenLabs act as interchangeable voice adapters — switch anytime without losing CRM data!
+</Callout>
+
+- **Multi-Provider Support**: Choose between Retell AI (~620ms latency) and ElevenLabs (~310ms latency).
+- **Native Hindi Voice Agents**: Deploy ElevenLabs native Hindi voices (**Priya** & **Arjun**) for localized student and customer outreach.
+- **Shared Knowledge Base**: Voice AI agents automatically consume the exact same Knowledge Base, AI Rules, Personality, and Business Hours configured in your AI Assistant settings.
+- **Cost Governance**: Set monthly INR budgets, daily call caps, and per-user call limits to prevent runaway spending.
+- **10-Field Post-Call Intelligence**: Every completed call is analyzed by your BYOK LLM (Gemini, OpenAI, Groq) to extract structured CRM fields.
+
+---
+
+### Step 1: Configure Provider Credentials in AI WCRM
+
+1. Navigate to **AI Assistant → AI Voice Calling** (or **Settings → AI Voice**).
+2. Choose your active provider tab (**Retell AI** or **ElevenLabs**).
+3. Input your provider API Key and Agent ID:
+   - **Retell AI**: Obtain API Key and Agent ID from [retellai.com/dashboard](https://retellai.com/dashboard).
+   - **ElevenLabs**: Get API Key and Conversational Agent ID from [elevenlabs.io/app](https://elevenlabs.io). For Hindi outreach, select **Priya** or **Arjun** voice models.
+4. Click **Save Configuration** and run **Test Connection** to verify API health.
+
+---
+
+### Step 2: Set Up Cost Governance Guardrails
+
+Prevent billing surprises by configuring spending limits in **Settings → AI Voice → Cost & Limits**:
+
+- **Monthly Account Budget**: e.g., ₹5,000 / month. Calls are automatically paused if budget is reached.
+- **Daily Call Cap**: Maximum outbound/inbound calls per day.
+- **Per-User Limit**: Maximum daily calls an individual sales agent can trigger.
+
+---
+
+### Step 3: Post-Call Intelligence & Ecosystem Sync
+
+When a voice call completes, AI WCRM automatically extracts 10 structured fields and syncs across 9 CRM modules:
+
+\`\`\`ts
+// 10-Field Post-Call Structured Intelligence
+export interface VoiceCallAnalysis {
+  summary: string;           // 2-3 sentence executive summary
+  customerIntent: string;    // Main customer request/question
+  sentiment: 'positive' | 'neutral' | 'negative';
+  buyingSignals: string[];   // e.g. ["asked about discount", "requested campus tour"]
+  objections: string[];      // e.g. ["budget constraint"]
+  nextFollowupAt?: Date;     // ISO timestamp for follow-up
+  actionItems: string[];     // e.g. ["Send prospectus on WhatsApp"]
+  aiLeadScore: number;       // 0–100 calculated score
+  opportunityStage: 'cold' | 'warm' | 'hot' | 'closed';
+  aiRecommendation: string; // Next best action for sales team
+}
+\`\`\`
+
+#### Automatic Module Sync Map:
+1. **Contacts**: Updates Lead Score, Customer Intent, Sentiment, and Last Called timestamp.
+2. **Deals Pipeline**: Advances deal stage (e.g. Warm → Hot) and flags priority deals.
+3. **Tasks**: Auto-creates follow-up tasks with due dates and recommended actions.
+4. **WhatsApp**: Automatically sends requested documents (brochures, fee charts) via WhatsApp.
+5. **Decision Center**: Pushes high-priority AI recommendation cards for management review.
+
+---
+
+<Callout type="info">
+  **Fallback Mechanism**: If the primary voice provider experiences downtime, AI WCRM automatically routes outbound calls to the configured backup provider.
+</Callout>
+`
+  },
+  {
+    id: 'art_6',
+    category_id: 'cat_campaigns',
+    category_slug: 'campaign-management',
+    category_name: 'Campaign Management',
+    title: 'AI Meta Ads Generation & Automated CRM Lead Form Sync',
+    slug: 'ai-meta-ads-guide',
+    description: 'Generate Meta ad creative & copy with AI, connect Meta Lead Ads webhooks, and trigger instant 0-latency WhatsApp follow-ups.',
+    status: 'published',
+    version: 'v1.0',
+    author_name: 'Growth & Ads Engineering',
+    reading_time_minutes: 6,
+    tags: ['Meta Ads', 'Lead Sync', 'AI Ad Copy', 'WhatsApp Automation', 'ROI Tracking'],
+    created_at: '2026-08-03T00:00:00Z',
+    updated_at: '2026-08-09T00:00:00Z',
+    content_mdx: `
+# AI Meta Ads Generation & Automated CRM Lead Form Sync
+
+AI WCRM integrates directly with **Meta Ad Manager** to let teams generate high-converting ad copy, sync Facebook/Instagram Instant Lead Forms in real-time, and trigger 0-latency WhatsApp conversations.
+
+---
+
+### Core Capabilities
+
+<Callout type="tip">
+  **0-Latency Lead Response**: When a user submits a Meta Lead Form on Instagram or Facebook, AI WCRM receives the webhook and initiates a personalized WhatsApp message in **under 2 seconds**!
+</Callout>
+
+- **AI Copy & Creative Generator**: Generate multi-angle ad copy (Headlines, Primary Text, CTAs) tailored for Indian audiences.
+- **Direct Meta Cloud API Lead Sync**: Webhook-based Instant Lead Form ingestion — zero reliance on Zapier or external connectors.
+- **AI Lead Intent Scoring**: Incoming leads are automatically scored (HOT 🔥 / WARM / COLD) based on form responses.
+- **CAC & Attribution Analytics**: Track cost-per-lead (CPL) and cost-per-acquisition (CAC) directly against closed CRM deals.
+
+---
+
+### Step 1: Connect Meta Business Manager & Lead Forms
+
+1. Go to **Settings → Meta Ads & Channels**.
+2. Click **Connect Meta Business Account** and grant Lead Access permissions.
+3. Select your active Facebook Pages and Lead Forms.
+4. Test the webhook connection using the **Send Test Lead** button.
+
+---
+
+### Step 2: Configure Instant WhatsApp Auto-Response
+
+In **Campaigns → Meta Ads Automation**:
+
+1. Select your target Lead Form.
+2. Choose your auto-response template (e.g. *Hello {{name}}, thank you for inquiring about {{course_name}}. Here is your official prospectus...*).
+3. Attach PDF brochures, pricing files, or interactive button menus.
+4. Assign leads to sales agents via Round-Robin or Intent-Based Routing.
+
+---
+
+### Code & Webhook Integration Example
+
+\`\`\`ts
+// Incoming Meta Lead Form Webhook Event Handler
+export async function handleMetaLeadWebhook(leadData: MetaLeadPayload) {
+  const { lead_id, form_id, field_data, created_time } = leadData;
+
+  // 1. Create or Update Contact in AI WCRM
+  const contact = await crm.contacts.upsert({
+    phone: extractFieldValue(field_data, 'phone_number'),
+    name: extractFieldValue(field_data, 'full_name'),
+    email: extractFieldValue(field_data, 'email'),
+    source: 'meta_ads',
+    ad_id: leadData.ad_id,
+    form_id
+  });
+
+  // 2. Score Lead Intent via BYOK LLM
+  const score = await ai.scoreLeadIntent(field_data);
+  await crm.deals.create({
+    contact_id: contact.id,
+    title: \`Meta Lead — \${contact.name}\`,
+    stage: score > 75 ? 'hot_lead' : 'qualified',
+    ai_score: score
+  });
+
+  // 3. Trigger Instant WhatsApp Welcome Message
+  await whatsapp.sendTemplate({
+    to: contact.phone,
+    templateName: 'lead_form_welcome',
+    variables: { name: contact.name }
+  });
+}
+\`\`\`
+
+---
+
+<Callout type="success">
+  **ROAS Tracking**: AI WCRM links closed deals in your Kanban pipeline back to the original Meta Ad Set ID, providing true Return On Ad Spend (ROAS) reports.
+</Callout>
+`
+  },
+  {
+    id: 'art_7',
+    category_id: 'cat_admin',
+    category_slug: 'administration',
+    category_name: 'Administration',
+    title: 'Enterprise PBAC & RBAC Permission Assignment Guide',
+    slug: 'pbac-rbac-permission-guide',
+    description: 'Master Role-Based Access Control (RBAC) and Policy-Based Access Control (PBAC) for multi-team security and governance.',
+    status: 'published',
+    version: 'v1.0',
+    author_name: 'Security & Governance Team',
+    reading_time_minutes: 6,
+    tags: ['RBAC', 'PBAC', 'Permissions', 'Security', 'User Roles', 'Access Control'],
+    created_at: '2026-08-04T00:00:00Z',
+    updated_at: '2026-08-09T00:00:00Z',
+    content_mdx: `
+# Enterprise PBAC & RBAC Permission Assignment Guide
+
+AI WCRM enforces a hybrid **Role-Based Access Control (RBAC)** and **Policy-Based Access Control (PBAC)** framework to ensure strict data segregation, team isolation, and least-privilege security across enterprise organizations.
+
+---
+
+### System Role Hierarchy (RBAC)
+
+AI WCRM includes 5 pre-configured system roles:
+
+| Role | Scope | Key Permissions |
+|---|---|---|
+| **Organization Owner** | Account-wide | Full system access, billing, team management, API key vault, security policies. |
+| **Admin** | Account-wide | User seats, workflow rules, channels, analytics, CRM configuration. |
+| **Sales Manager** | Team / Region | Lead assignment, team pipeline view, approval rules, export capabilities. |
+| **Sales Agent** | Assigned Leads | View & message assigned contacts, manage own deals, trigger AI calls. |
+| **Support Representative** | Inbox Only | Answer shared inbox tickets, tag conversations, use AI auto-replies. |
+
+---
+
+### Policy-Based Access Control (PBAC)
+
+PBAC allows administrators to attach fine-grained condition policies to roles or individual users.
+
+<Callout type="tip">
+  **Granular PBAC Rules**: Example Policy: *"Sales Agents in North Region can view contacts tagged 'Delhi', but CANNOT export CSV files or view raw API keys."*
+</Callout>
+
+#### Configurable PBAC Permission Attributes:
+- **\`crm.contacts.export\`**: Enable/disable CSV export of customer phone numbers.
+- **\`ai.vault.manage\`**: Restrict BYOK API key viewing and editing to Org Owners.
+- **\`voice.calls.initiate\`**: Restrict outbound Voice AI calling by user seat or daily budget.
+- **\`inbox.mask_phone_numbers\`**: Mask customer phone numbers (e.g. +91 9934XXXXXX) for agent seats.
+- **\`analytics.revenue_view\`**: Hide financial revenue figures from front-line support staff.
+
+---
+
+### Configuring PBAC Policies in Admin Dashboard
+
+1. Navigate to **Administration → Roles & Permissions → PBAC Policies**.
+2. Click **Create Custom Policy**.
+3. Select your target Role or Team Group.
+4. Define Allow/Deny policy statements:
+
+\`\`\`json
+{
+  "Version": "2026-08-01",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "crm:contacts:read",
+        "crm:deals:update",
+        "voice:call:create"
+      ],
+      "Resource": "arn:aiwcrm:account:1042:team:sales_north"
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "crm:contacts:export",
+        "ai:vault:read_keys"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+\`\`\`
+
+---
+
+<Callout type="warning">
+  **Audit Logging**: Every permission change, role assignment, or policy override is logged permanently in the SOC-2 immutable audit trail.
+</Callout>
+`
+  },
+  {
+    id: 'art_8',
+    category_id: 'cat_security',
+    category_slug: 'security-compliance',
+    category_name: 'Security & Compliance',
+    title: 'AES-256 Vault Encryption, SOC-2 & Compliance Guide',
+    slug: 'security-vault-compliance-guide',
+    description: 'Comprehensive technical reference on AES-256-GCM encryption, SOC-2 Type II audit logs, DPDP/GDPR privacy, and data retention.',
+    status: 'published',
+    version: 'v1.0',
+    author_name: 'Chief Information Security Officer (CISO)',
+    reading_time_minutes: 8,
+    tags: ['Security', 'AES-256', 'SOC-2', 'DPDP', 'GDPR', 'Compliance', 'Audit Logs'],
+    created_at: '2026-08-05T00:00:00Z',
+    updated_at: '2026-08-09T00:00:00Z',
+    content_mdx: `
+# AES-256 Vault Encryption, SOC-2 & Compliance Guide
+
+AI WCRM is engineered from the ground up to meet strict enterprise security standards, data privacy regulations (Digital Personal Data Protection Act - DPDP India & GDPR), and SOC-2 audit requirements.
+
+---
+
+### Data Encryption Standards
+
+<Callout type="tip">
+  **Encryption at Rest & in Transit**: All customer data, WhatsApp message logs, and BYOK credentials are protected with industry-standard encryption protocols.
+</Callout>
+
+- **Encryption at Rest**: Customer data and database tables are encrypted using **AES-256-GCM**.
+- **BYOK Vault Encryption**: Secret API keys (OpenAI, Gemini, ElevenLabs, Retell) are encrypted with unique per-account salt keys using \`aes-256-cbc\` / \`gcm\` before writing to storage.
+- **Encryption in Transit**: All API traffic, webhooks, and dashboard connections enforce **TLS 1.3** encryption with HSTS.
+
+---
+
+### DPDP Act (India) & GDPR Compliance
+
+AI WCRM helps enterprises maintain full legal compliance with privacy laws:
+
+1. **Consent Tracking**: Every WhatsApp contact record stores explicit opt-in source and timestamp.
+2. **Right to be Forgotten**: One-click PII sanitization — permanently purge a customer's phone number, name, and message history upon request.
+3. **Automated PII Masking**: Mask sensitive personal identifiers (Aadhaar, credit cards, passwords) before sending prompts to external LLMs.
+4. **Data Residency**: Data hosting available in Indian AWS/GCP regions (Mumbai / Hyderabad) for government & BFSI compliance.
+
+---
+
+### SOC-2 Type II Audit Logging
+
+Every critical system event generates an immutable, tamper-evident audit record stored in the SOC-2 audit trail.
+
+#### Logged Audit Events:
+- User login / logout & 2FA verification attempts.
+- Role changes & PBAC permission modifications.
+- BYOK API key additions, edits, or rotations.
+- Contact CSV exports and bulk broadcast dispatches.
+- System error events & auto-failover triggers.
+
+\`\`\`ts
+// SOC-2 Audit Event Format
+export interface AuditLogEntry {
+  id: string;
+  timestamp: string;         // ISO 8601 UTC
+  actor_id: string;          // User ID or API Token ID
+  actor_ip: string;          // Origin IP address
+  event_type: string;        // e.g. "byok_key_updated"
+  resource_type: string;     // e.g. "ai_provider_config"
+  resource_id: string;
+  changes: {
+    before?: Record<string, unknown>;
+    after?: Record<string, unknown>;
+  };
+  status: 'success' | 'failure';
+}
+\`\`\`
+
+---
+
+<Callout type="info">
+  **Vulnerability Management**: AI WCRM undergoes automated daily static security scans (SAST) and bi-annual independent third-party penetration testing.
 </Callout>
 `
   }

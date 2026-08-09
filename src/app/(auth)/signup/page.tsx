@@ -148,7 +148,7 @@ function SignupPageInner() {
           <CardDescription className="text-base text-muted-foreground mt-2">
             {inviteToken
               ? "Verify your email, then accept the invitation to join your team."
-              : "Get started with NGTech WCRM today"}
+              : "Get started with AIWCRM today"}
           </CardDescription>
         </CardHeader>
         <CardContent>

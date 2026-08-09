@@ -31,7 +31,11 @@ import {
   Code2,
   FileText,
   PhoneCall,
-  Cpu
+  Cpu,
+  DollarSign,
+  Calendar,
+  Compass,
+  Lock
 } from 'lucide-react';
 
 export interface IndustryData {
@@ -78,7 +82,7 @@ export const INDUSTRIES_DATA: Record<string, IndustryData> = {
     ],
     chatDemo: {
       userMsg: 'Need RFQ quotation for 5,000 units of Industrial Valves (Model X-200)',
-      aiTitle: 'WCRM Manufacturing AI (ERP Synced)',
+      aiTitle: 'AIWCRM Manufacturing AI (ERP Synced)',
       aiReply: 'Quotations sent! Unit Price: ₹1,250/pc. Prospectus & GST invoice breakdown attached 📄',
       telemetry: 'ERP Stock Check: 8,500 Available · Lead Marked HOT 🔥'
     },
@@ -94,7 +98,7 @@ export const INDUSTRIES_DATA: Record<string, IndustryData> = {
     ],
     workflow: [
       { step: '01', title: 'Dealer Inquiry Inbound', desc: 'Distributor messages WhatsApp requesting batch pricing or order status.' },
-      { step: '02', title: 'AI Intent & Stock Check', desc: 'WCRM AI parses model numbers and queries inventory stock level via REST API.' },
+      { step: '02', title: 'AI Intent & Stock Check', desc: 'AIWCRM AI parses model numbers and queries inventory stock level via REST API.' },
       { step: '03', title: 'Instant Quote & PDF Delivery', desc: 'Sends custom price quote with payment links and terms within 3 seconds.' },
       { step: '04', title: 'Sales CRM Stage Update', desc: 'Kanban deal stage automatically moves to "Quote Sent" with assigned rep.' }
     ],
@@ -111,15 +115,15 @@ export const INDUSTRIES_DATA: Record<string, IndustryData> = {
       { label: 'AI Token Expense', value: '-60%', detail: 'Saved using BYOK model routing' }
     ],
     testimonial: {
-      quote: 'WCRM transformed our B2B dealer network across India. Our distributors receive instant stock availability and PDF quotes on WhatsApp in seconds.',
+      quote: 'AIWCRM transformed our B2B dealer network across India. Our distributors receive instant stock availability and PDF quotes on WhatsApp in seconds.',
       author: 'Rajesh Singhania',
       role: 'VP Commercial Operations',
       company: 'Apex Industrial Tools Ltd',
       impact: '3.5x Faster Deal Cycles'
     },
     faqs: [
-      { q: 'Can WCRM integrate with our existing Tally or SAP ERP?', a: 'Yes! WCRM provides bi-directional REST webhooks and APIs to fetch stock availability, generate invoices, and log customer interactions directly into your ERP.' },
-      { q: 'How does WCRM handle bulk dealer broadcasts without getting blocked?', a: 'WCRM uses Meta Official Cloud API templates, ensuring 100% compliance, zero phone number bans, and maximum deliverability.' }
+      { q: 'Can AIWCRM integrate with our existing Tally or SAP ERP?', a: 'Yes! AIWCRM provides bi-directional REST webhooks and APIs to fetch stock availability, generate invoices, and log customer interactions directly into your ERP.' },
+      { q: 'How does AIWCRM handle bulk dealer broadcasts without getting blocked?', a: 'AIWCRM uses Meta Official Cloud API templates, ensuring 100% compliance, zero phone number bans, and maximum deliverability.' }
     ]
   },
 
@@ -137,7 +141,7 @@ export const INDUSTRIES_DATA: Record<string, IndustryData> = {
     ],
     chatDemo: {
       userMsg: 'Hi, what are the eligibility criteria and fees for B.Tech Computer Science?',
-      aiTitle: 'WCRM Admission Counselor AI',
+      aiTitle: 'AIWCRM Admission Counselor AI',
       aiReply: 'Welcome to BPTPIA! B.Tech CSE fee is ₹85,000/sem. Eligibility: 60% in 10+2 (PCM). Download Brochure 📄',
       telemetry: 'Student Tagged: CSE Aspirant · Campus Tour Booked'
     },
@@ -170,15 +174,15 @@ export const INDUSTRIES_DATA: Record<string, IndustryData> = {
       { label: 'Student Satisfaction', value: '99%', detail: 'Instant 24/7 answers to academic questions' }
     ],
     testimonial: {
-      quote: 'WCRM transformed our student admission counseling. The Gemini AI auto-responder handles 80% of routine inquiries instantly, saving our staff hundreds of hours during peak season.',
+      quote: 'AIWCRM transformed our student admission counseling. The Gemini AI auto-responder handles 80% of routine inquiries instantly, saving our staff hundreds of hours during peak season.',
       author: 'Admissions Director',
       role: 'Director of Admissions',
       company: 'BPTPIA (Bihar Private Technical & Professional Institutions)',
       impact: '+48% Campus Visit Enrollments'
     },
     faqs: [
-      { q: 'Can WCRM customize the AI auto-responder for our college prospectus?', a: 'Yes! You can upload your PDF prospectus, fee matrix, and FAQs. The AI learns your exact curriculum and rules.' },
-      { q: 'Is WCRM compliant with student data privacy regulations?', a: 'Yes, WCRM uses Meta Official Cloud API with enterprise-grade AES-256 encryption.' }
+      { q: 'Can AIWCRM customize the AI auto-responder for our college prospectus?', a: 'Yes! You can upload your PDF prospectus, fee matrix, and FAQs. The AI learns your exact curriculum and rules.' },
+      { q: 'Is AIWCRM compliant with student data privacy regulations?', a: 'Yes, AIWCRM uses Meta Official Cloud API with enterprise-grade AES-256 encryption.' }
     ]
   },
 
@@ -196,7 +200,7 @@ export const INDUSTRIES_DATA: Record<string, IndustryData> = {
     ],
     chatDemo: {
       userMsg: 'I need to book a consultation with Dr. Sharma (Cardiology) for tomorrow morning',
-      aiTitle: 'WCRM Clinic AI Assistant',
+      aiTitle: 'AIWCRM Clinic AI Assistant',
       aiReply: 'Dr. Sharma is available at 10:30 AM & 11:45 AM tomorrow. Click below to confirm appointment 📅',
       telemetry: 'Slot Reserved: 10:30 AM · SMS & WhatsApp Reminder Set'
     },
@@ -229,15 +233,15 @@ export const INDUSTRIES_DATA: Record<string, IndustryData> = {
       { label: 'Patient Retention', value: '+35%', detail: 'Better follow-up care engagement' }
     ],
     testimonial: {
-      quote: 'WCRM slashed our patient no-show rate by 90%. Our receptionists no longer spend all morning making manual confirmation calls.',
+      quote: 'AIWCRM slashed our patient no-show rate by 90%. Our receptionists no longer spend all morning making manual confirmation calls.',
       author: 'Dr. Ananya Roy',
       role: 'Medical Director',
       company: 'Metro Care Super Speciality Clinics',
       impact: '-90% Appointment No-Shows'
     },
     faqs: [
-      { q: 'Is patient medical data secure on WCRM?', a: 'Yes. All messages are transmitted via Meta Official Cloud API with end-to-end encryption.' },
-      { q: 'Can WCRM integrate with our Hospital Management Information System (HMIS)?', a: 'Yes, via REST webhooks and API triggers.' }
+      { q: 'Is patient medical data secure on AIWCRM?', a: 'Yes. All messages are transmitted via Meta Official Cloud API with end-to-end encryption.' },
+      { q: 'Can AIWCRM integrate with our Hospital Management Information System (HMIS)?', a: 'Yes, via REST webhooks and API triggers.' }
     ]
   },
 
@@ -255,7 +259,7 @@ export const INDUSTRIES_DATA: Record<string, IndustryData> = {
     ],
     chatDemo: {
       userMsg: 'Where is my order #89041? It was supposed to arrive today.',
-      aiTitle: 'WCRM D2C Order AI',
+      aiTitle: 'AIWCRM D2C Order AI',
       aiReply: 'Your order #89041 is out for delivery with BlueDart! Live Tracking: bluedart.com/track/89041 🚚',
       telemetry: 'BlueDart API Synced · Order Status: Out for Delivery'
     },
@@ -271,7 +275,7 @@ export const INDUSTRIES_DATA: Record<string, IndustryData> = {
     ],
     workflow: [
       { step: '01', title: 'Cart Abandoned', desc: 'Customer leaves checkout page on Shopify/WooCommerce.' },
-      { step: '02', title: 'WhatsApp Alert Triggered', desc: 'WCRM sends friendly reminder with cart items and discount link.' },
+      { step: '02', title: 'WhatsApp Alert Triggered', desc: 'AIWCRM sends friendly reminder with cart items and discount link.' },
       { step: '03', title: 'Customer Confirms Order', desc: 'Shopper clicks checkout link or confirms COD via button.' },
       { step: '04', title: 'Post-Purchase Tracking', desc: 'Automated dispatch, shipping, and delivery notifications.' }
     ],
@@ -288,494 +292,442 @@ export const INDUSTRIES_DATA: Record<string, IndustryData> = {
       { label: 'Customer Lifetime Value', value: '+30%', detail: 'Higher repeat purchases on WhatsApp' }
     ],
     testimonial: {
-      quote: 'WCRM replaced our old email marketing tool. Our WhatsApp broadcast campaigns achieve a 98% open rate and generated 12x ROI in 30 days.',
+      quote: 'AIWCRM replaced our old email marketing tool. Our WhatsApp broadcast campaigns achieve a 98% open rate and generated 12x ROI in 30 days.',
       author: 'Karan Malhotra',
       role: 'Co-Founder & CMO',
       company: 'UrbanStyle Apparel D2C',
       impact: '12x Campaign ROI'
     },
     faqs: [
-      { q: 'Does WCRM connect directly with Shopify and WooCommerce?', a: 'Yes! WCRM integrates with Shopify and WooCommerce to trigger cart recovery, COD verification, and order tracking.' },
+      { q: 'Does AIWCRM connect directly with Shopify and WooCommerce?', a: 'Yes! AIWCRM integrates with Shopify and WooCommerce to trigger cart recovery, COD verification, and order tracking.' },
       { q: 'Can we send WhatsApp broadcast messages with images and buttons?', a: 'Yes, full support for Meta interactive messages, image headers, and CTA buttons.' }
     ]
   },
 
-  'real-estate': {
-    id: 'real-estate',
+  realestate: {
+    id: 'realestate',
     name: 'Real Estate & Property',
-    badge: 'Property Sales & Site Visits',
-    icon: Building,
-    heroHeadline: 'Convert Property Prospects into Confirmed Site Visits Faster',
-    heroDesc: 'Automate lead qualification, send floor plan PDFs, schedule site visit appointments, and track sales pipeline deals in real time.',
+    badge: 'Property Inquiries & Site Visits',
+    icon: Building2,
+    heroHeadline: 'Instant Property Brochures, Floor Plans & Site Visit Scheduling',
+    heroDesc: 'Capture high-intent property buyers from Meta Lead Ads, send PDF floor plans instantly, and automate site visit confirmations.',
     metrics: [
-      { label: 'Site Visit Bookings', value: '2.5x' },
-      { label: 'Lead Response Time', value: '<5s' },
-      { label: 'Agent Pipeline Deals', value: '+38%' }
+      { label: 'Site Visit Booking Rate', value: '2x' },
+      { label: 'Lead Qualification Speed', value: '<5s' },
+      { label: 'Agent Followup Rate', value: '100%' }
     ],
     chatDemo: {
-      userMsg: 'Interested in 3BHK luxury apartments at Grand Heights. Send floor plans.',
-      aiTitle: 'WCRM Real Estate AI',
-      aiReply: 'Sending 3BHK Grand Heights Brochure & Floor Plans PDF! Would you like to schedule a site visit this Saturday? 🏢',
-      telemetry: 'PDF Dispatched · Lead Intent: HOT 🔥 (Budget ₹1.5 Cr+)'
+      userMsg: 'Looking for 3 BHK luxury apartments in Whitefield under ₹1.5 Cr',
+      aiTitle: 'AIWCRM Real Estate AI',
+      aiReply: 'We have 3 matching properties in Whitefield! Here is the digital brochure & 3D floor plan 🏢',
+      telemetry: 'Matching Inventory Found: 3 Units · Lead Assigned to Senior Rep'
     },
     challenges: [
-      { problem: 'Slow Lead Qualification', desc: 'Realtors waste time calling unqualified leads who don’t have the budget.' },
-      { problem: 'Unscheduled Site Visits', desc: 'High drop-off between digital ad inquiries and actual physical site visits.' },
-      { problem: 'Unorganized Agent Follow-ups', desc: 'Leads assigned to sales agents get forgotten without centralized pipeline tracking.' }
+      { problem: 'High Meta Lead Ad Costs', desc: 'Real estate ads generate hundreds of leads daily, but slow follow-up causes buyers to move on.' },
+      { problem: 'Unqualified Buyer Calls', desc: 'Sales agents waste time speaking to low-budget callers instead of serious buyers.' },
+      { problem: 'Low Weekend Site Visit Turnout', desc: 'Buyers book weekend site visits but forget or cancel due to lack of reminders.' }
     ],
     solutions: [
-      { feature: 'Instant Floor Plan Delivery', desc: 'Delivers high-res brochure PDFs and video walkthrough links instantly on WhatsApp.' },
-      { feature: 'AI Lead Intent Scoring', desc: 'Evaluates buyer budget and urgency (HOT 🔥, WARM) before alerting senior agents.' },
-      { feature: 'Visual Kanban Deal Pipeline', desc: 'Track property deals from initial inquiry to site visit, token payment, and registration.' }
+      { feature: 'Instant WhatsApp Floor Plans', desc: 'AI sends 3D floor plans and pricing PDFs immediately upon lead form submission.' },
+      { feature: 'Budget & Intent Qualification', desc: 'AI screens buyers based on budget, possession timeline, and location preference.' },
+      { feature: 'Automated Site Visit Reminders', desc: 'Sends location pin, site photos, and reminder alerts 2 hours before scheduled visit.' }
     ],
     workflow: [
-      { step: '01', title: 'Ad Lead Inbound', desc: 'Buyer clicks Facebook/Google Property Ad to WhatsApp.' },
-      { step: '02', title: 'AI Budget & Location Check', desc: 'AI asks configuration (2BHK/3BHK) and budget preferences.' },
-      { step: '03', title: 'Brochure & Site Visit Confirmation', desc: 'Sends PDF brochure and books site visit pickup date.' },
-      { step: '04', title: 'Agent Kanban Assignment', desc: 'Assigned agent receives WhatsApp notification with lead profile.' }
+      { step: '01', title: 'Ad Form Inbound', desc: 'Buyer fills Facebook/Instagram lead form for a new project.' },
+      { step: '02', title: 'WhatsApp Brochure Sent', desc: 'AIWCRM sends instant greeting with PDF brochure and video walkthrough.' },
+      { step: '03', title: 'Intent Qualification', desc: 'AI asks buyer preferred budget and configuration (2 BHK / 3 BHK).' },
+      { step: '04', title: 'Site Visit Confirmed', desc: 'Booked visit is synced to sales Kanban and assigned to site manager.' }
     ],
     features: [
-      { title: 'Brochure PDF Sharing', desc: 'Instant dispatch of property brochures and payment schedules.', icon: FileText },
-      { title: 'Site Visit Scheduling', desc: 'Calendar integration for booking agent site visit tours.', icon: Clock },
-      { title: 'Kanban Property Pipeline', desc: 'Visual sales stages for property deals and tokens.', icon: Kanban },
-      { title: 'Lead Re-engagement', desc: 'Re-engage cold property leads with price drop alerts.', icon: Send }
+      { title: 'Interactive Floor Plan Cards', desc: 'Share high-res property images and brochures in chat.', icon: FileText },
+      { title: 'Location Pin Dispatch', desc: 'Send Google Maps location pins for site sales offices.', icon: Building2 },
+      { title: 'Round-Robin Lead Assignment', desc: 'Distribute hot buyer leads fairly among sales agents.', icon: Users },
+      { title: 'Kanban Stage Automation', desc: 'Move deal cards automatically as buyers visit sites.', icon: Kanban }
     ],
     outcomes: [
-      { label: 'Site Visit Conversion', value: '2.5x', detail: 'More buyers visiting properties' },
-      { label: 'Lead Response Time', value: '<5s', detail: 'Instant answer while buyer interest is high' },
-      { label: 'Agent Deal Velocity', value: '+38%', detail: 'Faster closing of property deals' },
-      { label: 'Lead Wastage', value: '0%', detail: 'Every ad lead tracked in CRM' }
+      { label: 'Site Visit Volume', value: '2x', detail: 'Doubled weekend site visits' },
+      { label: 'Lead Response Time', value: '<5s', detail: 'Instant WhatsApp brochure delivery' },
+      { label: 'Agent Efficiency', value: '3x', detail: 'Agents focus only on qualified buyers' },
+      { label: 'Ad Spend ROAS', value: '4x', detail: 'Lower cost per qualified lead' }
     ],
     testimonial: {
-      quote: 'WCRM doubled our weekend site visit volume. Property buyers get floor plans instantly on WhatsApp, and our agents know exactly which leads are HOT.',
-      author: 'Vikramaditya Rao',
-      role: 'Sales Director',
-      company: 'Skyline Luxury Developers',
-      impact: '2.5x Site Visit Bookings'
+      quote: 'AIWCRM doubled our weekend site visit volume. Property buyers get floor plans instantly on WhatsApp, and our agents know exactly which leads are HOT.',
+      author: 'Vikram Sethi',
+      role: 'VP Sales & Marketing',
+      company: 'Prestige Realty Group',
+      impact: '2x Weekend Site Visits'
     },
     faqs: [
-      { q: 'Can WCRM assign property leads to different agents based on location?', a: 'Yes! Smart lead routing distributes leads based on project location, budget, or agent availability.' },
-      { q: 'Can we send video walkthrough links on WhatsApp?', a: 'Yes, you can share YouTube links, MP4 video previews, and interactive virtual tour URLs.' }
+      { q: 'Can AIWCRM assign property leads to different agents based on location?', a: 'Yes! Smart lead routing distributes leads based on project location, budget, or agent availability.' },
+      { q: 'Does AIWCRM integrate with Facebook and Instagram Lead Ads?', a: 'Yes, 0-latency direct Meta Cloud API integration.' }
     ]
   },
 
-  finance: {
-    id: 'finance',
-    name: 'BFSI & Financial Services',
-    badge: 'KYC & Secure Payment Collect',
-    icon: Landmark,
-    heroHeadline: 'Secure Document Collection & Loan Disposals on WhatsApp',
-    heroDesc: 'Automate KYC document collection, EMI payment reminders, credit score checks, and secure payment links with enterprise AES-256 encryption.',
+  bfsi: {
+    id: 'bfsi',
+    name: 'Banking, BFSI & FinTech',
+    badge: 'KYC Document Collection & Loans',
+    icon: ShieldCheck,
+    heroHeadline: 'Secure Financial Eligibility, KYC Collection & UPI Payment Links',
+    heroDesc: 'Accelerate loan pre-approvals, automate KYC document collection on WhatsApp, and deliver 1-click Razorpay payment links securely.',
     metrics: [
-      { label: 'Document Delay Reduction', value: '-60%' },
-      { label: 'On-Time EMI Payments', value: '+35%' },
-      { label: 'Security Standard', value: 'AES-256' }
+      { label: 'Loan Approval Speedup', value: '60%' },
+      { label: 'KYC Collection Time', value: '<5 min' },
+      { label: 'Security & Compliance', value: '100%' }
     ],
     chatDemo: {
-      userMsg: 'What is the status of my Personal Loan application #LN-9921?',
-      aiTitle: 'WCRM BFSI AI Gateway',
-      aiReply: 'Loan Approved! Approved Amount: ₹5,00,000. Please upload Aadhaar & PAN image to complete disbursement 📄',
-      telemetry: 'Encrypted Channel · KYC Document Upload Active'
+      userMsg: 'What is the interest rate and documents required for a Personal Loan of ₹5 Lakhs?',
+      aiTitle: 'AIWCRM BFSI AI Gateway',
+      aiReply: 'Interest rates start at 10.5% p.a. Upload Aadhaar & PAN PDF here for instant 2-minute pre-approval 💳',
+      telemetry: 'Eligibility Engine Synced · Pre-Approval Score: 780'
     },
     challenges: [
-      { problem: 'Pending Document Uploads', desc: 'Loan applicants delay sending PAN/Aadhaar/Bank statements via email.' },
-      { problem: 'Overdue EMI Payments', desc: 'High collection costs for manual EMI reminder calls.' },
-      { problem: 'Security & Compliance Standards', desc: 'Strict regulatory requirements for customer financial data privacy.' }
+      { problem: 'Drop-offs During KYC Upload', desc: 'Borrowers abandon loan applications when asked to log in to complex web portals.' },
+      { problem: 'Slow Loan Sanction Turnaround', desc: 'Manual document verification takes days, losing borrowers to competitor apps.' },
+      { problem: 'Strict Financial Regulations', desc: 'Financial data requires end-to-end encryption and compliance with RBI guidelines.' }
     ],
     solutions: [
-      { feature: 'Instant Document Capture', desc: 'Customers take photo of documents on WhatsApp for instant OCR processing.' },
-      { feature: 'Automated EMI Reminders', desc: 'Sends scheduled payment reminder alerts with embedded UPI/NetBanking links.' },
-      { feature: 'Bank-Grade AES-256 Encryption', desc: 'Meta Official API infrastructure meeting strict BFSI compliance standards.' }
+      { feature: 'WhatsApp KYC Upload', desc: 'Borrowers upload PAN, Aadhaar, and bank statements directly in WhatsApp chat.' },
+      { feature: 'Instant Pre-Approval Eligibility', desc: 'AI queries credit scoring APIs and provides instant loan pre-approval amounts.' },
+      { feature: 'Embedded Payment Links', desc: 'Send 1-click Razorpay/UPI links for loan processing fees or insurance EMI.' }
     ],
     workflow: [
-      { step: '01', title: 'Application Submitted', desc: 'Customer applies for loan or insurance policy.' },
-      { step: '02', title: 'WhatsApp Document Request', desc: 'System requests Aadhaar, PAN, or salary slip photos.' },
-      { step: '03', title: 'Instant Verification & Approval', desc: 'Documents verified and loan agreement sent for e-sign.' },
-      { step: '04', title: 'EMI Payment Sequence', desc: 'Automated monthly WhatsApp reminders before due date.' }
+      { step: '01', title: 'Loan Inquiry', desc: 'Applicant inquiries about home, car, or personal loan rates.' },
+      { step: '02', title: 'Eligibility Screening', desc: 'AI asks income, employment, and desired loan amount.' },
+      { step: '03', title: 'Document Upload on Chat', desc: 'Applicant uploads PDF/image copies of PAN and salary slip.' },
+      { step: '04', title: 'Sanction & E-Sign Link', desc: 'Sends official sanction letter and e-signature link via WhatsApp.' }
     ],
     features: [
-      { title: 'Secure Document Upload', desc: 'Capture & encrypt customer KYC documents.', icon: ShieldCheck },
-      { title: 'UPI & Payment Links', desc: 'Send direct payment collection links on WhatsApp.', icon: TrendingUp },
-      { title: 'Automated Policy Alerts', desc: 'Send renewal notices for insurance policies.', icon: Send },
-      { title: 'Multi-Agent Team Inbox', desc: 'Route loan underwriting queries to specialized reps.', icon: Users }
+      { title: 'AES-256 Data Encryption', desc: 'Enterprise security meeting RBI guidelines.', icon: Lock },
+      { title: 'Razorpay & PayU Links', desc: 'Generate instant UPI and card payment links.', icon: DollarSign },
+      { title: 'Automated EMI Reminders', desc: 'Send monthly EMI payment alerts with 1-click pay buttons.', icon: Calendar },
+      { title: 'Audit Trail & Telemetry', desc: 'Full log of customer conversations and consent timestamps.', icon: ShieldCheck }
     ],
     outcomes: [
-      { label: 'Document Collection Speed', value: '3x', detail: 'KYC completed in minutes instead of days' },
-      { label: 'EMI Collection Rate', value: '+35%', detail: 'Higher on-time monthly payments' },
-      { label: 'Loan Processing Cost', value: '-50%', detail: 'Lower manual operational expenses' },
-      { label: 'Security Standard', value: '100%', detail: 'Fully compliant Meta Cloud API' }
+      { label: 'Approval Speed', value: '60% faster', detail: 'Reduced loan sanction time dramatically' },
+      { label: 'KYC Completion Rate', value: '+50%', detail: 'Higher completion rate on WhatsApp vs Web' },
+      { label: 'EMI Recovery Rate', value: '94%', detail: 'Fewer overdue defaults via WhatsApp alerts' },
+      { label: 'Compliance Audit', value: '100%', detail: 'Fully SOC2 and ISO 27001 compliant' }
     ],
     testimonial: {
-      quote: 'WCRM streamlined our loan document collection. Customers upload their Aadhaar and PAN on WhatsApp in minutes, cutting our approval turnaround time by 60%.',
-      author: 'Sanjay Deshmukh',
-      role: 'Head of Digital Lending',
-      company: 'FinServe India Capital',
-      impact: '-60% Document Turnaround'
+      quote: 'AIWCRM streamlined our loan document collection. Customers upload their Aadhaar and PAN on WhatsApp in minutes, cutting our approval turnaround time by 60%.',
+      author: 'Siddharth Mehta',
+      role: 'Head of Digital Banking',
+      company: 'Equitas Financial Services',
+      impact: '60% Faster Loan Approvals'
     },
     faqs: [
-      { q: 'Is WCRM compliant with RBI and financial data privacy guidelines?', a: 'Yes. WCRM routes all traffic via Meta Official Cloud API with end-to-end AES-256 encryption.' },
-      { q: 'Can WCRM generate dynamic UPI payment links?', a: 'Yes, integrated payment links (Razorpay, PayU, Cashfree) allow instant 1-click payments inside WhatsApp.' }
+      { q: 'Is AIWCRM compliant with RBI and financial data privacy guidelines?', a: 'Yes. AIWCRM routes all traffic via Meta Official Cloud API with end-to-end AES-256 encryption.' },
+      { q: 'Can AIWCRM generate dynamic UPI payment links?', a: 'Yes, integrated payment links (Razorpay, PayU, Cashfree) allow instant 1-click payments inside WhatsApp.' }
     ]
   },
 
   hospitality: {
     id: 'hospitality',
-    name: 'Hospitality & Hotels',
-    badge: 'Guest Concierge & Direct Bookings',
+    name: 'Hospitality & Travel',
+    badge: 'Direct Bookings & Concierge',
     icon: Hotel,
-    heroHeadline: '24/7 WhatsApp AI Guest Concierge & Direct Hotel Bookings',
-    heroDesc: 'Automate table reservations, check-in instructions, room service requests, and review collection with zero commission fees.',
+    heroHeadline: 'Direct Hotel Bookings, Digital Room Service & Guest Concierge',
+    heroDesc: 'Increase direct room bookings on WhatsApp, send digital food menus, and automate guest check-in instructions.',
     metrics: [
       { label: 'Direct Booking Revenue', value: '+30%' },
-      { label: 'Guest Satisfaction', value: '98%' },
-      { label: 'Concierge Response', value: '<100ms' }
+      { label: 'Guest Response Speed', value: '<5s' },
+      { label: 'OTA Commission Saved', value: '-20%' }
     ],
     chatDemo: {
-      userMsg: 'Can I book a table for 4 people tonight at 8:00 PM?',
-      aiTitle: 'WCRM Hotel Concierge AI',
-      aiReply: 'Table reserved for 4 at 8:00 PM! Menu PDF attached. Would you like to pre-order appetizers? 🍽️',
-      telemetry: 'Table #14 Reserved · Reservation Sent via WhatsApp'
+      userMsg: 'Hi, do you have ocean-view suite availability for 2 nights starting December 15?',
+      aiTitle: 'AIWCRM Hotel Concierge AI',
+      aiReply: 'Yes! Ocean Suite is available at ₹12,500/night including breakfast. Reserve now with 1-click 🏨',
+      telemetry: 'PMS Inventory Checked · Reservation Link Dispatched'
     },
     challenges: [
-      { problem: 'High OTA Commission Fees', desc: 'Hotels lose up to 25% revenue on booking commissions to third-party travel aggregators.' },
-      { problem: 'Front Desk Bottlenecks', desc: 'Guests wait in line for basic check-in details, Wi-Fi passwords, and room service menus.' },
-      { problem: 'Uncollected Guest Reviews', desc: 'Low Google review counts because post-checkout survey links sent via email get ignored.' }
+      { problem: 'High OTA Commission Fees', desc: 'Hotels lose 15-25% commission on every booking made through third-party travel portals.' },
+      { problem: 'Slow Front-Desk Service', desc: 'Guests wait in line or call reception for basic room service, wifi passwords, and menus.' },
+      { problem: 'Low Post-Stay Reviews', desc: 'Guests leave without providing feedback, resulting in missed TripAdvisor reviews.' }
     ],
     solutions: [
-      { feature: 'Direct WhatsApp Bookings', desc: 'Guests book rooms and tables directly via WhatsApp with zero aggregator commission fees.' },
-      { feature: '24/7 AI Guest Concierge', desc: 'Answers Wi-Fi passwords, pool timings, room service requests, and local attractions instantly.' },
-      { feature: 'Automated Review Collection', desc: 'Sends friendly post-checkout WhatsApp messages inviting guests to rate their stay on Google.' }
+      { feature: 'Direct WhatsApp Booking Engine', desc: 'Guests check availability, view room photos, and pay directly on WhatsApp with 0% commission.' },
+      { feature: 'Digital Concierge Menu', desc: 'Guests scan room QR codes to order food, request extra towels, or book spa appointments.' },
+      { feature: 'Automated Review Collection', desc: 'Sends post-checkout thank you message requesting a 5-star Google review.' }
     ],
     workflow: [
-      { step: '01', title: 'Guest Inquiry', desc: 'Guest asks for room availability or menu.' },
-      { step: '02', title: 'AI Booking Confirmation', desc: 'AI checks room inventory and sends booking link.' },
-      { step: '03', title: 'In-Stay Concierge Support', desc: 'Guest requests extra towels or room service via WhatsApp.' },
-      { step: '04', title: 'Post-Stay Review Request', desc: 'Automated 5-star Google review prompt sent after checkout.' }
+      { step: '01', title: 'Guest Inquiry Inbound', desc: 'Guest asks for room rates or amenities on WhatsApp.' },
+      { step: '02', title: 'Room Photo & Price Delivery', desc: 'AI displays high-res suite photos and pricing options.' },
+      { step: '03', title: 'Direct Booking Payment', desc: 'Guest pays deposit via Razorpay link to lock reservation.' },
+      { step: '04', title: 'Pre-Arrival Check-in', desc: 'Sends directions, wifi code, and digital check-in form.' }
     ],
     features: [
-      { title: 'Digital Menu & PDF Sharing', desc: 'Instant sharing of food & spa menus.', icon: FileText },
-      { title: 'Check-In Verification', desc: 'Pre-arrival guest ID submission on WhatsApp.', icon: ShieldCheck },
-      { title: 'Room Service Order Bot', desc: 'Take in-room dining orders automatically.', icon: Bot },
-      { title: 'Review Growth Engine', desc: 'Boost Google & TripAdvisor review ratings.', icon: TrendingUp }
+      { title: 'Digital Menu Showcase', desc: 'Interactive food & spa service menu cards in chat.', icon: FileText },
+      { title: 'PMS Integration', desc: 'Sync room availability with Opera, Cloudbeds, or custom PMS.', icon: Building2 },
+      { title: 'Review Growth Automation', desc: 'Boost Google & TripAdvisor reviews automatically.', icon: Sparkles },
+      { title: 'Multilingual Guest AI', desc: 'Assist international travelers in 50+ languages.', icon: Bot }
     ],
     outcomes: [
-      { label: 'Direct Bookings', value: '+30%', detail: 'Saved thousands in OTA commission fees' },
-      { label: 'Guest Response Time', value: '<100ms', detail: 'Instant answers to all room inquiries' },
-      { label: 'Google Review Score', value: '4.8⭐', detail: '3x more positive guest reviews' },
-      { label: 'Staff Efficiency', value: '4x', detail: 'Front desk focuses on in-person guest care' }
+      { label: 'Direct Bookings', value: '+30%', detail: 'Shifted bookings from OTAs to WhatsApp' },
+      { label: 'Commission Savings', value: '₹4.5L/mo', detail: 'Saved on third-party OTA fees' },
+      { label: 'Guest Satisfaction', value: '97%', detail: 'Instant concierge service in room' },
+      { label: 'Google Review Growth', value: '3x', detail: 'Increased 5-star rating submissions' }
     ],
     testimonial: {
-      quote: 'WCRM helped us increase direct hotel bookings by 30%. Guests love receiving their check-in details and digital menus on WhatsApp.',
-      author: 'Rohit Oberoi',
+      quote: 'AIWCRM helped us increase direct hotel bookings by 30%. Guests love receiving their check-in details and digital menus on WhatsApp.',
+      author: 'Kabir Oberoi',
       role: 'General Manager',
-      company: 'Grand Palace Resorts & Spa',
-      impact: '+30% Direct Bookings'
+      company: 'Grand Azure Resort & Spa',
+      impact: '+30% Direct Room Bookings'
     },
     faqs: [
-      { q: 'Can WCRM integrate with Property Management Systems (PMS)?', a: 'Yes, via REST webhooks to sync room availability and guest details.' },
-      { q: 'Can we send broadcast offers for festive dining packages?', a: 'Yes, schedule Meta-approved broadcast campaigns to past guests.' }
+      { q: 'Can AIWCRM integrate with Property Management Systems (PMS)?', a: 'Yes, via REST webhooks to sync room availability and guest details.' },
+      { q: 'Does AIWCRM support multiple hotel property locations?', a: 'Yes, multi-property management under one central dashboard.' }
     ]
   },
 
   government: {
     id: 'government',
     name: 'Government & Public Sector',
-    badge: 'Citizen Services & Civic Alerts',
+    badge: 'Citizen Helpline & Services',
     icon: Building2,
-    heroHeadline: 'Citizen Grievance Redressal & Public Alerts on WhatsApp',
-    heroDesc: 'Automate citizen inquiry handling, civic grievance registration, digital document issuing, and high-volume public alerts securely.',
+    heroHeadline: 'Official Citizen Services, Grievance Redressal & Public Alerts',
+    heroDesc: 'Deliver civic certificates, resolve citizen complaints 24/7, and send public safety announcements with official Meta compliance.',
     metrics: [
+      { label: 'Citizen Inquiry Speed', value: '<3s' },
       { label: 'Grievance Resolution', value: '3x Faster' },
-      { label: 'Citizen Satisfaction', value: '96%' },
-      { label: 'Broadcast Deliverability', value: '99.9%' }
+      { label: 'Public Compliance', value: '100%' }
     ],
     chatDemo: {
-      userMsg: 'I want to track my Municipal Utility Permit application #UT-7712',
-      aiTitle: 'WCRM Citizen AI Portal',
-      aiReply: 'Permit #UT-7712 Approved! Download official digital permit certificate PDF below 📄',
-      telemetry: 'DigiLocker Verified · Certificate PDF Dispatched'
+      userMsg: 'How can I download my birth certificate or check property tax status?',
+      aiTitle: 'AIWCRM Citizen AI Portal',
+      aiReply: 'Enter your 10-digit Application Reference Number (ARN) to download your verified PDF certificate 📄',
+      telemetry: 'Govt API Verified · Official Digital Signature Valid'
     },
     challenges: [
-      { problem: 'Overcrowded Government Offices', desc: 'Citizens stand in long queues for simple status updates and certificate downloads.' },
-      { problem: 'Slow Grievance Redressal', desc: 'Public complaints get delayed due to manual paper routing between departments.' },
-      { problem: 'Emergency Alert Broadcasting', desc: 'Difficulty broadcasting urgent weather or civic alerts to lakhs of citizens reliably.' }
+      { problem: 'Overcrowded Citizen Helpdesks', desc: 'Long physical queues at government offices for basic document status inquiries.' },
+      { problem: 'Delayed Public Announcements', desc: 'Emergency weather alerts and civic updates fail to reach citizens in time via traditional media.' },
+      { problem: 'Unresolved Civic Grievance', desc: 'Citizen complaints regarding water supply or road repairs get lost in paper files.' }
     ],
     solutions: [
-      { feature: 'Digital Document Dispatch', desc: 'Citizens download verified certificates and permits instantly on WhatsApp.' },
-      { feature: 'Automated Grievance Tagging', desc: 'Public complaints are categorized, assigned ticket numbers, and routed to officers.' },
-      { feature: 'Mass Public WhatsApp Broadcasts', desc: 'Send emergency alerts and civic advisories to 100,000+ citizens in seconds.' }
+      { feature: '24/7 Citizen AI Portal', desc: 'Citizens download tax receipts, certificates, and forms instantly on WhatsApp.' },
+      { feature: 'Emergency Broadcast System', desc: 'Send urgent civic alerts and weather warnings to 100,000+ citizens simultaneously.' },
+      { feature: 'Ticketed Grievance Tracking', desc: 'Citizens upload photo proof of civic issues and receive live resolution tracking links.' }
     ],
     workflow: [
-      { step: '01', title: 'Citizen Messages Helpline', desc: 'Citizen requests permit status or files complaint.' },
-      { step: '02', title: 'AI Identity Verification', desc: 'AI verifies mobile number and application ID.' },
-      { step: '03', title: 'Instant Document / Ticket', desc: 'System dispatches PDF document or assigns ticket ID.' },
-      { step: '04', title: 'Officer Department Routing', desc: 'Escalated issues routed to departmental officers in team inbox.' }
+      { step: '01', title: 'Citizen Inquiry', desc: 'Citizen messages official government WhatsApp helpline number.' },
+      { step: '02', title: 'AI Form & Document Match', desc: 'AI verifies application ID against government database.' },
+      { step: '03', title: 'PDF Certificate Delivery', desc: 'Delivers digitally signed official certificate PDF.' },
+      { step: '04', title: 'Grievance Resolution Alert', desc: 'Sends resolution update when municipal team repairs issue.' }
     ],
     features: [
-      { title: 'Digital Certificate Delivery', desc: 'Instant PDF dispatch of verified documents.', icon: FileText },
-      { title: 'Department Ticket Routing', desc: 'Route civic complaints to appropriate municipal officer.', icon: Users },
-      { title: 'Mass Alert Broadcasting', desc: 'Broadcast emergency advisories to lakhs of citizens.', icon: Send },
-      { title: 'Multilingual Regional Support', desc: 'Full support for Hindi, Tamil, Bengali, Marathi, etc.', icon: Bot }
+      { title: 'Official Meta Verification', desc: 'Official Green Tick badge for government agency trust.', icon: ShieldCheck },
+      { title: 'Mass Public Alerts', desc: 'High-speed broadcast engine for civic announcements.', icon: Send },
+      { title: 'AES-256 Citizen Privacy', desc: 'Strict data confidentiality meeting government IT rules.', icon: Lock },
+      { title: 'Vernacular Language AI', desc: 'Supports Hindi, Tamil, Telugu, Marathi, and all Indian languages.', icon: Bot }
     ],
     outcomes: [
-      { label: 'Queue Reduction', value: '-75%', detail: 'Fewer citizens visiting physical counters' },
-      { label: 'Grievance Resolution', value: '3x Faster', detail: 'Automated ticketing and officer routing' },
-      { label: 'Public Satisfaction', value: '96%', detail: 'Instant transparency on application status' },
-      { label: 'Broadcast Capacity', value: '100K+', detail: 'High-speed official Meta API alerts' }
+      { label: 'Public Satisfaction', value: '96%', detail: 'Eliminated physical queue delays' },
+      { label: 'Ticket Resolution Time', value: '3x faster', detail: 'Automated civic complaint routing' },
+      { label: 'Broadcast Deliverability', value: '99.9%', detail: 'Instant civic emergency notifications' },
+      { label: 'Helpdesk Cost Savings', value: '-70%', detail: 'Reduced front-office administrative costs' }
     ],
     testimonial: {
-      quote: 'WCRM enabled our municipal corporation to deliver citizen certificates and resolve civic complaints 3x faster with 100% official Meta compliance.',
-      author: 'M. K. Verma',
-      role: 'Chief IT Commissioner',
-      company: 'Smart City Municipal Board',
-      impact: '3x Faster Resolution'
+      quote: 'AIWCRM enabled our municipal corporation to deliver citizen certificates and resolve civic complaints 3x faster with 100% official Meta compliance.',
+      author: 'Administrative Officer',
+      role: 'Director of e-Governance',
+      company: 'Municipal Corporation Division',
+      impact: '3x Faster Grievance Redressal'
     },
     faqs: [
-      { q: 'Is WCRM approved for government agency use?', a: 'Yes, WCRM utilizes Meta Official Cloud API with enterprise security standards.' },
-      { q: 'Can citizens communicate in local regional languages?', a: 'Yes, full multilingual AI auto-reply capability across Indian languages.' }
+      { q: 'Is AIWCRM approved for government agency use?', a: 'Yes, AIWCRM utilizes Meta Official Cloud API with enterprise security standards.' },
+      { q: 'Does AIWCRM support all official Indian regional languages?', a: 'Yes! Full multi-language support including Hindi, Marathi, Bengali, Tamil, Telugu, and more.' }
     ]
   },
 
   travel: {
     id: 'travel',
     name: 'Travel & Tourism',
-    badge: 'Itinerary Sharing & Global Support',
-    icon: Plane,
-    heroHeadline: 'Automated Itinerary Sharing & 24/7 Traveler Assistance',
-    heroDesc: 'Share beautiful travel itineraries, automated flight updates, tour booking confirmations, and 24/7 global traveler support on WhatsApp.',
+    badge: 'Itinerary & Booking Assistant',
+    icon: Compass,
+    heroHeadline: 'Instant PDF Itineraries, Flight Alerts & 24/7 Global Traveler Support',
+    heroDesc: 'Automate tour package quotes, dispatch PDF travel vouchers on WhatsApp, and provide 24/7 multi-currency booking assistance.',
     metrics: [
-      { label: 'Tour Booking Growth', value: '+35%' },
-      { label: 'Support Response', value: '<50ms' },
-      { label: 'Traveler Rating', value: '4.9⭐' }
+      { label: 'Package Booking Rate', value: '+38%' },
+      { label: 'Itinerary Dispatch', value: '<5s' },
+      { label: 'Global Traveler Support', value: '24/7' }
     ],
     chatDemo: {
-      userMsg: 'Send complete itinerary and hotel list for 5-Day Kerala Tour Package',
-      aiTitle: 'WCRM Travel AI Agent',
-      aiReply: 'Kerala 5D/4N Package Itinerary PDF attached! Price: ₹18,500/person (Hotels + Cab included) 🌴',
-      telemetry: 'PDF Dispatched · Package Lead Tagged: Kerala Tour'
+      userMsg: 'Looking for a 6-day Bali Honeymoon Package with private pool villa under ₹1.2 Lakh',
+      aiTitle: 'AIWCRM Travel AI Agent',
+      aiReply: 'Here is our bestselling 6D/5N Bali Luxury Itinerary PDF with flight & villa options 🌴',
+      telemetry: 'Custom Itinerary Generated · Bali Package Sent'
     },
     challenges: [
-      { problem: 'Unstructured Package Inquiries', desc: 'Travelers ask for customized itineraries across email, phone, and social media.' },
-      { problem: 'Flight & Tour Delay Communication', desc: 'Manual calls to inform groups about schedule changes take hours.' },
-      { problem: 'Global Time-Zone Support', desc: 'Travelers abroad need urgent assistance outside Indian office hours.' }
+      { problem: 'Custom Itinerary Delays', desc: 'Travel agents take up to 24 hours to craft custom quotes, losing impulse holiday bookings.' },
+      { problem: 'Missed Flight & Visa Updates', desc: 'Travelers struggle to get urgent flight change or visa status updates while abroad.' },
+      { problem: 'Unorganized Lead Pipeline', desc: 'High volume of holiday inquiry calls from ads goes untracked on personal agent phones.' }
     ],
     solutions: [
-      { feature: 'Instant PDF Itinerary Sharing', desc: 'AI sends rich travel itineraries with hotel lists and pricing instantly on WhatsApp.' },
-      { feature: 'Automated Flight & Tour Alerts', desc: 'Send group WhatsApp broadcast updates regarding pickup times and tour schedules.' },
-      { feature: '24/7 Global AI Traveler Support', desc: 'AI answers emergency voucher queries, hotel locations, and cab details anytime.' }
+      { feature: 'Instant PDF Itinerary Delivery', desc: 'AI generates custom day-wise tour itineraries and dispatches PDFs in 5 seconds.' },
+      { feature: '24/7 Global WhatsApp Concierge', desc: 'Assists travelers abroad with hotel vouchers, flight tickets, and local guide contacts.' },
+      { feature: 'Ad Lead Auto-Routing', desc: 'Routes incoming travel ad inquiries instantly to dedicated destination specialists.' }
     ],
     workflow: [
-      { step: '01', title: 'Traveler Inquiry', desc: 'Customer requests tour package details.' },
-      { step: '02', title: 'AI Itinerary Recommendation', desc: 'AI recommends top tour packages matching budget.' },
-      { step: '03', title: 'Booking & Voucher Dispatch', desc: 'Customer confirms booking and receives voucher PDF.' },
-      { step: '04', title: '24/7 On-Trip Assistance', desc: 'AI assists traveler during trip with directions and support.' }
+      { step: '01', title: 'Travel Inquiry', desc: 'Traveler inquires about destination packages from Meta ad.' },
+      { step: '02', title: 'AI Preference Screening', desc: 'AI asks dates, budget, number of travelers, and hotel preference.' },
+      { step: '03', title: 'Custom PDF Package Sent', desc: 'Sends customized itinerary PDF with day-wise breakdown.' },
+      { step: '04', title: 'Deposit & Booking', desc: 'Traveler confirms booking via embedded advance payment link.' }
     ],
     features: [
-      { title: 'Itinerary PDF Dispatch', desc: 'Send rich PDF itineraries and tour vouchers.', icon: FileText },
-      { title: 'Group Broadcast Updates', desc: 'Inform tour groups about daily schedule changes.', icon: Send },
-      { title: '24/7 AI Concierge', desc: 'Round-the-clock assistance for international travelers.', icon: Bot },
-      { title: 'Multi-Currency Support', desc: 'Display package costs in INR, USD, EUR, or AED.', icon: TrendingUp }
+      { title: 'PDF Package Generator', desc: 'Deliver custom branded holiday itineraries instantly.', icon: FileText },
+      { title: 'Destination Lead Routing', desc: 'Assign leads to specialized domestic/international agents.', icon: Users },
+      { title: 'Automated Trip Reminders', desc: 'Send flight boarding reminders and visa check-lists.', icon: Calendar },
+      { title: 'Global Multi-Currency', desc: 'Accept payments in INR, USD, EUR, and AED.', icon: DollarSign }
     ],
     outcomes: [
-      { label: 'Tour Package Sales', value: '+35%', detail: 'Faster booking with instant itinerary PDF' },
-      { label: 'Customer Rating', value: '4.9⭐', detail: 'High praise for 24/7 on-trip assistance' },
-      { label: 'After-Hours Support', value: '100%', detail: 'Zero traveler inquiries missed overnight' },
-      { label: 'Operational Costs', value: '-50%', detail: 'Automated routine travel updates' }
+      { label: 'Package Conversion', value: '+38%', detail: 'Faster quote turnaround increased sales' },
+      { label: 'Quote Dispatch Speed', value: '<5s', detail: 'Instant itinerary generation' },
+      { label: 'Traveler Support Rating', value: '99%', detail: '24/7 assistance anywhere in the world' },
+      { label: 'Agent Productivity', value: '4x', detail: 'Agents handle 4x more traveler inquiries' }
     ],
     testimonial: {
-      quote: 'WCRM transformed our travel agency operations. Travelers receive instant PDF itineraries on WhatsApp, and our global support is active 24/7.',
-      author: 'Meera Kapur',
-      role: 'Head of Operations',
-      company: 'Wanderlust International Tours',
-      impact: '+35% Package Sales'
+      quote: 'AIWCRM transformed our travel agency operations. Travelers receive instant PDF itineraries on WhatsApp, and our global support is active 24/7.',
+      author: 'Rohan Deshmukh',
+      role: 'Founder & CEO',
+      company: 'Wanderlust Global Holidays',
+      impact: '+38% Tour Package Sales'
     },
     faqs: [
-      { q: 'Can WCRM handle international numbers from global travelers?', a: 'Yes! Official Meta API supports WhatsApp numbers globally across 180+ countries.' },
-      { q: 'Can we send custom booking voucher PDFs via WhatsApp?', a: 'Yes, automatic PDF voucher generation and sharing.' }
-    ]
-  },
-
-  ngo: {
-    id: 'ngo',
-    name: 'NGOs & Non-Profits',
-    badge: 'Donor Engagement & Volunteer Drive',
-    icon: Heart,
-    heroHeadline: 'Donor Engagement, Impact Reporting & Volunteer Campaigns',
-    heroDesc: 'Connect with donors, share automated impact reports, run fundraising drives, and coordinate volunteer campaigns at scale on WhatsApp.',
-    metrics: [
-      { label: 'Donor Retention', value: '+50%' },
-      { label: 'Fundraising Campaign ROI', value: '8x' },
-      { label: 'Volunteer Response', value: '95%' }
-    ],
-    chatDemo: {
-      userMsg: 'I want to donate ₹2,500 for the Rural Education Project',
-      aiTitle: 'WCRM Impact AI Assistant',
-      aiReply: 'Thank you for supporting Rural Education! Click below to donate via UPI/Razorpay (80G Tax Exemption Certificate included) 🙏',
-      telemetry: 'Donor Tagged: Education Supporter · 80G Receipt Auto-Generated'
-    },
-    challenges: [
-      { problem: 'Low Donor Re-engagement', desc: 'Donors contribute once but drop off due to lack of regular impact updates.' },
-      { problem: 'Delayed 80G Tax Receipts', desc: 'Manual processing and emailing of tax exemption receipts takes weeks.' },
-      { problem: 'Scattered Volunteer Coordination', desc: 'Difficulty mobilizing volunteers quickly for emergency relief drives.' }
-    ],
-    solutions: [
-      { feature: 'Instant 80G Tax Receipt Dispatch', desc: 'Automatically generates and sends 80G donation receipts on WhatsApp.' },
-      { feature: 'Automated Impact Stories', desc: 'Schedule monthly photo & video updates showing how donor funds are making a difference.' },
-      { feature: 'Volunteer Broadcast Engine', desc: 'Mobilize hundreds of volunteers instantly for local community drives.' }
-    ],
-    workflow: [
-      { step: '01', title: 'Donor Expresses Interest', desc: 'Donor messages WhatsApp from campaign link.' },
-      { step: '02', title: 'AI Donation Link', desc: 'AI shares cause details and Razorpay donation link.' },
-      { step: '03', title: 'Instant 80G Receipt', desc: 'System generates official 80G tax receipt PDF.' },
-      { step: '04', title: 'Ongoing Impact Updates', desc: 'Regular broadcast updates on project progress.' }
-    ],
-    features: [
-      { title: '80G Receipt Auto-Delivery', desc: 'Instant PDF tax exemption certificates.', icon: FileText },
-      { title: 'Fundraising Broadcasts', desc: 'High-converting WhatsApp campaigns for causes.', icon: Send },
-      { title: 'Volunteer Registration Bot', desc: 'Onboard and screen new community volunteers.', icon: Users },
-      { title: 'Impact Video Sharing', desc: 'Share video updates directly in WhatsApp chat.', icon: Sparkles }
-    ],
-    outcomes: [
-      { label: 'Donor Retention', value: '+50%', detail: 'Donors stay engaged with monthly updates' },
-      { label: 'Receipt Processing', value: '<5s', detail: 'Instant 80G tax receipt generation' },
-      { label: 'Fundraising ROI', value: '8x', detail: 'Outperformed traditional email appeals' },
-      { label: 'Volunteer Mobilization', value: '10x Faster', detail: 'Quick deployment for emergency relief' }
-    ],
-    testimonial: {
-      quote: 'WCRM helped us increase recurring donor retention by 50%. Our donors receive instant 80G tax receipts and monthly video impact reports on WhatsApp.',
-      author: 'Sunita Narain',
-      role: 'Director of Partnerships',
-      company: 'Hope Foundation India',
-      impact: '+50% Donor Retention'
-    },
-    faqs: [
-      { q: 'Does Meta offer special WhatsApp API rates for registered non-profits?', a: 'Yes, Meta provides discounted utility and service messaging rates for verified non-profit organizations.' },
-      { q: 'Can we send 80G tax exemption certificates automatically?', a: 'Yes, automatically generated PDF tax receipts sent instantly upon payment.' }
+      { q: 'Can AIWCRM handle international numbers from global travelers?', a: 'Yes! Official Meta API supports WhatsApp numbers globally across 180+ countries.' },
+      { q: 'Does AIWCRM integrate with GDS and flight booking engines?', a: 'Yes, via REST webhooks and custom API connectors.' }
     ]
   },
 
   services: {
     id: 'services',
     name: 'Professional Services',
-    badge: 'Client Consultations & Proposals',
-    icon: Briefcase,
-    heroHeadline: 'Client Qualification, Appointment Booking & Proposal Tracking',
-    heroDesc: 'Empower law firms, accounting practices, agencies, and consultants with automated client screening, proposal sharing, and retainer reminders.',
+    badge: 'Client Screening & Consultations',
+    icon: Code2,
+    heroHeadline: 'Client Qualification, Consultation Booking & Document Collection',
+    heroDesc: 'Screen high-value clients for legal, accounting, and consulting firms. Automate proposal delivery and calendar bookings on WhatsApp.',
     metrics: [
-      { label: 'Client Onboarding Speed', value: '4x' },
-      { label: 'Consultation Bookings', value: '+40%' },
-      { label: 'Retainer Collection', value: '98%' }
+      { label: 'Billable Time Saved', value: '30%' },
+      { label: 'Client Qualification', value: '<1 min' },
+      { label: 'Proposal Delivery', value: 'Instant' }
     ],
     chatDemo: {
-      userMsg: 'Need GST audit consultation for our IT company. Send retainer package options.',
-      aiTitle: 'WCRM Professional AI Assistant',
-      aiReply: 'Sending GST Audit Retainer Proposal PDF! Available Consultation Slots: Tomorrow 3:00 PM & 5:00 PM 💼',
-      telemetry: 'Proposal Sent · Lead Tagged: High-Value Corporate Client'
+      userMsg: 'Need GST audit and corporate tax advisory services for a Private Limited company',
+      aiTitle: 'AIWCRM Professional AI Assistant',
+      aiReply: 'Here is our Corporate Tax Advisory Service Deck & Fee Schedule. Book a partner consult here 💼',
+      telemetry: 'Client Qualified: Pvt Ltd · Partner Meeting Booked'
     },
     challenges: [
-      { problem: 'Unqualified Client Meetings', desc: 'Partners waste billable hours in consultation calls with low-budget inquiries.' },
-      { problem: 'Slow Proposal Turnaround', desc: 'Delays in sending customized client proposals result in lost contracts.' },
-      { problem: 'Overdue Invoice Collections', desc: 'Chasing clients for monthly retainer payments requires awkward manual calls.' }
+      { problem: 'Unqualified Client Inquiries', desc: 'Partners waste billable hours answering calls from low-budget leads.' },
+      { problem: 'Slow Proposal Turnaround', desc: 'Delays in sending formal service proposals cause prospective clients to pick rival firms.' },
+      { problem: 'Uncollected Client Documents', desc: 'Chasing clients for tax documents and audit files via email causes project delays.' }
     ],
     solutions: [
-      { feature: 'AI Prospect Screening', desc: 'Screens client budget and company size before scheduling senior partner calls.' },
-      { feature: 'Automated Proposal Delivery', desc: 'Dispatches professional PDF proposals and engagement letters on WhatsApp.' },
-      { feature: 'Retainer Payment Reminders', desc: 'Scheduled monthly WhatsApp reminders with 1-click UPI/card payment links.' }
+      { feature: 'AI Client Qualification', desc: 'Screens leads by turnover, company type, and service budget before booking partner time.' },
+      { feature: 'Instant Proposal Delivery', desc: 'Delivers customized service decks and engagement letters automatically on WhatsApp.' },
+      { feature: 'WhatsApp Document Portal', desc: 'Clients upload tax documents and financial statements securely in chat.' }
     ],
     workflow: [
-      { step: '01', title: 'Client Inbound', desc: 'Prospect inquires for legal, accounting, or consulting services.' },
-      { step: '02', title: 'AI Needs Assessment', desc: 'AI collects company details, scope, and timeline.' },
-      { step: '03', title: 'Proposal & Booking Link', desc: 'AI sends service proposal PDF and partner calendar link.' },
-      { step: '04', title: 'Retainer Invoicing', desc: 'Automated monthly retainer invoicing and receipting.' }
+      { step: '01', title: 'Client Inbound Message', desc: 'Prospect inquires about legal, audit, or consulting services.' },
+      { step: '02', title: 'AI Budget Screening', desc: 'AI verifies business turnover and required scope of work.' },
+      { step: '03', title: 'Proposal & Calendar Link', desc: 'AI dispatches proposal PDF and Google Calendar booking link.' },
+      { step: '04', title: 'Document Collection', desc: 'Sends checklist of required onboarding documents.' }
     ],
     features: [
-      { title: 'Proposal PDF Sharing', desc: 'Send formal service proposals & engagement terms.', icon: FileText },
-      { title: 'Partner Calendar Sync', desc: 'Book paid consultation slots automatically.', icon: Clock },
-      { title: 'Retainer Invoicing Bot', desc: 'Automated monthly billing alerts and UPI links.', icon: TrendingUp },
-      { title: 'Private Internal Notes', desc: 'Collaborate with team on client files in team inbox.', icon: MessageSquare }
+      { title: 'Google Calendar Sync', desc: 'Automate consultation bookings with partner calendars.', icon: Calendar },
+      { title: 'Secure Document Vault', desc: 'Receive client financial files with AES-256 security.', icon: Lock },
+      { title: 'Proposal PDF Dispatch', desc: 'Instant sharing of service proposals and fee schedules.', icon: FileText },
+      { title: 'Team Role Management', desc: 'Manage access between partners, associates, and staff.', icon: Users }
     ],
     outcomes: [
-      { label: 'Client Onboarding', value: '4x Faster', detail: 'Pre-screened leads and instant proposals' },
-      { label: 'Billable Hour Savings', value: '+30%', detail: 'Partners spend time only on high-value clients' },
-      { label: 'Retainer Collection', value: '98%', detail: 'On-time monthly retainer payments' },
-      { label: 'Client Satisfaction', value: '4.9⭐', detail: 'Instant answers to contract status inquiries' }
+      { label: 'Billable Hours Saved', value: '30%', detail: 'Partners focus only on pre-screened clients' },
+      { label: 'Proposal Turnaround', value: 'Instant', detail: 'Zero delay in service deck delivery' },
+      { label: 'Client Onboarding', value: '2x faster', detail: 'Automated document checklist on WhatsApp' },
+      { label: 'Close Rate', value: '+35%', detail: 'Higher conversion on qualified consultations' }
     ],
     testimonial: {
-      quote: 'WCRM freed up 30% of our senior partners’ billable hours. Low-budget inquiries are screened out automatically, and proposal delivery takes seconds.',
-      author: 'Anand Vardhan',
-      role: 'Managing Partner',
-      company: 'Vardhan & Associates Legal',
-      impact: '+30% Billable Hours Saved'
+      quote: 'AIWCRM freed up 30% of our senior partners’ billable hours. Low-budget inquiries are screened out automatically, and proposal delivery takes seconds.',
+      author: 'Amitabh Verma',
+      role: 'Senior Managing Partner',
+      company: 'Verma & Associates Chartered Accountants',
+      impact: '30% Billable Hours Saved'
     },
     faqs: [
-      { q: 'Can WCRM integrate with Calendly or Google Calendar for partner bookings?', a: 'Yes! Automated appointment booking synced with Google Calendar or Calendly.' },
-      { q: 'Is client confidentiality protected on WCRM?', a: 'Yes, end-to-end Meta Cloud API security with strict role-based access control.' }
+      { q: 'Can AIWCRM integrate with Calendly or Google Calendar for partner bookings?', a: 'Yes! Automated appointment booking synced with Google Calendar or Calendly.' },
+      { q: 'Is client confidentiality protected on AIWCRM?', a: 'Yes, end-to-end Meta Cloud API security with strict role-based access control.' }
     ]
   },
 
-  'b2b-enterprise': {
-    id: 'b2b-enterprise',
-    name: 'B2B Enterprises',
-    badge: 'Account-Based Messaging & SLAs',
-    icon: Building,
-    heroHeadline: 'Account-Based WhatsApp Engagement for Enterprise B2B Teams',
-    heroDesc: 'Unify multi-channel enterprise sales, SLA monitoring, multi-region team inboxes, and BYOK multi-model AI routing with 99.9% uptime SLA.',
+  b2b: {
+    id: 'b2b',
+    name: 'B2B Enterprise',
+    badge: 'Key Account Management & BYOK',
+    icon: Building2,
+    heroHeadline: 'Multi-Agent Enterprise Inbox, ERP Webhooks & Zero Token Markup',
+    heroDesc: 'Scale key account communication, connect ERP webhooks, and cut AI expenses by 60% with BYOK model routing.',
     metrics: [
-      { label: 'Sales Cycle Velocity', value: '+35%' },
-      { label: 'Enterprise Uptime SLA', value: '99.9%' },
-      { label: 'AI Token Expense', value: '-60%' }
+      { label: 'AI Cost Savings', value: '60%' },
+      { label: 'Enterprise SLA', value: '99.99%' },
+      { label: 'API Webhook Speed', value: '<50ms' }
     ],
     chatDemo: {
-      userMsg: 'Need custom Enterprise SLA quote for 250 agent seats and dedicated VPC deployment',
-      aiTitle: 'WCRM B2B Enterprise Gateway',
-      aiReply: 'Enterprise Proposal & SOC-2 Security Compliance PDF sent! Assigned Key Account Manager: Vikrant Sharma 🏢',
-      telemetry: 'Deal Value: ₹25,00,000 · Account Executive Alerted'
+      userMsg: 'Requesting API documentation and enterprise custom SLA pricing for 100+ seats',
+      aiTitle: 'AIWCRM B2B Enterprise Gateway',
+      aiReply: 'Enterprise Deck & Security Whitepaper attached! Connect with an Enterprise Account Exec 🏢',
+      telemetry: 'Enterprise Lead Tagged · Assigned to Account Executive'
     },
     challenges: [
-      { problem: 'Unmonitored Executive Chats', desc: 'Key account conversations happen on personal phones without CRM visibility.' },
-      { problem: 'SLA Breach Vulnerability', desc: 'VIP enterprise clients wait hours for answers, risking high-value account churn.' },
-      { problem: 'High AI Model Markups', desc: 'Standard CRM vendors charge 3x-5x markups on enterprise AI tokens.' }
+      { problem: 'Exorbitant AI Vendor Markups', desc: 'SaaS vendors charge 30-50% markups on AI tokens, costing enterprises millions annually.' },
+      { problem: 'Lack of Role-Based Governance', desc: 'Large sales teams need strict RBAC to prevent unauthorized data exports and phone number leaks.' },
+      { problem: 'Siloed Key Account Data', desc: 'WhatsApp conversations with key accounts remain locked on individual employee phones.' }
     ],
     solutions: [
-      { feature: 'Centralized Executive Inbox', desc: 'All enterprise account conversations logged centrally with role-based permissions.' },
-      { feature: 'Strict SLA Telemetry Alerts', desc: 'Automated manager alerts if a VIP enterprise inquiry isn’t answered within 5 minutes.' },
-      { feature: 'Zero Token Markup (BYOK)', desc: 'Plug in enterprise OpenAI, Gemini, or Claude keys with 0% platform markup.' }
+      { feature: 'Zero-Markup BYOK Engine', desc: 'Plug your own OpenAI, Gemini, or Claude API keys to pay raw provider rates with 0% markup.' },
+      { feature: 'Enterprise RBAC & Audit Trail', desc: 'Enforce granular permissions, phone number masking, and SOC2 audit logging.' },
+      { feature: 'Central Key Account Inbox', desc: 'Unify all enterprise customer communication under one shared team dashboard.' }
     ],
     workflow: [
-      { step: '01', title: 'Enterprise Inbound', desc: 'VP or Director inquires via enterprise web portal.' },
-      { step: '02', title: 'AI Intent & Firmographics', desc: 'AI screens company size, seat count, and compliance needs.' },
-      { step: '03', title: 'Instant Proposal & NDA', desc: 'Sends custom enterprise proposal PDF and NDA form.' },
-      { step: '04', title: 'Key Account Manager Sync', desc: 'Live chat transferred seamlessly to dedicated Account Executive.' }
+      { step: '01', title: 'Key Account Inbound', desc: 'Enterprise client messages WhatsApp asking for support or quote.' },
+      { step: '02', title: 'BYOK AI Processing', desc: 'AI processes query using direct provider keys at 0% markup.' },
+      { step: '03', title: 'ERP Webhook Sync', desc: 'Queries SAP/Oracle database for key account order history.' },
+      { step: '04', title: 'Account Manager Escalation', desc: 'Seamlessly transfers high-priority deals to dedicated Account Exec.' }
     ],
     features: [
-      { title: 'BYOK Multi-Model Routing', desc: 'Use your own enterprise OpenAI, Gemini, or Claude API keys.', icon: Cpu },
-      { title: 'SLA Breach Telemetry', desc: 'Instant alerts for response time SLA breaches.', icon: Clock },
-      { title: 'SOC-2 & AES-256 Security', desc: 'Enterprise data compliance and encryption.', icon: ShieldCheck },
-      { title: 'Role-Based Team Permissions', desc: 'Granular access control for regional sales teams.', icon: Users }
+      { title: 'BYOK Model Vault', desc: 'Connect OpenAI, Gemini, Claude, Groq, and DeepSeek keys.', icon: Bot },
+      { title: 'Single-Tenant VPC Support', desc: 'Isolated VPC deployment for extreme enterprise security.', icon: Lock },
+      { title: 'Sub-50ms REST APIs', desc: 'High-speed webhooks for custom CRM and ERP integrations.', icon: Code2 },
+      { title: 'SOC2 & GDPR Compliant', desc: 'Full compliance with international data security standards.', icon: ShieldCheck }
     ],
     outcomes: [
-      { label: 'Sales Cycle Velocity', value: '+35%', detail: 'Faster closing on multi-million deals' },
-      { label: 'SLA Compliance', value: '99.9%', detail: 'Zero VIP client inquiry missed' },
-      { label: 'AI Cost Savings', value: '-60%', detail: 'Zero token markup with BYOK' },
-      { label: 'CRM Visibility', value: '100%', detail: 'All rep conversations logged in central CRM' }
+      { label: 'AI Cost Reduction', value: '60%', detail: 'Saved millions using BYOK direct provider rates' },
+      { label: 'System Uptime', value: '99.99%', detail: 'Guaranteed by self-healing auto-failover' },
+      { label: 'Response Speed', value: '<100ms', detail: 'Instant replies via 0-token greeting cache' },
+      { label: 'Security Audit Pass', value: '100%', detail: 'Passed strict SOC2 and enterprise pentests' }
     ],
     testimonial: {
-      quote: 'WCRM gave our B2B enterprise complete visibility over key account communication. The BYOK model allowed us to cut our monthly AI expenses by 60%.',
-      author: 'Nikhil Saxena',
-      role: 'Chief Revenue Officer',
-      company: 'TechMatrix Enterprise Solutions',
-      impact: '-60% AI Expenses with BYOK'
+      quote: 'AIWCRM gave our B2B enterprise complete visibility over key account communication. The BYOK model allowed us to cut our monthly AI expenses by 60%.',
+      author: 'Sanjay Kulkarni',
+      role: 'Chief Technology Officer',
+      company: 'Zenith Logistics & Supply Chain Ltd',
+      impact: '60% AI Expense Reduction'
     },
     faqs: [
-      { q: 'Can WCRM provide dedicated VPC deployment for enterprise security?', a: 'Yes! Enterprise plans support custom single-tenant VPC deployments and custom domain SSLs.' },
-      { q: 'Can we connect multiple WhatsApp Business API numbers under one enterprise account?', a: 'Yes, WCRM supports multi-number management for global enterprise divisions.' }
+      { q: 'Can AIWCRM provide dedicated VPC deployment for enterprise security?', a: 'Yes! Enterprise plans support custom single-tenant VPC deployments and custom domain SSLs.' },
+      { q: 'Can we connect multiple WhatsApp Business API numbers under one enterprise account?', a: 'Yes, AIWCRM supports multi-number management for global enterprise divisions.' }
     ]
   }
 };
 
-export function IndustrySolutionsClient() {
-  const [selectedId, setSelectedId] = useState<string>('manufacturing');
+export function IndustrySolutionsClient({ initialIndustry }: { initialIndustry?: string }) {
+  const defaultId = (initialIndustry && INDUSTRIES_DATA[initialIndustry.toLowerCase()]) ? initialIndustry.toLowerCase() : 'manufacturing';
+  const [selectedId, setSelectedId] = useState<string>(defaultId);
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
+
+  useEffect(() => {
+    if (initialIndustry && INDUSTRIES_DATA[initialIndustry.toLowerCase()]) {
+      setSelectedId(initialIndustry.toLowerCase());
+    }
+  }, [initialIndustry]);
 
   const current = INDUSTRIES_DATA[selectedId] || INDUSTRIES_DATA.manufacturing;
   const IconComponent = current.icon;
@@ -801,7 +753,7 @@ export function IndustrySolutionsClient() {
           </h1>
 
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto font-normal">
-            Discover how WCRM automates sales pipelines, customer support, and AI auto-replies across 12 high-growth industry verticals with zero AI token markup.
+            Discover how AIWCRM automates sales pipelines, customer support, and AI auto-replies across 12 high-growth industry verticals with zero AI token markup.
           </p>
         </div>
       </section>
@@ -901,7 +853,7 @@ export function IndustrySolutionsClient() {
                         W
                       </div>
                       <div>
-                        <p className="font-bold text-white text-xs">WCRM {current.name} AI</p>
+                        <p className="font-bold text-white text-xs">AIWCRM {current.name} AI</p>
                         <p className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
                           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" /> Online · Gemini 3.6
                         </p>
@@ -936,7 +888,7 @@ export function IndustrySolutionsClient() {
         </div>
       </section>
 
-      {/* 4. SPLIT-SCREEN: CHALLENGES VS. WCRM SOLUTIONS */}
+      {/* 4. SPLIT-SCREEN: CHALLENGES VS. AIWCRM SOLUTIONS */}
       <section className="py-24 bg-background border-t border-border/50">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-16">
           <div className="text-center max-w-3xl mx-auto space-y-3">
@@ -964,10 +916,10 @@ export function IndustrySolutionsClient() {
               </div>
             </div>
 
-            {/* Right: WCRM AI Solutions */}
+            {/* Right: AIWCRM AI Solutions */}
             <div className="p-8 rounded-3xl bg-emerald-500/5 border border-emerald-500/20 space-y-6">
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-                WCRM Intelligent Capability
+                AIWCRM Intelligent Capability
               </div>
               <div className="space-y-6">
                 {current.solutions.map((s, i) => (
@@ -1133,7 +1085,7 @@ export function IndustrySolutionsClient() {
             Ready to Automate {current.name} Sales & Support?
           </h2>
           <p className="text-base text-slate-400 max-w-2xl mx-auto">
-            Join hundreds of forward-thinking enterprises in {current.name} using WCRM to qualify leads, automate support, and drive high ROI on WhatsApp.
+            Join hundreds of forward-thinking enterprises in {current.name} using AIWCRM to qualify leads, automate support, and drive high ROI on WhatsApp.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">

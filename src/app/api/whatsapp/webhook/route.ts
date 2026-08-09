@@ -237,6 +237,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
 
+  // ─── Event Timestamp & DB-Level Idempotency Protection ───
+  const firstChange = body.entry?.[0]?.changes?.[0]?.value
+  const msgObj = firstChange?.messages?.[0]
+  const statusObj = (firstChange as any)?.statuses?.[0]
+  const eventId = msgObj?.id || statusObj?.id || (firstChange as any)?.id
+
+  // 1. Timestamp validation: reject stale events > 5 minutes old
+  const eventTimestamp = msgObj?.timestamp || statusObj?.timestamp
+  if (eventTimestamp) {
+    const eventTimeMs = parseInt(eventTimestamp, 10) * 1000
+    if (Date.now() - eventTimeMs > 5 * 60 * 1000) {
+      console.warn(`[webhook] Rejected stale event ${eventId} (older than 5 min)`)
+      return NextResponse.json({ status: 'stale event ignored' }, { status: 200 })
+    }
+  }
+
+  // 2. DB-Level Idempotency Protection (Reject duplicate message/status events)
+  if (eventId) {
+    const { error: dupeErr } = await supabaseAdmin()
+      .from('webhook_events')
+      .insert({ event_id: eventId, source: 'meta' })
+
+    if (dupeErr && dupeErr.code === '23505') { // Postgres unique_violation code
+      return NextResponse.json({ status: 'duplicate event, skipped' }, { status: 200 })
+    }
+  }
+
   // Await processing before returning the 200 OK so that serverless
   // environments (like Vercel) don't kill the function before it finishes.
   try {

@@ -20,7 +20,7 @@ export function BeforeAfterTransformationSection() {
   ];
 
   return (
-    <section className="py-24 bg-background border-t border-border/50 relative overflow-hidden">
+    <section className="py-12 sm:py-14 bg-card/30 border-y border-border/50 relative overflow-hidden">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-16">
         
         {/* Header */}

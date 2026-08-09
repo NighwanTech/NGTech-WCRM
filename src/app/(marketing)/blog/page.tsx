@@ -3,7 +3,7 @@ import { ArrowRight, Calendar, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = {
-  title: "Blog | NGTech WCRM",
+  title: "Blog | AIWCRM",
   description: "Insights, guides, and best practices for WhatsApp marketing, sales automation, and customer support.",
 }
 

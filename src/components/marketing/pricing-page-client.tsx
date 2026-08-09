@@ -74,13 +74,14 @@ export function PricingPageClient({
   // Extra Conversations math
   const includedMsgs = parseInt(String(currentSelectedPlan?.max_conversations || 5000).replace(/\D/g, '')) || 5000;
   const extraMessagesCount = Math.max(0, cartMessages - includedMsgs);
-  const extraMessagesCost = Math.round((extraMessagesCount / 1000) * 1.5);
+  const extraMessagesCost = Math.round(extraMessagesCount * 1.5);
 
   const addonPrices: Record<string, number> = {
     voice_ai: 2999,
     byok_vault: 1499,
     greeting_cache: 999,
     meta_setup: 4999,
+    meta_ads: 1999,
   };
 
   const totalAddonsCost = cartAddons.reduce((sum, key) => sum + (addonPrices[key] || 0), 0);
@@ -507,7 +508,7 @@ export function PricingPageClient({
                   className="w-full accent-emerald-500 cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
-                  <span>5,000 (₹1.5 / 1k extra msgs)</span>
+                  <span>5,000 (₹1.5 / extra msg)</span>
                   <span>100,000</span>
                   <span>250,000+</span>
                 </div>
@@ -518,9 +519,10 @@ export function PricingPageClient({
                 <label className="text-xs font-bold text-foreground font-mono uppercase">4. Optional Enterprise Services & Add-Ons</label>
                 <div className="space-y-2">
                   {[
-                    { key: 'voice_ai', name: '🎙️ Retell Voice AI Call Agent Extension', price: '+₹2,999/mo', desc: 'Phone call automation & audio transcripts' },
+                    { key: 'voice_ai', name: '🎙️ Voice AI Call Agent (Retell or ElevenLabs)', price: '+₹2,999/mo', desc: 'Multi-provider calling · Hindi voices · CRM intelligence sync' },
                     { key: 'byok_vault', name: '🤖 BYOK Multi-LLM Router Vault', price: '+₹1,499/mo', desc: 'Direct 0% token markup API key routing' },
                     { key: 'greeting_cache', name: '⚡ 0-Token Instant Reply Cache', price: '+₹999/mo', desc: '<100ms instant greeting auto-responder' },
+                    { key: 'meta_ads', name: '🎯 AI Meta Ads', price: '+₹1,999/mo', desc: 'Generate & sync Meta ads with AI' },
                     { key: 'meta_setup', name: '🚀 Dedicated Meta Account Setup', price: '+₹4,999 one-time', desc: 'White-glove Meta green tick onboarding' },
                   ].map((addon) => {
                     const isChecked = cartAddons.includes(addon.key);
@@ -616,7 +618,7 @@ export function PricingPageClient({
 
               {/* Direct Checkout Button */}
               <Link
-                href={`/checkout?plan=${currentSelectedPlan.slug || 'starter'}&billing=${isAnnual ? 'annual' : 'monthly'}&seats=${cartSeats}&price=${cartFinalTotal}`}
+                href={`/checkout?plan=${currentSelectedPlan.slug || 'starter'}&billing=${isAnnual ? 'annual' : 'monthly'}&seats=${cartSeats}&price=${cartFinalTotal}&addons=${cartAddons.join(',')}`}
                 className="w-full flex h-14 items-center justify-center rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm transition-all shadow-xl shadow-emerald-500/25 gap-2"
               >
                 Proceed to Instant Checkout →
@@ -768,7 +770,7 @@ export function PricingPageClient({
                   { feature: 'BYOK Multi-LLM AI Routing (0% Markup)', starter: false, growth: true, enterprise: true, tag: 'AI ROUTER' },
                   { feature: 'Visual Kanban Deals Pipeline', starter: false, growth: true, enterprise: true, tag: 'SALES CRM' },
                   { feature: 'No-Code Workflow Builder', starter: false, growth: true, enterprise: true, tag: 'AUTOMATION' },
-                  { feature: 'Retell Voice AI Phone Calls & Transcripts', starter: false, growth: true, enterprise: true, tag: 'VOICE AI' },
+                  { feature: 'Multi-Provider Voice AI (Retell + ElevenLabs)', starter: false, growth: true, enterprise: true, tag: 'VOICE AI' },
                   { feature: '0-Token Instant Reply Greeting Cache', starter: true, growth: true, enterprise: true, tag: 'SPEED' },
                   { feature: 'Sub-1s Self-Healing Auto Failover', starter: false, growth: true, enterprise: true, tag: 'SECURITY' },
                   { feature: 'Developer REST APIs & Sub-50ms Webhooks', starter: false, growth: true, enterprise: true, tag: 'DEV SUITE' },

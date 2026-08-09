@@ -62,7 +62,8 @@ export default function SuperAdminPricingPage() {
     byok_vault_price: 1499,
     greeting_cache_price: 999,
     meta_setup_price: 4999,
-    features_input: 'Meta Cloud API\nMulti-Agent Inbox\nGemini 3.6 AI\n0-Token Greeting Cache'
+    meta_ads_price: 1999,
+    features_input: 'Meta Cloud API\nMulti-Agent Inbox\nGemini 3.6 AI\n0-Token Greeting Cache\nMulti-Provider Voice AI (Retell + ElevenLabs)'
   });
 
   useEffect(() => {
@@ -177,6 +178,7 @@ export default function SuperAdminPricingPage() {
               byok_vault_price: 1499,
               greeting_cache_price: 999,
               meta_setup_price: 4999,
+              meta_ads_price: 1999,
               features_input: 'Official Meta Cloud API\nMulti-Agent Inbox\nBYOK AI Router\nKanban Deals Pipeline'
             });
             setShowAddPlanModal(true);
@@ -277,6 +279,7 @@ export default function SuperAdminPricingPage() {
                           byok_vault_price: plan.byok_vault_price || 1499,
                           greeting_cache_price: plan.greeting_cache_price || 999,
                           meta_setup_price: plan.meta_setup_price || 4999,
+                          meta_ads_price: plan.meta_ads_price || 1999,
                           features_input: (plan.features_list || [
                             'Official Meta WhatsApp Cloud API',
                             'Multi-Agent Shared Inbox',
@@ -495,8 +498,9 @@ export default function SuperAdminPricingPage() {
                 </Label>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-[11px] text-muted-foreground">🎙️ Retell Voice AI Call Agent (₹/mo)</Label>
+                    <Label className="text-[11px] text-muted-foreground">🎙️ Voice AI Call Agent — Retell or ElevenLabs (₹/mo)</Label>
                     <Input type="number" value={planForm.voice_ai_price || 2999} onChange={e => setPlanForm({ ...planForm, voice_ai_price: Number(e.target.value) })} />
+                    <p className="text-[9px] text-muted-foreground font-mono">Multi-provider: Retell AI · ElevenLabs · Hindi voices · CRM intelligence sync</p>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-[11px] text-muted-foreground">🤖 BYOK Multi-LLM Vault (₹/mo)</Label>
@@ -507,6 +511,10 @@ export default function SuperAdminPricingPage() {
                     <Input type="number" value={planForm.greeting_cache_price || 999} onChange={e => setPlanForm({ ...planForm, greeting_cache_price: Number(e.target.value) })} />
                   </div>
                   <div className="space-y-1">
+                    <Label className="text-[11px] text-muted-foreground">🎯 AI Meta Ads (₹/mo)</Label>
+                    <Input type="number" value={planForm.meta_ads_price || 1999} onChange={e => setPlanForm({ ...planForm, meta_ads_price: Number(e.target.value) })} />
+                  </div>
+                  <div className="space-y-1 col-span-2">
                     <Label className="text-[11px] text-muted-foreground">🚀 Dedicated Meta Account Setup (₹ one-time)</Label>
                     <Input type="number" value={planForm.meta_setup_price || 4999} onChange={e => setPlanForm({ ...planForm, meta_setup_price: Number(e.target.value) })} />
                   </div>

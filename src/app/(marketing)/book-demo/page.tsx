@@ -4,8 +4,8 @@ import { CheckCircle2, ShieldCheck, Zap, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Book a Demo | NGTech WCRM',
-  description: 'Schedule a personalized demo of NGTech WCRM and see how we can automate your WhatsApp marketing and sales pipelines.',
+  title: 'Book a Demo | AIWCRM',
+  description: 'Schedule a personalized demo of AIWCRM and see how we can automate your WhatsApp marketing and sales pipelines.',
 }
 
 export default function BookDemoPage() {
@@ -18,7 +18,7 @@ export default function BookDemoPage() {
           {/* Left Column - Copy & Value Prop */}
           <div className="flex flex-col justify-center">
             <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground mb-6">
-              See NGTech WCRM in Action
+              See AIWCRM in Action
             </h1>
             <p className="text-lg text-muted-foreground mb-10">
               Discover how India's leading WhatsApp CRM can help you automate support, launch broadcast campaigns, and close more deals directly on WhatsApp.

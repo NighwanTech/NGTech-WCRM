@@ -37,13 +37,6 @@ import { TestimonialCarousel, type Testimonial } from '@/components/marketing/te
 import { createClient } from '@/lib/supabase/server';
 
 export const CITY_DATA: Record<string, { name: string; state: string; headline: string; description: string; highlights: string[] }> = {
-  patna: {
-    name: 'Patna',
-    state: 'Bihar',
-    headline: '#1 AI WhatsApp CRM & API Provider in Patna, Bihar',
-    description: 'Empower your Patna education institutes, Coaching centers, Real Estate, and Retail businesses with Meta-approved WhatsApp API, AI Chatbots, and Multi-Agent Shared Inbox.',
-    highlights: ['Trusted by leading Patna institutions and BPTPIA members', 'Instant setup with Multi-Model AI (Gemini 3.6 & BYOK)', 'Dedicated local support in Bihar'],
-  },
   delhi: {
     name: 'Delhi NCR',
     state: 'Delhi',
@@ -72,26 +65,12 @@ export const CITY_DATA: Record<string, { name: string; state: string; headline: 
     description: 'Transform customer engagement in Hyderabad with WhatsApp green-tick API, AI chatbots, and automated broadcast campaigns.',
     highlights: ['Ideal for Hyderabad education, healthcare, and IT firms', '24/7 AI auto-responder with custom knowledge base', 'High deliverability bulk WhatsApp broadcasts'],
   },
-  chennai: {
-    name: 'Chennai',
-    state: 'Tamil Nadu',
-    headline: 'Leading WhatsApp CRM & Automation Platform in Chennai',
-    description: 'Scale sales and support in Chennai with official WhatsApp Cloud API, AI agents, and Kanban deal pipelines.',
-    highlights: ['Popular among Chennai healthcare, manufacturing, and retail', 'Multi-agent inbox with automatic department routing', 'BYOK support with 0% token markup'],
-  },
   pune: {
     name: 'Pune',
     state: 'Maharashtra',
     headline: 'WhatsApp Business API & CRM Software in Pune',
     description: 'Grow your Pune business with seamless WhatsApp lead management, multi-agent chat assignment, and automated drip sequences.',
     highlights: ['Fast onboarding for Pune manufacturing and educational institutes', 'INR ₹ billing with transparent token usage', 'No-code flow builder for custom chat funnels'],
-  },
-  kolkata: {
-    name: 'Kolkata',
-    state: 'West Bengal',
-    headline: 'Best WhatsApp CRM & Chatbot Software in Kolkata',
-    description: 'Automate sales and customer support in Kolkata with Meta-approved WhatsApp API and AI auto-responders.',
-    highlights: ['Ideal for Kolkata retail, education, and hospitality', 'Zero token greeting cache for instant replies', 'Multi-agent team inbox & deal tracking'],
   },
   ahmedabad: {
     name: 'Ahmedabad',
@@ -113,6 +92,125 @@ export const CITY_DATA: Record<string, { name: string; state: string; headline: 
     headline: '#1 WhatsApp CRM Platform in Chandigarh & Mohali',
     description: 'Streamline customer support for Chandigarh and Mohali businesses with official WhatsApp API, AI lead scoring, and team inbox.',
     highlights: ['Local North India support team based in Mohali/Chandigarh', 'Automated appointment booking & lead followup', 'Meta green tick verification assistance'],
+  },
+  chennai: {
+    name: 'Chennai',
+    state: 'Tamil Nadu',
+    headline: 'Leading WhatsApp CRM & Automation Platform in Chennai',
+    description: 'Scale sales and support in Chennai with official WhatsApp Cloud API, AI agents, and Kanban deal pipelines.',
+    highlights: ['Popular among Chennai healthcare, manufacturing, and retail', 'Multi-agent inbox with automatic department routing', 'BYOK support with 0% token markup'],
+  },
+  kolkata: {
+    name: 'Kolkata',
+    state: 'West Bengal',
+    headline: 'Best WhatsApp CRM & Chatbot Software in Kolkata',
+    description: 'Automate sales and customer support in Kolkata with Meta-approved WhatsApp API and AI auto-responders.',
+    highlights: ['Ideal for Kolkata retail, education, and hospitality', 'Zero token greeting cache for instant replies', 'Multi-agent team inbox & deal tracking'],
+  },
+  surat: {
+    name: 'Surat',
+    state: 'Gujarat',
+    headline: 'Top WhatsApp CRM & Marketing Software in Surat',
+    description: 'Empower Surat textile, diamond, and trading enterprises with automated WhatsApp broadcasts, AI auto-replies, and sales pipelines.',
+    highlights: ['Tailored for Surat textile traders and diamond merchants', 'Bulk broadcast scheduling with high deliverability', '24/7 multi-lingual AI customer auto-replies'],
+  },
+  lucknow: {
+    name: 'Lucknow',
+    state: 'Uttar Pradesh',
+    headline: '#1 WhatsApp CRM & API Provider in Lucknow',
+    description: 'Boost customer engagement and sales for Lucknow retail, education, and real estate businesses with Meta-approved WhatsApp API.',
+    highlights: ['Trusted by leading Lucknow retail and education brands', 'Instant setup with automated lead assignment', 'Local North India support team'],
+  },
+  patna: {
+    name: 'Patna',
+    state: 'Bihar',
+    headline: '#1 AI WhatsApp CRM & API Provider in Patna, Bihar',
+    description: 'Empower your Patna education institutes, Coaching centers, Real Estate, and Retail businesses with Meta-approved WhatsApp API, AI Chatbots, and Multi-Agent Shared Inbox.',
+    highlights: ['Trusted by leading Patna institutions and BPTPIA members', 'Instant setup with Multi-Model AI (Gemini 3.6 & BYOK)', 'Dedicated local support in Bihar'],
+  },
+  ranchi: {
+    name: 'Ranchi',
+    state: 'Jharkhand',
+    headline: 'Best WhatsApp CRM & API Software in Ranchi',
+    description: 'Scale your Ranchi business with official WhatsApp Business API, multi-agent chat management, and automated sales workflows.',
+    highlights: ['Designed for Ranchi education institutes & real estate', 'Multi-agent shared team inbox', 'Meta green-tick badge verification assistance'],
+  },
+  gaya: {
+    name: 'Gaya Ji',
+    state: 'Bihar',
+    headline: 'Leading WhatsApp CRM & Automation Software in Gaya Ji',
+    description: 'Transform customer support and bookings in Gaya Ji with automated WhatsApp AI agents and high-delivery marketing broadcasts.',
+    highlights: ['Built for Gaya Ji hospitality, tourism, & local retail', '24/7 AI auto-responder for instant inquiries', 'Easy setup with 0% AI token markup (BYOK)'],
+  },
+  muzaffarpur: {
+    name: 'Muzaffarpur',
+    state: 'Bihar',
+    headline: 'Top WhatsApp CRM & Broadcast Software in Muzaffarpur',
+    description: 'Streamline customer inquiries and marketing broadcasts for Muzaffarpur trading and agricultural businesses.',
+    highlights: ['Ideal for Muzaffarpur trading, retail, and education', 'High-volume WhatsApp broadcasting', 'Dedicated support for Bihar enterprises'],
+  },
+  bhagalpur: {
+    name: 'Bhagalpur',
+    state: 'Bihar',
+    headline: '#1 WhatsApp CRM & Marketing Software in Bhagalpur',
+    description: 'Grow your Bhagalpur silk, textile, and retail enterprise with Meta-approved WhatsApp API and automated customer pipelines.',
+    highlights: ['Tailored for Bhagalpur textile manufacturers and retail', 'Automated lead capture & follow-up sequences', 'Multi-agent shared inbox'],
+  },
+  dhanbad: {
+    name: 'Dhanbad',
+    state: 'Jharkhand',
+    headline: 'Best WhatsApp Business API & CRM Provider in Dhanbad',
+    description: 'Automate sales leads and customer support for Dhanbad industrial, mining, and commercial businesses with WhatsApp CRM.',
+    highlights: ['Built for Dhanbad commercial and industrial vendors', 'Kanban deal pipelines & lead scoring', '99.9% uptime SLA'],
+  },
+  jamshedpur: {
+    name: 'Jamshedpur',
+    state: 'Jharkhand',
+    headline: 'Leading WhatsApp CRM & Chatbot Software in Jamshedpur',
+    description: 'Empower Jamshedpur manufacturing, automotive, and retail businesses with official WhatsApp API and AI auto-replies.',
+    highlights: ['Trusted by Jamshedpur industrial & service businesses', 'Seamless REST API & webhook integrations', 'INR ₹ transparent billing'],
+  },
+  indore: {
+    name: 'Indore',
+    state: 'Madhya Pradesh',
+    headline: '#1 WhatsApp CRM & Automation Platform in Indore',
+    description: 'Scale sales and customer support for Indore startups, D2C brands, and commercial hubs with official Meta WhatsApp API.',
+    highlights: ['Popular among Indore startups and D2C brands', 'AI lead scoring & auto-routing', 'Instant Meta API setup in under 10 minutes'],
+  },
+  bhopal: {
+    name: 'Bhopal',
+    state: 'Madhya Pradesh',
+    headline: 'Top WhatsApp CRM & API Software in Bhopal',
+    description: 'Transform customer communications for Bhopal educational institutions, coaching hubs, and retail stores with WCRM.',
+    highlights: ['Ideal for Bhopal education institutes & healthcare', '24/7 AI chatbot auto-responses', 'Multi-agent team management'],
+  },
+  nagpur: {
+    name: 'Nagpur',
+    state: 'Maharashtra',
+    headline: 'Best WhatsApp Business API & CRM Software in Nagpur',
+    description: 'Boost growth for Nagpur logistics, retail, and manufacturing sectors with automated WhatsApp broadcasts and AI workflows.',
+    highlights: ['Designed for Nagpur logistics, trade, and retail', 'Bulk broadcast scheduling with analytics', 'Meta green tick badge support'],
+  },
+  varanasi: {
+    name: 'Varanasi',
+    state: 'Uttar Pradesh',
+    headline: 'Leading WhatsApp CRM & Automation Software in Varanasi',
+    description: 'Empower Varanasi tourism, handicraft, silk, and retail businesses with WhatsApp Business API and AI customer support.',
+    highlights: ['Tailored for Varanasi silk weavers, tourism, & retail', 'Multi-lingual AI auto-replies (Hindi & English)', 'Zero token greeting cache'],
+  },
+  dehradun: {
+    name: 'Dehradun',
+    state: 'Uttarakhand',
+    headline: '#1 WhatsApp CRM & API Provider in Dehradun',
+    description: 'Streamline admissions, bookings, and support for Dehradun boarding schools, colleges, and tourism businesses with WhatsApp CRM.',
+    highlights: ['Perfect for Dehradun educational institutes & resorts', 'Automated appointment & inquiry handling', 'Dedicated onboarding support'],
+  },
+  raipur: {
+    name: 'Raipur',
+    state: 'Chhattisgarh',
+    headline: 'Top WhatsApp CRM & Automation Software in Raipur',
+    description: 'Scale customer sales and team coordination for Raipur industrial, steel, and retail enterprises with official Meta WhatsApp API.',
+    highlights: ['Built for Chhattisgarh industrial and retail brands', 'Kanban CRM pipeline & lead tracking', 'BYOK multi-model AI integration'],
   },
 };
 
@@ -214,24 +312,57 @@ export default async function CityLandingPage({ params }: { params: Promise<{ ci
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-emerald-500/30">
       
-      {/* City LocalBusiness & Software Schema */}
+      {/* Rich Snippets Schema (LocalBusiness, SoftwareApplication, FAQPage) */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'LocalBusiness',
-            name: `WCRM - WhatsApp CRM ${data.name}`,
-            description: data.description,
-            url: `https://wacrm.in/whatsapp-crm/${cityKey}`,
-            address: {
-              '@type': 'PostalAddress',
-              addressLocality: data.name,
-              addressRegion: data.state,
-              addressCountry: 'IN',
+          __html: JSON.stringify([
+            {
+              '@context': 'https://schema.org',
+              '@type': 'LocalBusiness',
+              name: `WCRM - WhatsApp CRM ${data.name}`,
+              description: data.description,
+              url: `https://wacrm.in/whatsapp-crm/${cityKey}`,
+              address: {
+                '@type': 'PostalAddress',
+                addressLocality: data.name,
+                addressRegion: data.state,
+                addressCountry: 'IN',
+              },
+              areaServed: data.name,
+              priceRange: '₹₹',
             },
-            areaServed: data.name,
-          }),
+            {
+              '@context': 'https://schema.org',
+              '@type': 'SoftwareApplication',
+              name: `WCRM WhatsApp Business API - ${data.name}`,
+              operatingSystem: 'Web, iOS, Android',
+              applicationCategory: 'BusinessApplication',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'INR',
+                description: '7-Day Free Trial',
+              },
+              aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: '4.9',
+                ratingCount: '520',
+              },
+            },
+            {
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: cityFaqs.map((faq) => ({
+                '@type': 'Question',
+                name: faq.q,
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: faq.a,
+                },
+              })),
+            },
+          ]),
         }}
       />
 

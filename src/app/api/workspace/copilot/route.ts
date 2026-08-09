@@ -40,7 +40,7 @@ export async function POST(req: Request) {
 
         const { text: aiGeneratedText } = await generateText({
           model: groq('llama-3.1-8b-instant'),
-          prompt: `You are WCRM AI Saathi, the official smart assistant for NGTech WCRM.
+          prompt: `You are WCRM AI Saathi, the official smart assistant for AIWCRM.
 User asked: "${query}"
 
 Knowledge Base Context:
@@ -224,10 +224,10 @@ Strict Instructions:
       try {
         const { text: aiGeneratedText } = await generateText({
           model: groq('llama-3.1-8b-instant'),
-          prompt: `You are WCRM AI Saathi, the official smart assistant for NGTech WCRM.
-User Query: "${query}"
-
-Explain how to use or navigate this in NGTech WCRM in a friendly, 2-3 sentence response.`,
+          prompt: `You are WCRM AI Saathi, the official smart assistant for AIWCRM.
+You are embedded in the user's dashboard (pathname: ${reqBody.pathname}).
+The user is asking a question about a specific page or feature.
+Explain how to use or navigate this in AIWCRM in a friendly, 2-3 sentence response.`,
         })
 
         responseText = aiGeneratedText ? aiGeneratedText.trim() : `I can help you navigate and master any feature in WCRM!`

@@ -15,7 +15,9 @@ import { HumanHandoffCard } from '@/components/ai-assistant/HumanHandoffCard'
 import { BusinessHoursCard } from '@/components/ai-assistant/BusinessHoursCard'
 import { TestingPlayground } from '@/components/ai-assistant/TestingPlayground'
 import { AnalyticsDashboard } from '@/components/ai-assistant/AnalyticsDashboard'
+import { VisualMediaAISettingsCard } from '@/components/ai-assistant/VisualMediaAISettingsCard'
 import { toast } from 'sonner'
+import { Image as ImageIcon } from 'lucide-react'
 
 function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T {
   let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -33,6 +35,7 @@ const TABS = [
   { id: 'rules', label: 'AI Rules', icon: ShieldAlert },
   { id: 'handoff', label: 'Human Handoff', icon: Users },
   { id: 'hours', label: 'Business Hours', icon: Clock },
+  { id: 'media', label: 'Visual & Media AI', icon: ImageIcon },
   { id: 'testing', label: 'Playground', icon: TestTube2 },
   { id: 'analytics', label: 'Analytics', icon: LineChart },
 ]
@@ -124,6 +127,7 @@ export default function AIAssistantPage() {
       case 'rules': return <AIRulesCard config={config || {}} onChange={handleConfigChange} />
       case 'handoff': return <HumanHandoffCard config={config || {}} onChange={handleConfigChange} />
       case 'hours': return <BusinessHoursCard config={config || {}} onChange={handleConfigChange} />
+      case 'media': return <VisualMediaAISettingsCard config={config || {}} onChange={handleConfigChange} />
       case 'testing': return <TestingPlayground config={config || {}} />
       case 'analytics': return <AnalyticsDashboard />
       default: return null

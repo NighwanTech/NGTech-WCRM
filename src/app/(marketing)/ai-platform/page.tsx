@@ -5,8 +5,27 @@ import { EnterpriseAiEngineSection } from '@/components/marketing/enterprise-ai-
 import { AiFailoverVisualSection } from '@/components/marketing/ai-failover-visual';
 
 export const metadata = {
-  title: "Multi-Model AI Platform & Auto-Failover Engine | WCRM",
-  description: "Deploy Gemini 3.6, OpenAI, Claude, Groq & DeepSeek with Bring Your Own Key (BYOK) pricing, zero downtime auto-failover, and 0-token greeting cache.",
+  title: "Multi-Model AI Platform, Meta Ads Engine & Auto-Failover | AIWCRM",
+  description: "Deploy Gemini 3.6, OpenAI, Claude, Groq & DeepSeek with BYOK pricing, zero downtime auto-failover, AI Meta Ads Creation, and 0-token greeting cache. India's most advanced WhatsApp AI platform.",
+  keywords: [
+    "AIWCRM AI Platform",
+    "AI Meta Ads WhatsApp",
+    "Multi-Model AI Router",
+    "BYOK AI WhatsApp CRM",
+    "AI Auto-Failover WhatsApp",
+    "Gemini 3.6 WhatsApp Integration",
+    "Zero Token Greeting Cache",
+    "Enterprise AI WhatsApp India",
+    "LLM AI Optimization AIO"
+  ],
+  openGraph: {
+    title: "Multi-Model AI Platform, Meta Ads Engine & Auto-Failover | AIWCRM",
+    description: "AI Meta Ads Creation, BYOK Multi-LLM AI with auto-failover and 0-token greeting cache. India's leading AI WhatsApp CRM.",
+    url: 'https://www.aiwcrm.com/ai-platform',
+    siteName: 'AIWCRM',
+    locale: 'en_IN',
+    type: 'website',
+  },
 };
 
 export default function AiPlatformPage() {

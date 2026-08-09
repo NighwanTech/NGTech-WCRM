@@ -17,9 +17,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
 export const metadata: Metadata = {
-  title: 'Contact Us | NGTech WCRM',
+  title: 'Contact Us | AIWCRM',
   description:
-    'Get in touch with NGTech WCRM & Nighwan Technology. Speak with our experts or connect on WhatsApp for instant 10-minute setup support.',
+    'Get in touch with AIWCRM & Nighwan Technology. Speak with our experts or connect on WhatsApp for instant 10-minute setup support.',
 }
 
 export default function ContactPage() {
@@ -35,7 +35,7 @@ export default function ContactPage() {
             Get in <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">Touch</span>
           </h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Have questions about NGTech WCRM or need help setting up your team? Connect with our dedicated sales and support team.
+            Have questions about AIWCRM or need help setting up your team? Connect with our dedicated sales and support team.
           </p>
         </div>
 

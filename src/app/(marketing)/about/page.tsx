@@ -21,9 +21,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
 export const metadata: Metadata = {
-  title: 'About Us | Nighwan Technology & NGTech WCRM',
+  title: 'About Us | Nighwan Technology & AIWCRM',
   description:
-    'Learn about NGTech WCRM, built by Nighwan Technology Pvt. Ltd. — pioneers in AI automation, Industry 4.0, and Meta-approved WhatsApp Business API solutions.',
+    'Learn about AIWCRM, built by Nighwan Technology Pvt. Ltd. — pioneers in AI automation, Industry 4.0, and Meta-approved WhatsApp Business API solutions.',
 }
 
 export default function AboutPage() {
@@ -42,7 +42,7 @@ export default function AboutPage() {
             </h1>
 
             <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed font-normal">
-              NGTech WCRM is engineered by <strong className="text-foreground">Nighwan Technology</strong> — bridging the gap between operational strategy and intelligent WhatsApp automation for MSMEs and global enterprises.
+              AIWCRM is engineered by <strong className="text-foreground">Nighwan Technology</strong> — bridging the gap between operational strategy and intelligent WhatsApp automation for MSMEs and global enterprises.
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
@@ -119,7 +119,7 @@ export default function AboutPage() {
                 Founded on <strong className="text-foreground">25th September 2020</strong>, Nighwan Technology Pvt. Ltd. operates at the intersection of enterprise software, Industry 4.0, and artificial intelligence.
               </p>
               <p className="text-base text-muted-foreground leading-relaxed">
-                We observed that millions of Indian MSMEs and fast-growing businesses struggled to manage customer communications across fragmented tools. To solve this, we created <strong className="text-emerald-500">NGTech WCRM</strong> — an all-in-one Meta-approved WhatsApp CRM platform that turns messaging into automated sales pipelines.
+                We observed that millions of Indian MSMEs and fast-growing businesses struggled to manage customer communications across fragmented tools. To solve this, we created <strong className="text-emerald-500">AIWCRM</strong> — an all-in-one Meta-approved WhatsApp CRM platform that turns messaging into automated sales pipelines.
               </p>
 
               <div className="pt-2 grid grid-cols-2 gap-4">
@@ -191,7 +191,7 @@ export default function AboutPage() {
               <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 w-fit">
                 <MessageSquare className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-bold text-foreground">NGTech WCRM</h3>
+              <h3 className="text-lg font-bold text-foreground">AIWCRM</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Multi-agent shared inbox, automated broadcasts, and AI lead scoring for WhatsApp.
               </p>

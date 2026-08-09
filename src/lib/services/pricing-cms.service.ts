@@ -132,7 +132,7 @@ export const FALLBACK_PRICING_PLANS: PricingPlan[] = [
       'Bring Your Own Key (BYOK) - 0% Markup',
       'Visual Kanban Deals Pipeline',
       'No-Code Workflow Automation Builder',
-      'Retell Voice AI Integration & Call Sync',
+      'Multi-Provider Voice AI (Retell + ElevenLabs) & Call Sync',
       'AI Lead Sentiment & Intent Scoring (HOT 🔥)',
       'Google Sheets 2-Way Real-Time Sync',
       'Priority WhatsApp Support & Setup Guide'
@@ -183,7 +183,7 @@ export const FALLBACK_PRICING_FAQS: PricingFaq[] = [
   {
     id: 'faq_1',
     question: 'Are there any hidden platform markups on Meta WhatsApp messages?',
-    answer: 'No! Unlike traditional providers who add 30-50% markups on messaging costs, WCRM passes Meta Cloud API messaging rates directly to you with zero added markups.',
+    answer: 'No! Unlike traditional providers who add 30-50% markups on messaging costs, AIWCRM passes Meta Cloud API messaging rates directly to you with zero added markups.',
     category: 'Billing & Meta Pricing',
     sort_order: 1,
     is_active: true
@@ -191,7 +191,7 @@ export const FALLBACK_PRICING_FAQS: PricingFaq[] = [
   {
     id: 'faq_2',
     question: 'How does Bring Your Own Key (BYOK) work for AI models?',
-    answer: 'BYOK allows you to plug your own OpenAI, Gemini, Groq, or Claude API keys directly into WCRM. You pay the AI providers directly at their raw rates, saving up to 60% compared to standard CRM vendors.',
+    answer: 'BYOK allows you to plug your own OpenAI, Gemini, Groq, or Claude API keys directly into AIWCRM. You pay the AI providers directly at their raw rates, saving up to 60% compared to standard CRM vendors.',
     category: 'AI Platform',
     sort_order: 2,
     is_active: true
@@ -199,7 +199,7 @@ export const FALLBACK_PRICING_FAQS: PricingFaq[] = [
   {
     id: 'faq_3',
     question: 'What happens when primary AI model experiences an API rate limit (429 error)?',
-    answer: 'WCRM features a self-healing Auto-Failover Engine. If your primary model hits a rate limit or timeout, WCRM automatically routes the message to your backup model (e.g. Groq Llama 3.3 or DeepSeek) in <1 second.',
+    answer: 'AIWCRM features a self-healing Auto-Failover Engine. If your primary model hits a rate limit or timeout, AIWCRM automatically routes the message to your backup model (e.g. Groq Llama 3.3 or DeepSeek) in <1 second.',
     category: 'AI Platform',
     sort_order: 3,
     is_active: true

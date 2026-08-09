@@ -64,6 +64,21 @@ const SECURITY_HEADERS = [
 ] as const;
 
 const nextConfig: NextConfig = {
+  // Compress assets using Gzip / Brotli
+  compress: true,
+  // Enable modern compiler optimizations (remove console logs in production)
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
+  // Tree-shake lucide-react and heavy icon/ui packages to eliminate unused bundle JavaScript
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "@base-ui/react",
+      "date-fns",
+      "recharts",
+    ],
+  },
   /**
    * Cache-Control policy.
    *
@@ -136,6 +151,14 @@ const nextConfig: NextConfig = {
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
   },
 };
 

@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getLocale } from 'next-intl/server';
 import Script from 'next/script';
 import { ThemedToaster } from "@/components/themed-toaster";
+import { SimulationProvider } from "@/components/security/simulation-provider";
 import {
   DEFAULT_MODE,
   DEFAULT_THEME,
@@ -18,6 +19,8 @@ import {
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -26,22 +29,25 @@ export const metadata: Metadata = {
     default: "AiWCRM | Enterprise WhatsApp CRM Platform & API",
     template: "%s — AiWCRM",
   },
-  description: "Meta-Approved WhatsApp CRM software by NG Technology Pvt. Ltd. Shared multi-agent inbox, AI chatbots, bulk broadcast campaigns, and automated sales pipelines.",
+  description: "Meta-Approved WhatsApp CRM software by Nighwan Technology Pvt. Ltd. Shared multi-agent inbox, AI chatbots, bulk broadcast campaigns, and automated sales pipelines.",
   keywords: [
+    "AIWCRM",
     "WhatsApp CRM India",
     "WhatsApp Business API Provider",
     "WhatsApp Shared Inbox Software",
     "WhatsApp Automation Platform",
-    "WhatsApp Bulk Message Sender",
-    "WhatsApp AI Chatbot India",
+    "AI WhatsApp Chatbot",
+    "AI Meta Ads Creation",
     "Meta Approved WhatsApp API Partner",
-    "WhatsApp CRM for Small Business",
-    "WhatsApp Marketing Software",
-    "AiWCRM"
+    "Enterprise RBAC WhatsApp",
+    "WhatsApp Security & Governance",
+    "Geo-Targeted WhatsApp Marketing",
+    "LLM Search Optimization (AIO)",
+    "AI-Powered WhatsApp Ads"
   ],
-  authors: [{ name: "NG Technology Pvt. Ltd.", url: "https://www.aiwcrm.com" }],
-  creator: "NG Technology Pvt. Ltd.",
-  publisher: "NG Technology Pvt. Ltd.",
+  authors: [{ name: "Nighwan Technology Pvt. Ltd.", url: "https://www.aiwcrm.com" }],
+  creator: "Nighwan Technology Pvt. Ltd.",
+  publisher: "Nighwan Technology Pvt. Ltd.",
   alternates: {
     canonical: "https://www.aiwcrm.com",
   },
@@ -58,7 +64,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [{ url: "/favicon.ico" }],
-    apple: [{ url: "/logo.png" }],
+    apple: [{ url: "/logo.svg" }],
   },
   formatDetection: {
     email: false,
@@ -74,10 +80,10 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://www.aiwcrm.com/logo.png",
-        width: 1254,
-        height: 1254,
-        alt: "AiWCRM Logo",
+        url: "https://www.aiwcrm.com/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "AiWCRM Platform Banner",
       },
     ],
   },
@@ -85,7 +91,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "AiWCRM | WhatsApp CRM Platform",
     description: "Meta-Approved WhatsApp CRM, Shared Inbox & AI Automation.",
-    images: ["https://www.aiwcrm.com/logo.png"],
+    images: ["https://www.aiwcrm.com/og-image.png"],
   },
 };
 
@@ -165,6 +171,9 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
         <Script
           id="theme-boot"
           strategy="beforeInteractive"
@@ -207,7 +216,7 @@ export default async function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": ["Organization", "LocalBusiness"],
-              "name": "NG Technology Pvt. Ltd.",
+              "name": "Nighwan Technology Pvt. Ltd.",
               "alternateName": "AiWCRM",
               "url": "https://www.aiwcrm.com",
               "logo": "https://www.aiwcrm.com/logo.png",
@@ -231,7 +240,7 @@ export default async function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "SoftwareApplication",
-              "name": "NGTech WCRM",
+              "name": "AIWCRM",
               "operatingSystem": "Web, Android, iOS",
               "applicationCategory": "BusinessApplication",
               "offers": {
@@ -256,10 +265,10 @@ export default async function RootLayout({
               "mainEntity": [
                 {
                   "@type": "Question",
-                  "name": "What is NGTech WCRM?",
+                  "name": "What is AIWCRM?",
                   "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "NGTech WCRM is an official Meta-approved WhatsApp Business API platform offering a shared multi-agent inbox, AI auto-replies, broadcast marketing campaigns, lead scoring, and automated pipelines."
+                    "text": "AIWCRM is an official Meta-approved WhatsApp Business API platform offering a shared multi-agent inbox, AI auto-replies, broadcast marketing campaigns, lead scoring, and automated pipelines."
                   }
                 },
                 {
@@ -272,10 +281,10 @@ export default async function RootLayout({
                 },
                 {
                   "@type": "Question",
-                  "name": "Is NGTech WCRM approved by Meta?",
+                  "name": "Is AIWCRM approved by Meta?",
                   "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Yes, NGTech WCRM uses official Meta WhatsApp Business API integration with green-tick badge support, compliant template broadcasts, and direct webhook events."
+                    "text": "Yes, AIWCRM uses official Meta WhatsApp Business API integration with green-tick badge support, compliant template broadcasts, and direct webhook events."
                   }
                 }
               ]
@@ -286,8 +295,10 @@ export default async function RootLayout({
       <body className="min-h-full bg-background text-foreground font-sans">
         <NextIntlClientProvider messages={messages} locale={locale}>
           <ThemeProvider>
-            {children}
-            <ThemedToaster />
+            <SimulationProvider>
+              {children}
+              <ThemedToaster />
+            </SimulationProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

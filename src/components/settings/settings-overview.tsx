@@ -211,6 +211,11 @@ export function SettingsOverview({
             } custom field${counts?.customFields === 1 ? '' : 's'}`,
     },
     {
+      section: 'governance',
+      loading: false,
+      subtitle: 'Zero-Trust PBAC, KMS & Cryptographic Audit Logs',
+    },
+    {
       section: 'appearance',
       loading: false,
       subtitle: `${cap(mode)} mode · ${themeName} accent`,

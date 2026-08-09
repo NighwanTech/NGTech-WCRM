@@ -21,6 +21,7 @@ import { format } from "date-fns";
 import { ReplyQuote } from "./reply-quote";
 import { MessageReactions } from "./message-reactions";
 import { renderWhatsAppMarkdown } from "./whatsapp-markdown";
+import { ImageViewer } from "@/components/ui/image-viewer";
 
 interface MessageBubbleProps {
   message: Message;
@@ -133,7 +134,9 @@ function MessageContent({ message }: { message: Message }) {
       return (
         <div>
           {message.media_url ? (
-            <MediaImage url={message.media_url} alt="Shared image" />
+            <ImageViewer src={message.media_url} alt="Shared image" className="inline-block">
+              <MediaImage url={message.media_url} alt="Shared image" />
+            </ImageViewer>
           ) : (
             <MediaUnavailable label="Image" />
           )}

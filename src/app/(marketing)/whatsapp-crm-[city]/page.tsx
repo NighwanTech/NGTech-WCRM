@@ -40,79 +40,177 @@ export const CITY_DATA: Record<string, { name: string; state: string; headline: 
   patna: {
     name: 'Patna',
     state: 'Bihar',
-    headline: '#1 AI WhatsApp CRM & API Provider in Patna, Bihar',
-    description: 'Empower your Patna education institutes, Coaching centers, Real Estate, and Retail businesses with Meta-approved WhatsApp API, AI Chatbots, and Multi-Agent Shared Inbox.',
-    highlights: ['Trusted by leading Patna institutions and BPTPIA members', 'Instant setup with Multi-Model AI (Gemini 3.6 & BYOK)', 'Dedicated local support in Bihar'],
+    headline: '#1 AI WhatsApp CRM & Meta Ads Platform in Patna, Bihar',
+    description: 'Empower your Patna education institutes, Real Estate, and Retail businesses with Meta-approved WhatsApp API, AI Meta Ads Integration, and Enterprise RBAC.',
+    highlights: ['Trusted by leading Patna institutions and BPTPIA members', 'Instant setup with Multi-Model AI (Gemini 3.6 & BYOK)', 'Geo-Targeted WhatsApp Ads for Bihar'],
   },
   delhi: {
     name: 'Delhi NCR',
     state: 'Delhi',
-    headline: '#1 WhatsApp CRM & API Provider in Delhi NCR',
-    description: 'Empower your Delhi NCR sales and support teams with Meta-approved WhatsApp Business API, AI chatbots, and multi-agent shared inbox.',
-    highlights: ['Serving 500+ businesses across Delhi, Gurgaon, and Noida', 'Instant Meta API setup in under 10 minutes', 'Dedicated local support & setup assistance'],
+    headline: '#1 WhatsApp CRM, Meta Ads & API Provider in Delhi NCR',
+    description: 'Empower your Delhi NCR sales teams with Meta-approved WhatsApp Business API, AI-driven Meta Ads campaigns, and Enterprise Governance.',
+    highlights: ['Serving 500+ businesses across Delhi, Gurgaon, and Noida', 'Enterprise RBAC and Multi-Agent Inbox', 'Geo-Targeted AI Meta Ads Setup'],
   },
   mumbai: {
     name: 'Mumbai',
     state: 'Maharashtra',
-    headline: 'Leading WhatsApp CRM & Automation Software in Mumbai',
-    description: 'Scale your enterprise and small business sales in Mumbai with WhatsApp bulk broadcasts, automated pipelines, and 24/7 AI auto-replies.',
-    highlights: ['Tailored for Mumbai real estate, retail, and e-commerce', 'Multi-agent chat routing & team performance tracking', 'Zero message blocking with official Meta API'],
+    headline: 'Leading WhatsApp CRM & Meta Ads Software in Mumbai',
+    description: 'Scale your enterprise and small business sales in Mumbai with WhatsApp bulk broadcasts, AI Meta Ads integration, and LLM search optimizations.',
+    highlights: ['Tailored for Mumbai real estate, retail, and e-commerce', 'AI-Powered WhatsApp Ads Generation', 'Enterprise Security & Governance'],
   },
   bangalore: {
     name: 'Bangalore',
     state: 'Karnataka',
-    headline: 'Best WhatsApp Business API & CRM for Startups in Bangalore',
-    description: 'Built for fast-growing Bangalore tech startups and D2C brands. Automate customer support and turn WhatsApp chats into revenue.',
-    highlights: ['Developer-friendly webhooks & REST API integrations', 'AI lead scoring & automated CRM pipeline stages', 'Used by top Bengaluru tech and retail brands'],
+    headline: 'Best WhatsApp CRM, AI Meta Ads & API for Startups in Bangalore',
+    description: 'Built for fast-growing Bangalore tech startups and D2C brands. Run AI-powered Meta Ads, automate customer support, and turn WhatsApp chats into revenue.',
+    highlights: ['AI Meta Ads Creation & Audience Targeting', 'BYOK Multi-Model AI (Gemini, OpenAI, Groq)', 'Developer-friendly webhooks & REST API integrations'],
   },
   hyderabad: {
     name: 'Hyderabad',
     state: 'Telangana',
-    headline: 'Top WhatsApp CRM Platform in Hyderabad',
-    description: 'Transform customer engagement in Hyderabad with WhatsApp green-tick API, AI chatbots, and automated broadcast campaigns.',
-    highlights: ['Ideal for Hyderabad education, healthcare, and IT firms', '24/7 AI auto-responder with custom knowledge base', 'High deliverability bulk WhatsApp broadcasts'],
+    headline: 'Top WhatsApp CRM & AI Meta Ads Platform in Hyderabad',
+    description: 'Transform customer engagement in Hyderabad with Meta-approved WhatsApp API, AI-generated Meta Ads, and 24/7 automated AI chatbots.',
+    highlights: ['AI-Powered Meta Ads for Hyderabad businesses', '24/7 AI auto-responder with custom knowledge base', 'Enterprise RBAC & Multi-Agent Inbox'],
   },
   chennai: {
     name: 'Chennai',
     state: 'Tamil Nadu',
-    headline: 'Leading WhatsApp CRM & Automation Platform in Chennai',
-    description: 'Scale sales and support in Chennai with official WhatsApp Cloud API, AI agents, and Kanban deal pipelines.',
-    highlights: ['Popular among Chennai healthcare, manufacturing, and retail', 'Multi-agent inbox with automatic department routing', 'BYOK support with 0% token markup'],
+    headline: 'WhatsApp CRM, AI Meta Ads & Automation Platform in Chennai',
+    description: 'Scale sales in Chennai with official WhatsApp Cloud API, AI Meta Ads campaigns, and enterprise-grade security & governance.',
+    highlights: ['AI Meta Ads Campaigns for Chennai businesses', 'Enterprise RBAC & Role-Based Access Control', 'BYOK support with 0% AI token markup'],
   },
   pune: {
     name: 'Pune',
     state: 'Maharashtra',
-    headline: 'WhatsApp Business API & CRM Software in Pune',
-    description: 'Grow your Pune business with seamless WhatsApp lead management, multi-agent chat assignment, and automated drip sequences.',
-    highlights: ['Fast onboarding for Pune manufacturing and educational institutes', 'INR ₹ billing with transparent token usage', 'No-code flow builder for custom chat funnels'],
+    headline: 'WhatsApp Business API, Meta Ads & CRM Software in Pune',
+    description: 'Grow your Pune business with seamless WhatsApp lead management, AI-driven Meta Ads, and Enterprise Security.',
+    highlights: ['Fast onboarding for Pune manufacturing and educational institutes', 'AI Meta Ads Integration & Geo-Targeting', 'Enterprise RBAC and Multi-Agent Inbox'],
   },
   kolkata: {
     name: 'Kolkata',
     state: 'West Bengal',
-    headline: 'Best WhatsApp CRM & Chatbot Software in Kolkata',
-    description: 'Automate sales and customer support in Kolkata with Meta-approved WhatsApp API and AI auto-responders.',
-    highlights: ['Ideal for Kolkata retail, education, and hospitality', 'Zero token greeting cache for instant replies', 'Multi-agent team inbox & deal tracking'],
+    headline: 'Best WhatsApp CRM, AI Meta Ads & Chatbot Software in Kolkata',
+    description: 'Automate sales in Kolkata with Meta-approved WhatsApp API, AI-generated Meta Ads campaigns, and smart AI auto-responders.',
+    highlights: ['AI Meta Ads & Geo-Targeted Campaigns in Kolkata', 'Zero-Token Greeting Cache for instant AI replies', 'Multi-agent team inbox & enterprise deal tracking'],
   },
   ahmedabad: {
     name: 'Ahmedabad',
     state: 'Gujarat',
-    headline: 'Top WhatsApp CRM & Broadcast Software in Ahmedabad',
-    description: 'Empower Ahmedabad manufacturing, textile, and D2C businesses with WhatsApp broadcast marketing and AI CRM.',
-    highlights: ['Built for Gujarat manufacturing and trade businesses', 'High delivery Meta broadcast campaigns', 'AI auto-failover for zero downtime'],
+    headline: 'Top WhatsApp CRM, AI Meta Ads & Broadcast Software in Ahmedabad',
+    description: 'Empower Ahmedabad manufacturing, textile, and D2C businesses with AI-powered Meta Ads, WhatsApp broadcast marketing, and enterprise security.',
+    highlights: ['AI Meta Ads for Gujarat manufacturing & trade', 'High delivery Meta broadcast campaigns', 'Enterprise RBAC & AI Governance tools'],
   },
   jaipur: {
     name: 'Jaipur',
     state: 'Rajasthan',
-    headline: 'Leading WhatsApp CRM & Automation Software in Jaipur',
-    description: 'Scale your Jaipur business with WhatsApp green-tick API, automated lead qualification, and Kanban sales pipelines.',
-    highlights: ['Popular for Jaipur tourism, retail, and education', 'Automated follow-up sequences & deal alerts', 'Multi-model AI support (Gemini & OpenAI)'],
+    headline: 'Leading WhatsApp CRM, AI Meta Ads & Automation Software in Jaipur',
+    description: 'Scale your Jaipur business with WhatsApp green-tick API, AI-powered Meta Ads creation, and automated lead qualification pipelines.',
+    highlights: ['AI Meta Ads for Jaipur tourism, retail & education', 'Automated follow-up sequences & deal alerts', 'Multi-model AI (Gemini & OpenAI) with BYOK'],
   },
   chandigarh: {
     name: 'Chandigarh & Mohali',
     state: 'Punjab',
-    headline: '#1 WhatsApp CRM Platform in Chandigarh & Mohali',
-    description: 'Streamline customer support for Chandigarh and Mohali businesses with official WhatsApp API, AI lead scoring, and team inbox.',
-    highlights: ['Local North India support team based in Mohali/Chandigarh', 'Automated appointment booking & lead followup', 'Meta green tick verification assistance'],
+    headline: '#1 WhatsApp CRM & AI Meta Ads Platform in Chandigarh & Mohali',
+    description: 'Streamline customer support for Chandigarh and Mohali with official WhatsApp API, AI Meta Ads campaigns, and enterprise-grade multi-agent team inbox.',
+    highlights: ['AI Meta Ads for North India businesses', 'Automated appointment booking & lead followup', 'Enterprise RBAC & Meta Green Tick Verification'],
+  },
+  surat: {
+    name: 'Surat',
+    state: 'Gujarat',
+    headline: 'Top WhatsApp CRM & AI Meta Ads Platform in Surat',
+    description: 'Empower Surat textile, diamond, and D2C businesses with AI-powered Meta Ads, official WhatsApp Business API, and automated sales pipelines.',
+    highlights: ['AI Meta Ads for Surat textile & diamond businesses', 'Meta-approved WhatsApp API with green-tick', 'Enterprise RBAC & Multi-Agent Inbox'],
+  },
+  lucknow: {
+    name: 'Lucknow',
+    state: 'Uttar Pradesh',
+    headline: 'Leading WhatsApp CRM & AI Meta Ads Software in Lucknow',
+    description: 'Scale your Lucknow business with official WhatsApp API, AI-powered Meta Ads creation, and 24/7 AI chatbots for sales and support.',
+    highlights: ['AI Meta Ads for Lucknow retail & education businesses', '24/7 Gemini AI auto-responder', 'Enterprise RBAC & BYOK support'],
+  },
+  ranchi: {
+    name: 'Ranchi',
+    state: 'Jharkhand',
+    headline: '#1 WhatsApp CRM & AI Meta Ads Provider in Ranchi',
+    description: 'Empower Ranchi businesses with Meta-approved WhatsApp API, AI Meta Ads campaigns, and multi-agent team inbox for faster customer support.',
+    highlights: ['AI Meta Ads for Ranchi businesses & startups', 'Instant Meta API setup in under 10 minutes', 'Local Jharkhand support & onboarding'],
+  },
+  gaya: {
+    name: 'Gaya Ji',
+    state: 'Bihar',
+    headline: '#1 WhatsApp CRM & AI Meta Ads Platform in Gaya Ji, Bihar',
+    description: 'Boost your Gaya Ji business with Meta-approved WhatsApp Business API, AI-generated Meta Ads, and multi-model AI chatbots for education, hospitality, and retail.',
+    highlights: ['AI Meta Ads for Gaya hospitality & education sector', 'Gemini 3.6 AI with 0-Token Greeting Cache', 'Trusted by Bihar businesses'],
+  },
+  muzaffarpur: {
+    name: 'Muzaffarpur',
+    state: 'Bihar',
+    headline: 'Best WhatsApp CRM & AI Meta Ads Software in Muzaffarpur',
+    description: 'Scale your Muzaffarpur business with AI-powered Meta Ads, official WhatsApp Business API, and 24/7 AI customer support automation.',
+    highlights: ['AI Meta Ads for Muzaffarpur retail & agri-businesses', 'BYOK Multi-Model AI (Gemini, OpenAI, Groq)', 'Multi-agent inbox & deal pipeline'],
+  },
+  bhagalpur: {
+    name: 'Bhagalpur',
+    state: 'Bihar',
+    headline: 'Leading WhatsApp CRM & AI Meta Ads Platform in Bhagalpur',
+    description: 'Empower Bhagalpur silk, textile, and retail businesses with Meta-approved WhatsApp API, AI-generated Meta Ads, and automated lead qualification.',
+    highlights: ['AI Meta Ads for Bhagalpur silk & retail industry', 'Enterprise RBAC & multi-agent team inbox', 'Zero-token Greeting Cache for instant replies'],
+  },
+  dhanbad: {
+    name: 'Dhanbad',
+    state: 'Jharkhand',
+    headline: 'Top WhatsApp CRM & AI Meta Ads Software in Dhanbad',
+    description: 'Transform customer engagement in Dhanbad with official WhatsApp API, AI-powered Meta Ads campaigns, and enterprise-grade CRM pipelines.',
+    highlights: ['AI Meta Ads for Dhanbad businesses', 'Automated follow-up & broadcast campaigns', 'Enterprise security & RBAC governance'],
+  },
+  jamshedpur: {
+    name: 'Jamshedpur',
+    state: 'Jharkhand',
+    headline: 'Best WhatsApp CRM & AI Meta Ads Platform in Jamshedpur',
+    description: 'Grow your Jamshedpur manufacturing, retail, and education business with Meta-approved WhatsApp API, AI Meta Ads, and automated sales pipelines.',
+    highlights: ['AI Meta Ads for Jamshedpur manufacturing & retail', 'Multi-agent team inbox with smart routing', 'Enterprise RBAC & AI Governance'],
+  },
+  indore: {
+    name: 'Indore',
+    state: 'Madhya Pradesh',
+    headline: 'Leading WhatsApp CRM & AI Meta Ads Platform in Indore',
+    description: 'Scale your Indore business with official WhatsApp Business API, AI-powered Meta Ads creation, and automated CRM pipelines for faster sales closures.',
+    highlights: ['AI Meta Ads for Indore retail, education & IT', 'Gemini 3.6 AI chatbot with BYOK support', 'Enterprise RBAC & Multi-Agent Inbox'],
+  },
+  bhopal: {
+    name: 'Bhopal',
+    state: 'Madhya Pradesh',
+    headline: '#1 WhatsApp CRM & AI Meta Ads Software in Bhopal',
+    description: 'Empower Bhopal businesses with Meta-approved WhatsApp Business API, AI-generated Meta Ads campaigns, and enterprise-grade team inbox.',
+    highlights: ['AI Meta Ads for Bhopal businesses & startups', '24/7 AI auto-responder with Gemini 3.6', 'Enterprise security, RBAC & green-tick API'],
+  },
+  nagpur: {
+    name: 'Nagpur',
+    state: 'Maharashtra',
+    headline: 'Top WhatsApp CRM & AI Meta Ads Platform in Nagpur',
+    description: 'Scale Nagpur retail, education, and orange-industry businesses with AI Meta Ads, official WhatsApp API, and automated drip campaigns.',
+    highlights: ['AI Meta Ads for Nagpur retail & education', 'High-delivery WhatsApp broadcast campaigns', 'Enterprise RBAC & Multi-Agent Inbox'],
+  },
+  varanasi: {
+    name: 'Varanasi',
+    state: 'Uttar Pradesh',
+    headline: 'Best WhatsApp CRM & AI Meta Ads Software in Varanasi',
+    description: 'Grow your Varanasi tourism, retail, and handicraft business with Meta-approved WhatsApp API, AI Meta Ads, and 24/7 AI customer support.',
+    highlights: ['AI Meta Ads for Varanasi tourism & handicraft sector', 'Automated WhatsApp broadcast for seasonal campaigns', 'BYOK Multi-Model AI with 0% token markup'],
+  },
+  dehradun: {
+    name: 'Dehradun',
+    state: 'Uttarakhand',
+    headline: 'Leading WhatsApp CRM & AI Meta Ads Platform in Dehradun',
+    description: 'Empower Dehradun education institutes, hospitality, and retail businesses with AI-powered Meta Ads, official WhatsApp API, and multi-agent team inbox.',
+    highlights: ['AI Meta Ads for Dehradun education & hospitality', 'Enterprise RBAC & green-tick verification', 'Automated lead qualification & follow-up'],
+  },
+  raipur: {
+    name: 'Raipur',
+    state: 'Chhattisgarh',
+    headline: '#1 WhatsApp CRM & AI Meta Ads Software in Raipur',
+    description: 'Transform your Raipur business with Meta-approved WhatsApp Business API, AI Meta Ads creation, and automated sales CRM pipelines.',
+    highlights: ['AI Meta Ads for Raipur steel, mining & retail businesses', 'Gemini 3.6 AI chatbot with multi-lingual support', 'Enterprise RBAC & Multi-Agent Inbox'],
   },
 };
 
@@ -126,14 +224,15 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
   if (!data) return {};
 
   return {
-    title: `${data.headline} | WCRM`,
+    title: `${data.headline} | AIWCRM`,
     description: data.description,
     keywords: [
       `WhatsApp CRM ${data.name}`,
       `WhatsApp API Provider ${data.name}`,
-      `AI Chatbot ${data.name}`,
+      `AI Meta Ads ${data.name}`,
+      `Enterprise RBAC ${data.state}`,
       `WhatsApp Business API ${data.state}`,
-      `WhatsApp Bulk Broadcast ${data.name}`,
+      `Geo-Targeted WhatsApp Ads ${data.name}`,
     ],
     openGraph: {
       title: data.headline,
@@ -178,7 +277,7 @@ export default async function CityLandingPage({ params }: { params: Promise<{ ci
           id: '1',
           name: 'BPTPIA',
           url: null,
-          testimonial_text: 'WCRM transformed our student admission counseling in Patna. The Gemini AI auto-responder handles 80% of routine inquiries instantly, saving our staff hundreds of hours.',
+          testimonial_text: 'AIWCRM transformed our student admission counseling in Patna. The Gemini AI auto-responder handles 80% of routine inquiries instantly, saving our staff hundreds of hours.',
           author_name: 'Admissions Director',
           author_role: 'Bihar Private Technical & Professional Institutions Association'
         },
@@ -194,16 +293,16 @@ export default async function CityLandingPage({ params }: { params: Promise<{ ci
 
   const cityFaqs = [
     {
-      q: `Why choose WCRM as your WhatsApp CRM provider in ${data.name}?`,
-      a: `WCRM is built specifically for growing businesses in ${data.name} and across ${data.state}. It provides Meta Official WhatsApp Business API access with BYOK multi-model AI (Gemini 3.6, OpenAI, Groq), zero-downtime auto-failover, and native sales CRM pipelines without third-party markups.`
+      q: `Why choose AIWCRM as your WhatsApp CRM provider in ${data.name}?`,
+      a: `AIWCRM is built specifically for growing businesses in ${data.name} and across ${data.state}. It provides Meta Official WhatsApp Business API access with BYOK multi-model AI (Gemini 3.6, OpenAI, Groq), zero-downtime auto-failover, and native sales CRM pipelines without third-party markups.`
     },
     {
-      q: `How fast can a business in ${data.name} get started with WCRM?`,
-      a: `Onboarding takes less than 10 minutes. You can connect your existing phone number or apply for a new Meta WhatsApp Business API number directly from your WCRM dashboard.`
+      q: `How fast can a business in ${data.name} get started with AIWCRM?`,
+      a: `Onboarding takes less than 10 minutes. You can connect your existing phone number or apply for a new Meta WhatsApp Business API number directly from your AIWCRM dashboard.`
     },
     {
-      q: `Does WCRM support local language AI auto-replies in ${data.name}?`,
-      a: `Yes! WCRM AI auto-responders support multi-lingual processing including English, Hindi, and regional languages, enabling natural conversations with customers in ${data.name}.`
+      q: `Does AIWCRM support local language AI auto-replies in ${data.name}?`,
+      a: `Yes! AIWCRM AI auto-responders support multi-lingual processing including English, Hindi, and regional languages, enabling natural conversations with customers in ${data.name}.`
     },
     {
       q: `What is the Bring Your Own Key (BYOK) pricing benefit for ${data.name} companies?`,
@@ -214,24 +313,57 @@ export default async function CityLandingPage({ params }: { params: Promise<{ ci
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-emerald-500/30">
       
-      {/* City LocalBusiness & Software Schema */}
+      {/* Rich Snippets Schema (LocalBusiness, SoftwareApplication, FAQPage) */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'LocalBusiness',
-            name: `WCRM - WhatsApp CRM ${data.name}`,
-            description: data.description,
-            url: `https://wacrm.in/whatsapp-crm-${cityKey}`,
-            address: {
-              '@type': 'PostalAddress',
-              addressLocality: data.name,
-              addressRegion: data.state,
-              addressCountry: 'IN',
+          __html: JSON.stringify([
+            {
+              '@context': 'https://schema.org',
+              '@type': 'LocalBusiness',
+              name: `AIWCRM - WhatsApp CRM ${data.name}`,
+              description: data.description,
+              url: `https://wacrm.in/whatsapp-crm-${cityKey}`,
+              address: {
+                '@type': 'PostalAddress',
+                addressLocality: data.name,
+                addressRegion: data.state,
+                addressCountry: 'IN',
+              },
+              areaServed: data.name,
+              priceRange: '₹₹',
             },
-            areaServed: data.name,
-          }),
+            {
+              '@context': 'https://schema.org',
+              '@type': 'SoftwareApplication',
+              name: `AIWCRM WhatsApp Business API - ${data.name}`,
+              operatingSystem: 'Web, iOS, Android',
+              applicationCategory: 'BusinessApplication',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'INR',
+                description: '7-Day Free Trial',
+              },
+              aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: '4.9',
+                ratingCount: '520',
+              },
+            },
+            {
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: cityFaqs.map((faq) => ({
+                '@type': 'Question',
+                name: faq.q,
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: faq.a,
+                },
+              })),
+            },
+          ]),
         }}
       />
 
@@ -256,6 +388,22 @@ export default async function CityLandingPage({ params }: { params: Promise<{ ci
               <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl font-normal">
                 {data.description}
               </p>
+
+              {/* AI Feature Badges */}
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 px-3 py-1 text-[11px] font-bold text-blue-400">
+                  <Sparkles className="h-3 w-3" /> AI Meta Ads Creation
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 px-3 py-1 text-[11px] font-bold text-purple-400">
+                  <Bot className="h-3 w-3" /> Gemini 3.6 AI Chatbot
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-[11px] font-bold text-emerald-400">
+                  <ShieldCheck className="h-3 w-3" /> Enterprise RBAC
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/10 border border-orange-500/30 px-3 py-1 text-[11px] font-bold text-orange-400">
+                  <Zap className="h-3 w-3" /> Meta API Official Partner
+                </span>
+              </div>
 
               {/* City Highlights Checklist */}
               <div className="space-y-2.5 pt-2">
@@ -309,7 +457,7 @@ export default async function CityLandingPage({ params }: { params: Promise<{ ci
                         W
                       </div>
                       <div>
-                        <p className="font-bold text-white text-xs">WCRM AI {data.name}</p>
+                        <p className="font-bold text-white text-xs">AIWCRM AI {data.name}</p>
                         <p className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
                           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" /> Online · Gemini 3.6
                         </p>
@@ -326,7 +474,7 @@ export default async function CityLandingPage({ params }: { params: Promise<{ ci
                     </div>
                     <div className="flex justify-start">
                       <div className="bg-[#202c33] text-white p-2.5 rounded-2xl rounded-tl-none max-w-[85%] space-y-1 border border-emerald-500/30">
-                        <p className="font-bold text-emerald-400 text-[11px]">WCRM AI Auto-Reply (0 Tokens)</p>
+                        <p className="font-bold text-emerald-400 text-[11px]">AIWCRM AI Auto-Reply (0 Tokens)</p>
                         <p>Welcome! We serve 500+ businesses in {data.name}. Sent product catalog 📄</p>
                         <span className="text-[9px] text-slate-400 float-right font-mono">10:42 AM</span>
                       </div>
@@ -418,7 +566,7 @@ export default async function CityLandingPage({ params }: { params: Promise<{ ci
       <section className="py-16 bg-card/40 border-t border-border/50">
         <div className="container mx-auto max-w-7xl px-4 text-center space-y-8">
           <h3 className="text-xs uppercase font-extrabold tracking-widest text-emerald-500">
-            WCRM Across Major Indian Cities
+            AIWCRM Across Major Indian Cities
           </h3>
           <div className="flex flex-wrap justify-center gap-3">
             {Object.entries(CITY_DATA).map(([key, val]) => (
@@ -447,7 +595,7 @@ export default async function CityLandingPage({ params }: { params: Promise<{ ci
             Ready to Scale Your Sales in {data.name}?
           </h2>
           <p className="text-base text-slate-400 max-w-2xl mx-auto">
-            Join leading enterprises in {data.name} using WCRM to automate support, qualify leads, and run high-ROI campaigns with zero AI markup.
+            Join leading enterprises in {data.name} using AIWCRM to automate support, qualify leads, and run high-ROI campaigns with zero AI markup.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
