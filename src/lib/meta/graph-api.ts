@@ -230,21 +230,25 @@ export async function createAd(
 }
 
 /**
- * Create Ad Creative
+ * Fetch Full Campaign Hierarchy Details (Campaign + AdSets + Ad Creatives)
  */
-export async function createAdCreative(
-  adAccountId: string,
-  payload: any,
+export async function getCampaignFullDetails(
+  campaignId: string,
   accessToken: string
 ) {
-  const formattedAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`
-  const url = `${BASE_URL}/${formattedAccountId}/adcreatives`
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...payload, access_token: accessToken }),
-  })
-  const data = await res.json()
-  if (data.error) throw new Error(`Failed to create Ad Creative: ${data.error.message}`)
-  return data
+  const url = `${BASE_URL}/${campaignId}?fields=id,name,status,objective,buying_type,special_ad_categories,daily_budget,lifetime_budget,adsets{id,name,status,daily_budget,targeting,billing_event,optimization_goal,bid_amount},ads{id,name,status,creative{id,name,title,body,image_url,thumbnail_url,call_to_action_type,link_url}}&access_token=${accessToken}`
+
+  try {
+    const res = await fetch(url)
+    const data = await res.json()
+    if (data.error) {
+      console.warn(`Graph API detailed fetch warning for ${campaignId}:`, data.error.message)
+      return null
+    }
+    return data
+  } catch (err: any) {
+    console.warn(`Failed to fetch full campaign details for ${campaignId}:`, err.message)
+    return null
+  }
 }
+

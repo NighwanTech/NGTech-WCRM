@@ -210,7 +210,7 @@ export default function MetaAdsDashboardPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <CampaignsTable campaigns={campaigns} loading={loading} />
+          <CampaignsTable campaigns={campaigns} loading={loading} adAccountId={selectedAccountId} />
         </CardContent>
       </Card>
     </div>

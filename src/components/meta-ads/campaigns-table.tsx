@@ -11,9 +11,10 @@ import { CampaignEditModal } from "@/components/meta-ads/campaign-edit-modal"
 interface TableProps {
   campaigns: MetaCampaign[]
   loading?: boolean
+  adAccountId?: string
 }
 
-export function CampaignsTable({ campaigns: initialCampaigns, loading }: TableProps) {
+export function CampaignsTable({ campaigns: initialCampaigns, loading, adAccountId }: TableProps) {
   const [campaigns, setCampaigns] = useState(initialCampaigns)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [editingCampaign, setEditingCampaign] = useState<MetaCampaign | null>(null)
@@ -149,6 +150,7 @@ export function CampaignsTable({ campaigns: initialCampaigns, loading }: TablePr
         open={modalOpen}
         onOpenChange={setModalOpen}
         onUpdate={handleUpdateCampaign}
+        adAccountId={adAccountId}
       />
     </>
   )
