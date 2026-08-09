@@ -39,7 +39,7 @@ export default function MetaAdsSettingsPage() {
   const handleFacebookOAuthLogin = () => {
     const appId = process.env.NEXT_PUBLIC_META_APP_ID || "843808418636023"
     const redirectUri = encodeURIComponent(`${window.location.origin}/api/meta/auth/callback`)
-    const scope = encodeURIComponent("ads_management,ads_read,leads_retrieval,business_management,pages_show_list")
+    const scope = encodeURIComponent("ads_management,ads_read,business_management,pages_show_list,pages_read_engagement")
 
     const fbAuthUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code`
 
