@@ -35,15 +35,15 @@ export async function createMetaAdCampaign(options: LaunchCampaignOptions): Prom
       body: JSON.stringify({
         name: `[AIWCRM] ${name}`,
         objective: objective || 'OUTCOME_ENGAGEMENT',
-        status: 'PAUSED', // Start paused for safety
-        special_ad_categories: [],
+        status: 'PAUSED', // Start paused for review and safety
+        special_ad_categories: ['NONE'],
       }),
     })
 
     const campaignData = await campaignRes.json()
 
     if (campaignData.error) {
-      throw new Error(`Campaign creation failed: ${campaignData.error.message}`)
+      throw new Error(`Campaign creation failed: ${campaignData.error.message || JSON.stringify(campaignData.error)}`)
     }
 
     const campaignId = campaignData.id
