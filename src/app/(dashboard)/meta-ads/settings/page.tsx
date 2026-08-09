@@ -34,6 +34,13 @@ export default function MetaAdsSettingsPage() {
       }
     }
     fetchSettings()
+
+    // Handle OAuth return params
+    const params = new URLSearchParams(window.location.search)
+    if (params.has("success") || params.has("code")) {
+      setSaved(true)
+      setTimeout(() => setSaved(false), 5000)
+    }
   }, [])
 
   const handleFacebookOAuthLogin = () => {
