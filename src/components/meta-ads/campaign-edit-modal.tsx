@@ -233,25 +233,25 @@ export function CampaignEditModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-5xl md:max-w-6xl w-[95vw] sm:w-[92vw] max-w-[1250px] max-h-[92vh] overflow-y-auto p-6">
+      <DialogContent className="w-full sm:max-w-5xl md:max-w-6xl sm:w-[92vw] max-h-[94vh] overflow-y-auto p-4 sm:p-6 rounded-xl sm:rounded-2xl">
         <DialogHeader className="border-b pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <DialogTitle className="text-xl font-bold tracking-tight text-foreground truncate max-w-xl">
+                <DialogTitle className="text-lg sm:text-xl font-bold tracking-tight text-foreground break-words line-clamp-2">
                   {name}
                 </DialogTitle>
               </div>
-              <DialogDescription className="text-xs text-muted-foreground flex items-center gap-3">
+              <DialogDescription className="text-xs text-muted-foreground flex flex-wrap items-center gap-2 sm:gap-3">
                 <span className="font-mono">Meta ID: {campaign.id}</span>
-                <span>•</span>
+                <span className="hidden sm:inline">•</span>
                 <span className="font-medium text-foreground">Spend: ₹{campaign.spend || "0"}</span>
-                <span>•</span>
+                <span className="hidden sm:inline">•</span>
                 <span className="font-medium text-foreground">Impressions: {campaign.impressions || "0"}</span>
               </DialogDescription>
             </div>
             
-            <div className="flex items-center gap-2 self-start sm:self-auto">
+            <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
               <Button
                 size="sm"
                 variant="outline"
@@ -275,18 +275,18 @@ export function CampaignEditModal({
 
         {/* Multi-Level Tabs (Hierarchy like Meta Ads Manager) */}
         <Tabs defaultValue="campaign" className="w-full mt-4">
-          <TabsList className="grid grid-cols-4 w-full h-11 bg-muted/60 p-1 rounded-xl">
-            <TabsTrigger value="campaign" className="text-xs font-bold gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-primary" /> 1. Campaign
+          <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto sm:h-11 bg-muted/60 p-1 rounded-xl gap-1">
+            <TabsTrigger value="campaign" className="text-xs font-bold gap-1.5 py-2 sm:py-0">
+              <Layers className="w-3.5 h-3.5 text-primary shrink-0" /> 1. Campaign
             </TabsTrigger>
-            <TabsTrigger value="adset" className="text-xs font-bold gap-1.5">
-              <Target className="w-3.5 h-3.5 text-indigo-500" /> 2. Ad Set (Audience)
+            <TabsTrigger value="adset" className="text-xs font-bold gap-1.5 py-2 sm:py-0">
+              <Target className="w-3.5 h-3.5 text-indigo-500 shrink-0" /> 2. Ad Set
             </TabsTrigger>
-            <TabsTrigger value="creative" className="text-xs font-bold gap-1.5">
-              <Palette className="w-3.5 h-3.5 text-emerald-500" /> 3. Ad Creative & Copy
+            <TabsTrigger value="creative" className="text-xs font-bold gap-1.5 py-2 sm:py-0">
+              <Palette className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> 3. Creative & Copy
             </TabsTrigger>
-            <TabsTrigger value="ai-audit" className="text-xs font-bold gap-1.5 text-primary">
-              <Sparkles className="w-3.5 h-3.5 animate-pulse" /> 4. AI Recommendations
+            <TabsTrigger value="ai-audit" className="text-xs font-bold gap-1.5 text-primary py-2 sm:py-0">
+              <Sparkles className="w-3.5 h-3.5 animate-pulse shrink-0" /> 4. AI Co-Pilot
             </TabsTrigger>
           </TabsList>
 
