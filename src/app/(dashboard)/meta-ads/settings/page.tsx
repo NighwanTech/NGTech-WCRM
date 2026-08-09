@@ -19,11 +19,14 @@ import {
   AlertCircle,
   RefreshCw,
   LineChart,
-  Trash2
+  Trash2,
+  Check,
+  Star
 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { RulesManager } from "@/components/meta-ads/rules-manager"
+import { toast } from "sonner"
 
 interface AdAccountItem {
   id: string
@@ -45,6 +48,7 @@ export default function MetaAdsSettingsPage() {
   const [isConnected, setIsConnected] = useState(false)
   const [accountName, setAccountName] = useState<string | null>(null)
   const [adAccounts, setAdAccounts] = useState<AdAccountItem[]>([])
+  const [selectedAdAccountId, setSelectedAdAccountId] = useState<string>("")
   
   // Exchange state
   const [isExchanging, setIsExchanging] = useState(false)
@@ -61,7 +65,16 @@ export default function MetaAdsSettingsPage() {
         if (data.pixelId) setPixelId(data.pixelId)
         setIsConnected(Boolean(data.isConnected))
         setAccountName(data.accountName || null)
-        setAdAccounts(data.adAccounts || [])
+        const accountsList = data.adAccounts || []
+        setAdAccounts(accountsList)
+
+        // Read stored active account or fallback to first
+        const stored = typeof window !== "undefined" ? localStorage.getItem("meta_active_ad_account_id") : null
+        if (stored && accountsList.some((a: any) => a.ad_account_id === stored)) {
+          setSelectedAdAccountId(stored)
+        } else if (accountsList.length > 0) {
+          setSelectedAdAccountId(accountsList[0].ad_account_id)
+        }
       }
     } catch (err) {
       console.error("Failed to fetch meta settings", err)
@@ -73,6 +86,14 @@ export default function MetaAdsSettingsPage() {
   useEffect(() => {
     fetchSettings()
   }, [fetchSettings])
+
+  const handleSwitchAccount = (adAcc: AdAccountItem) => {
+    setSelectedAdAccountId(adAcc.ad_account_id)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("meta_active_ad_account_id", adAcc.ad_account_id)
+    }
+    toast.success(`Active Account switched to: ${adAcc.account_name || adAcc.ad_account_id}`)
+  }
 
   // Handle OAuth code exchange automatically when returning from Facebook
   useEffect(() => {
@@ -294,39 +315,51 @@ export default function MetaAdsSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-4 rounded-xl bg-muted/40 border flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-muted-foreground" />
-                <p className="font-semibold text-sm text-foreground">
-                  {isConnected ? (accountName || "Meta Business Ad Account") : "Facebook Business OAuth"}
-                </p>
+          {(() => {
+            const activeAccount = adAccounts.find(a => a.ad_account_id === selectedAdAccountId) || adAccounts[0]
+            return (
+              <div className="p-4 rounded-xl bg-muted/40 border flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-emerald-600" />
+                    <p className="font-bold text-sm text-foreground">
+                      {isConnected 
+                        ? (activeAccount?.account_name ? `Active Workspace Account: ${activeAccount.account_name}` : (accountName || "Meta Business Ad Account"))
+                        : "Facebook Business OAuth"}
+                    </p>
+                    {isConnected && activeAccount?.ad_account_id && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono text-emerald-700 bg-emerald-500/10 border-emerald-500/30">
+                        {activeAccount.ad_account_id}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {isConnected 
+                      ? "60-Day Auto-Renewing Token Active • Graph API v20.0" 
+                      : "Meta App ID: 843808418636023 (Verified Tech Provider)"}
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button 
+                    onClick={handleFacebookOAuthLogin} 
+                    className={isConnected 
+                      ? "bg-muted hover:bg-muted/80 text-foreground border gap-2 text-xs" 
+                      : "bg-[#1877F2] hover:bg-[#166FE5] text-white gap-2 font-semibold shadow-sm"}
+                    title="Connect a different Facebook account or refresh permissions with Meta"
+                  >
+                    {isConnected ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5" /> Re-Authorize Facebook OAuth
+                      </>
+                    ) : (
+                      <>Connect with Facebook</>
+                    )}
+                  </Button>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {isConnected 
-                  ? "60-Day Auto-Renewing Token Active • Graph API v20.0" 
-                  : "Meta App ID: 843808418636023 (Verified Tech Provider)"}
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Button 
-                onClick={handleFacebookOAuthLogin} 
-                className={isConnected 
-                  ? "bg-muted hover:bg-muted/80 text-foreground border gap-2 text-xs" 
-                  : "bg-[#1877F2] hover:bg-[#166FE5] text-white gap-2 font-semibold shadow-sm"}
-                title="Connect a different Facebook account or refresh permissions with Meta"
-              >
-                {isConnected ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5" /> Re-Authorize Facebook OAuth
-                  </>
-                ) : (
-                  <>Connect with Facebook</>
-                )}
-              </Button>
-            </div>
-          </div>
+            )
+          })()}
 
           {/* List of Connected Ad Accounts */}
           {adAccounts.length > 0 && (
@@ -338,50 +371,74 @@ export default function MetaAdsSettingsPage() {
               </div>
 
               <div className="space-y-2">
-                {adAccounts.map((adAcc) => (
-                  <div key={adAcc.id} className="p-3.5 rounded-lg border bg-background flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm text-foreground">{adAcc.account_name || "Ad Account"}</span>
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
-                          {adAcc.ad_account_id}
-                        </Badge>
+                {adAccounts.map((adAcc) => {
+                  const isCurrentActive = adAcc.ad_account_id === selectedAdAccountId
+                  return (
+                    <div 
+                      key={adAcc.id} 
+                      className={`p-3.5 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
+                        isCurrentActive ? "border-emerald-500/60 bg-emerald-500/5 shadow-sm ring-1 ring-emerald-500/30" : "bg-background"
+                      }`}
+                    >
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-foreground">{adAcc.account_name || "Ad Account"}</span>
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
+                            {adAcc.ad_account_id}
+                          </Badge>
+                          {isCurrentActive && (
+                            <Badge className="bg-emerald-600 text-white text-[10px] px-2 py-0 gap-1 font-semibold shadow-xs">
+                              <Check className="w-3 h-3" /> Active Selected
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Status: <span className="text-emerald-600 font-medium capitalize">{adAcc.status}</span>
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Status: <span className="text-emerald-600 font-medium capitalize">{adAcc.status}</span>
-                      </p>
-                    </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Link href={`/meta-ads?adAccountId=${encodeURIComponent(adAcc.ad_account_id)}`}>
-                        <Button size="sm" variant="outline" className="text-xs gap-1 font-semibold border-primary/30 text-primary hover:bg-primary/5">
-                          <RefreshCw className="w-3.5 h-3.5" /> Switch to this Account
-                        </Button>
-                      </Link>
-                      <Link href={`/meta-ads/create?adAccountId=${encodeURIComponent(adAcc.ad_account_id)}`}>
-                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1 font-semibold">
-                          <Rocket className="w-3.5 h-3.5" /> Run Ads
-                        </Button>
-                      </Link>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleDetachSingleAccount(adAcc.ad_account_id)}
-                        disabled={detachingId === adAcc.ad_account_id}
-                        className="text-destructive hover:bg-destructive/10 text-xs px-2.5 border border-destructive/20 gap-1 font-medium"
-                        title="Detach only this ad account"
-                      >
-                        {detachingId === adAcc.ad_account_id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <div className="flex flex-wrap items-center gap-2">
+                        {!isCurrentActive ? (
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => handleSwitchAccount(adAcc)}
+                            className="text-xs gap-1 font-semibold border-primary/30 text-primary hover:bg-primary/5"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" /> Switch to this Account
+                          </Button>
                         ) : (
-                          <>
-                            <Trash2 className="w-3.5 h-3.5" /> Detach
-                          </>
+                          <Link href={`/meta-ads?adAccountId=${encodeURIComponent(adAcc.ad_account_id)}`}>
+                            <Button size="sm" variant="outline" className="text-xs gap-1 font-semibold border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10">
+                              <LineChart className="w-3.5 h-3.5" /> View Dashboard
+                            </Button>
+                          </Link>
                         )}
-                      </Button>
+                        <Link href={`/meta-ads/create?adAccountId=${encodeURIComponent(adAcc.ad_account_id)}`}>
+                          <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1 font-semibold">
+                            <Rocket className="w-3.5 h-3.5" /> Run Ads
+                          </Button>
+                        </Link>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDetachSingleAccount(adAcc.ad_account_id)}
+                          disabled={detachingId === adAcc.ad_account_id}
+                          className="text-destructive hover:bg-destructive/10 text-xs px-2.5 border border-destructive/20 gap-1 font-medium"
+                          title="Detach only this ad account"
+                        >
+                          {detachingId === adAcc.ad_account_id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <>
+                              <Trash2 className="w-3.5 h-3.5" /> Detach
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}
