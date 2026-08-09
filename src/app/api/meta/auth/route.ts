@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/flows/admin-client'
 import { exchangeCodeForAccessToken, exchangeForLongLivedToken, encryptToken } from '@/lib/meta/token-manager'
 import { getAdAccounts } from '@/lib/meta/graph-api'
+import { saveMetaAdAccount } from '@/lib/meta/db-adapter'
 import { withZeroTrustGuard } from '@/lib/security/zero-trust-guard'
 
 /**
@@ -48,79 +48,32 @@ export async function POST(request: Request) {
 
       const encryptedToken = encryptToken(accessToken)
       const expiresAt = expiresIn ? new Date(Date.now() + expiresIn * 1000).toISOString() : null
-      const db = supabaseAdmin()
 
-      // If user has ad accounts from Meta, save each of them
+      // Save each ad account found from Graph API
       if (adAccounts && adAccounts.length > 0) {
         for (const adAcc of adAccounts) {
           const formattedId = adAcc.id || adAcc.account_id || 'act_default'
           const name = adAcc.name || 'Meta Ad Account'
 
-          // Check if record exists
-          const { data: existing } = await db
-            .from('meta_ad_accounts')
-            .select('id')
-            .eq('account_id', ctx.accountId)
-            .eq('ad_account_id', formattedId)
-            .maybeSingle()
-
-          if (existing) {
-            await db
-              .from('meta_ad_accounts')
-              .update({
-                account_name: name,
-                access_token: encryptedToken,
-                token_expires_at: expiresAt,
-                status: 'active',
-                updated_at: new Date().toISOString(),
-              })
-              .eq('id', existing.id)
-          } else {
-            await db.from('meta_ad_accounts').insert({
-              account_id: ctx.accountId,
-              ad_account_id: formattedId,
-              account_name: name,
-              access_token: encryptedToken,
-              token_expires_at: expiresAt,
-              user_id: ctx.userId,
-              status: 'active',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            })
-          }
-        }
-      } else {
-        // Save generic connected Meta account record
-        const { data: existing } = await db
-          .from('meta_ad_accounts')
-          .select('id')
-          .eq('account_id', ctx.accountId)
-          .maybeSingle()
-
-        if (existing) {
-          await db
-            .from('meta_ad_accounts')
-            .update({
-              access_token: encryptedToken,
-              token_expires_at: expiresAt,
-              status: 'active',
-              account_name: 'Connected Meta Account',
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', existing.id)
-        } else {
-          await db.from('meta_ad_accounts').insert({
-            account_id: ctx.accountId,
-            ad_account_id: 'act_primary',
-            account_name: 'Connected Meta Account',
-            access_token: encryptedToken,
-            token_expires_at: expiresAt,
-            user_id: ctx.userId,
-            status: 'active',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+          await saveMetaAdAccount({
+            accountId: ctx.accountId,
+            userId: ctx.userId,
+            adAccountId: formattedId,
+            accountName: name,
+            encryptedAccessToken: encryptedToken,
+            tokenExpiresAt: expiresAt,
           })
         }
+      } else {
+        // Save generic connected Meta account record so status is active
+        await saveMetaAdAccount({
+          accountId: ctx.accountId,
+          userId: ctx.userId,
+          adAccountId: 'act_primary',
+          accountName: 'Connected Meta Account',
+          encryptedAccessToken: encryptedToken,
+          tokenExpiresAt: expiresAt,
+        })
       }
 
       return NextResponse.json({

@@ -1,30 +1,19 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/flows/admin-client'
+import { getActiveMetaAdAccounts, updateMetaPixelId } from '@/lib/meta/db-adapter'
 import { withZeroTrustGuard } from '@/lib/security/zero-trust-guard'
 
 export async function GET(request: Request) {
   return withZeroTrustGuard(request, { permission: 'meta_ads:read' }, async (ctx) => {
     try {
-      const db = supabaseAdmin()
-      const { data, error } = await db
-        .from('meta_ad_accounts')
-        .select('id, ad_account_id, account_name, capi_pixel_id, status, created_at')
-        .eq('account_id', ctx.accountId)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('Database query error on meta_ad_accounts:', error)
-      }
-
-      const primary = data?.[0] || null
+      const accounts = await getActiveMetaAdAccounts(ctx.accountId)
+      const primary = accounts?.[0] || null
 
       return NextResponse.json({ 
         success: true, 
         pixelId: primary?.capi_pixel_id || '',
-        isConnected: !!data && data.length > 0,
+        isConnected: Boolean(accounts && accounts.length > 0),
         accountName: primary?.account_name || primary?.ad_account_id || null,
-        adAccounts: data || [],
+        adAccounts: accounts || [],
       })
     } catch (error: any) {
       console.error('Fetch meta settings error:', error)
@@ -39,25 +28,11 @@ export async function POST(request: Request) {
       const body = await request.json()
       const { pixelId } = body
 
-      const db = supabaseAdmin()
-      const { data: adAccount } = await db
-        .from('meta_ad_accounts')
-        .select('id')
-        .eq('account_id', ctx.accountId)
-        .eq('status', 'active')
-        .limit(1)
-        .maybeSingle()
+      const updated = await updateMetaPixelId(ctx.accountId, pixelId)
 
-      if (!adAccount) {
+      if (!updated) {
         return NextResponse.json({ error: 'No active Meta Ad Account found to attach Pixel ID to.' }, { status: 400 })
       }
-
-      const { error } = await db
-        .from('meta_ad_accounts')
-        .update({ capi_pixel_id: pixelId })
-        .eq('id', adAccount.id)
-
-      if (error) throw error
 
       return NextResponse.json({ success: true })
     } catch (error: any) {

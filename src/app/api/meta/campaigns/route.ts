@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/flows/admin-client'
+import { getAdminClient } from '@/lib/admin-supabase'
+import { getActiveMetaAdAccounts } from '@/lib/meta/db-adapter'
 import { getCampaigns } from '@/lib/meta/graph-api'
 import { decryptToken } from '@/lib/meta/token-manager'
 import { withZeroTrustGuard } from '@/lib/security/zero-trust-guard'
@@ -10,19 +11,10 @@ import { withZeroTrustGuard } from '@/lib/security/zero-trust-guard'
 export async function GET(request: Request) {
   return withZeroTrustGuard(request, { permission: 'meta_ads:read' }, async (ctx) => {
     try {
-      const db = supabaseAdmin()
+      const accounts = await getActiveMetaAdAccounts(ctx.accountId)
+      const adAccount = accounts?.[0] || null
 
-      // 1. Fetch connected Meta Ad account
-      const { data: adAccount, error: accErr } = await db
-        .from('meta_ad_accounts')
-        .select('*')
-        .eq('account_id', ctx.accountId)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-      if (accErr || !adAccount) {
+      if (!adAccount) {
         return NextResponse.json({
           connected: false,
           campaigns: [],
@@ -30,9 +22,10 @@ export async function GET(request: Request) {
         })
       }
 
-      // 2. Fetch live campaigns from Meta Graph API
+      // 2. Fetch live campaigns from Meta Graph API if access token is present
       const decryptedToken = decryptToken(adAccount.access_token)
-      let campaigns = []
+      let campaigns: any[] = []
+      const db = getAdminClient()
 
       try {
         campaigns = await getCampaigns(adAccount.ad_account_id, decryptedToken)
@@ -55,7 +48,7 @@ export async function GET(request: Request) {
               },
               { onConflict: 'account_id,campaign_id' }
             )
-          } catch (e) {
+          } catch {
             // ignore cache insert errors
           }
         }

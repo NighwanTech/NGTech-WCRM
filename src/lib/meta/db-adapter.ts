@@ -1,0 +1,161 @@
+import { getAdminClient } from '@/lib/admin-supabase'
+import { SupabaseClient } from '@supabase/supabase-js'
+
+export interface MetaAdAccountRecord {
+  id: string
+  account_id?: string
+  workspace_id?: string
+  ad_account_id: string
+  account_name: string
+  access_token: string
+  token_expires_at?: string | null
+  user_id?: string | null
+  status: string
+  capi_pixel_id?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+function getDb(): SupabaseClient {
+  return getAdminClient()
+}
+
+/**
+ * Fetch all active Meta Ad accounts for a given account / workspace ID
+ */
+export async function getActiveMetaAdAccounts(accountId: string): Promise<MetaAdAccountRecord[]> {
+  const db = getDb()
+
+  // First try account_id column
+  const { data: byAccount, error: accErr } = await db
+    .from('meta_ad_accounts')
+    .select('*')
+    .eq('account_id', accountId)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+
+  if (!accErr && byAccount) {
+    return byAccount
+  }
+
+  // Fallback to workspace_id column
+  const { data: byWorkspace, error: wsErr } = await db
+    .from('meta_ad_accounts')
+    .select('*')
+    .eq('workspace_id', accountId)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+
+  if (!wsErr && byWorkspace) {
+    return byWorkspace
+  }
+
+  console.warn('Could not query meta_ad_accounts by account_id or workspace_id:', accErr?.message || wsErr?.message)
+  return []
+}
+
+/**
+ * Upsert / Save a Meta Ad Account record safely handling both account_id and workspace_id columns
+ */
+export async function saveMetaAdAccount(params: {
+  accountId: string
+  userId: string
+  adAccountId: string
+  accountName: string
+  encryptedAccessToken: string
+  tokenExpiresAt?: string | null
+}): Promise<MetaAdAccountRecord | null> {
+  const db = getDb()
+  const { accountId, userId, adAccountId, accountName, encryptedAccessToken, tokenExpiresAt } = params
+
+  // 1. Check if record exists
+  const existingAccounts = await getActiveMetaAdAccounts(accountId)
+  const existing = existingAccounts.find((a) => a.ad_account_id === adAccountId) || existingAccounts[0]
+
+  if (existing) {
+    const { data: updated, error: updateErr } = await db
+      .from('meta_ad_accounts')
+      .update({
+        ad_account_id: adAccountId,
+        account_name: accountName,
+        access_token: encryptedAccessToken,
+        token_expires_at: tokenExpiresAt,
+        status: 'active',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', existing.id)
+      .select()
+      .maybeSingle()
+
+    if (!updateErr && updated) {
+      return updated
+    }
+  }
+
+  // 2. Insert new record - try with account_id first
+  const payloadPrimary: any = {
+    account_id: accountId,
+    ad_account_id: adAccountId,
+    account_name: accountName,
+    access_token: encryptedAccessToken,
+    token_expires_at: tokenExpiresAt,
+    user_id: userId,
+    status: 'active',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
+
+  const { data: insertedAcc, error: insertAccErr } = await db
+    .from('meta_ad_accounts')
+    .insert(payloadPrimary)
+    .select()
+    .maybeSingle()
+
+  if (!insertAccErr && insertedAcc) {
+    return insertedAcc
+  }
+
+  // Fallback to workspace_id
+  const payloadWs: any = {
+    workspace_id: accountId,
+    ad_account_id: adAccountId,
+    account_name: accountName,
+    access_token: encryptedAccessToken,
+    token_expires_at: tokenExpiresAt,
+    user_id: userId,
+    status: 'active',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
+
+  const { data: insertedWs, error: insertWsErr } = await db
+    .from('meta_ad_accounts')
+    .insert(payloadWs)
+    .select()
+    .maybeSingle()
+
+  if (!insertWsErr && insertedWs) {
+    return insertedWs
+  }
+
+  console.error('Failed to save meta_ad_account in both attempts:', insertAccErr?.message, insertWsErr?.message)
+  return null
+}
+
+/**
+ * Update CAPI Pixel ID
+ */
+export async function updateMetaPixelId(accountId: string, pixelId: string): Promise<boolean> {
+  const db = getDb()
+  const accounts = await getActiveMetaAdAccounts(accountId)
+  if (!accounts || accounts.length === 0) {
+    return false
+  }
+
+  const { error } = await db
+    .from('meta_ad_accounts')
+    .update({ capi_pixel_id: pixelId })
+    .eq('id', accounts[0].id)
+
+  return !error
+}

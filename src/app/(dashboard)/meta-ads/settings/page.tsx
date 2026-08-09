@@ -100,6 +100,12 @@ export default function MetaAdsSettingsPage() {
           }
           setExchangeSuccess(true)
           setIsConnected(true)
+          if (data.adAccounts && data.adAccounts.length > 0) {
+            setAdAccounts(data.adAccounts)
+            setAccountName(data.adAccounts[0].name || data.adAccounts[0].account_name || "Meta Ad Account")
+          } else if (data.primaryAccount) {
+            setAccountName(data.primaryAccount.name || "Meta Ad Account")
+          }
           await fetchSettings()
           setTimeout(() => setExchangeSuccess(false), 8000)
         })
