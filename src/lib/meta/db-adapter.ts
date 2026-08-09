@@ -101,9 +101,9 @@ export async function saveMetaAdAccount(params: {
   const db = getDb()
   const { accountId, userId, adAccountId, accountName, encryptedAccessToken, tokenExpiresAt } = params
 
-  // 1. Check if record exists
+  // 1. Check if record exists for this specific adAccountId
   const existingAccounts = await getActiveMetaAdAccounts(accountId, userId)
-  const existing = existingAccounts.find((a) => a.ad_account_id === adAccountId) || existingAccounts[0]
+  const existing = existingAccounts.find((a) => a.ad_account_id === adAccountId)
 
   if (existing) {
     const { data: updated, error: updateErr } = await db

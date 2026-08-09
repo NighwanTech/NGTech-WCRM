@@ -35,18 +35,55 @@ export interface MetaLeadData {
 }
 
 /**
- * Fetch list of Ad Accounts for an authenticated user token
+ * Fetch all Ad Accounts for an authenticated user token (including Business Manager accounts)
  */
 export async function getAdAccounts(accessToken: string): Promise<MetaAdAccount[]> {
-  const url = `${BASE_URL}/me/adaccounts?fields=id,name,account_id,currency,account_status&access_token=${accessToken}`
-  const res = await fetch(url)
-  const data = await res.json()
+  const allAccounts: Map<string, MetaAdAccount> = new Map()
 
-  if (data.error) {
-    throw new Error(`Graph API error: ${data.error.message}`)
+  // 1. Direct /me/adaccounts
+  try {
+    const url = `${BASE_URL}/me/adaccounts?fields=id,name,account_id,currency,account_status&limit=100&access_token=${accessToken}`
+    const res = await fetch(url)
+    const data = await res.json()
+    if (data.data && Array.isArray(data.data)) {
+      for (const acc of data.data) {
+        allAccounts.set(acc.id || acc.account_id, acc)
+      }
+    }
+  } catch (err) {
+    console.warn('Error fetching /me/adaccounts:', err)
   }
 
-  return data.data || []
+  // 2. Business Manager accounts (/me/businesses)
+  try {
+    const bizUrl = `${BASE_URL}/me/businesses?fields=id,name,owned_ad_accounts{id,name,account_id,currency,account_status},client_ad_accounts{id,name,account_id,currency,account_status}&limit=50&access_token=${accessToken}`
+    const bizRes = await fetch(bizUrl)
+    const bizData = await bizRes.json()
+    if (bizData.data && Array.isArray(bizData.data)) {
+      for (const biz of bizData.data) {
+        if (biz.owned_ad_accounts?.data) {
+          for (const acc of biz.owned_ad_accounts.data) {
+            allAccounts.set(acc.id || acc.account_id, {
+              ...acc,
+              name: acc.name ? `${biz.name} - ${acc.name}` : `${biz.name} Ad Account`,
+            })
+          }
+        }
+        if (biz.client_ad_accounts?.data) {
+          for (const acc of biz.client_ad_accounts.data) {
+            allAccounts.set(acc.id || acc.account_id, {
+              ...acc,
+              name: acc.name ? `${biz.name} - ${acc.name}` : `${biz.name} Client Ad Account`,
+            })
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Error fetching /me/businesses ad accounts:', err)
+  }
+
+  return Array.from(allAccounts.values())
 }
 
 /**
