@@ -5,7 +5,7 @@ import { withZeroTrustGuard } from '@/lib/security/zero-trust-guard'
 export async function GET(request: Request) {
   return withZeroTrustGuard(request, { permission: 'meta_ads:read' }, async (ctx) => {
     try {
-      const accounts = await getActiveMetaAdAccounts(ctx.accountId)
+      const accounts = await getActiveMetaAdAccounts(ctx.accountId, ctx.userId)
       const primary = accounts?.[0] || null
 
       return NextResponse.json({ 

@@ -82,6 +82,15 @@ export default function MetaAdsSettingsPage() {
       return
     }
 
+    if (params.has("success")) {
+      setExchangeSuccess(true)
+      fetchSettings()
+      // Retry once after 1.5 seconds to account for database replication
+      setTimeout(() => fetchSettings(), 1500)
+      setTimeout(() => setExchangeSuccess(false), 8000)
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+
     if (code) {
       setIsExchanging(true)
       setExchangeError(null)
@@ -107,6 +116,7 @@ export default function MetaAdsSettingsPage() {
             setAccountName(data.primaryAccount.name || "Meta Ad Account")
           }
           await fetchSettings()
+          setTimeout(() => fetchSettings(), 1500)
           setTimeout(() => setExchangeSuccess(false), 8000)
         })
         .catch((err: any) => {

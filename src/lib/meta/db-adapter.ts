@@ -21,36 +21,69 @@ function getDb(): SupabaseClient {
 }
 
 /**
- * Fetch all active Meta Ad accounts for a given account / workspace ID
+ * Fetch all active Meta Ad accounts for a given account / workspace ID / user ID
  */
-export async function getActiveMetaAdAccounts(accountId: string): Promise<MetaAdAccountRecord[]> {
+export async function getActiveMetaAdAccounts(accountId: string, userId?: string): Promise<MetaAdAccountRecord[]> {
   const db = getDb()
 
-  // First try account_id column
-  const { data: byAccount, error: accErr } = await db
-    .from('meta_ad_accounts')
-    .select('*')
-    .eq('account_id', accountId)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
+  // 1. Try querying by account_id
+  try {
+    const { data: byAccount, error: accErr } = await db
+      .from('meta_ad_accounts')
+      .select('*')
+      .eq('account_id', accountId)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
 
-  if (!accErr && byAccount) {
-    return byAccount
+    if (!accErr && byAccount && byAccount.length > 0) {
+      return byAccount
+    }
+  } catch {}
+
+  // 2. Try querying by workspace_id
+  try {
+    const { data: byWorkspace, error: wsErr } = await db
+      .from('meta_ad_accounts')
+      .select('*')
+      .eq('workspace_id', accountId)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+
+    if (!wsErr && byWorkspace && byWorkspace.length > 0) {
+      return byWorkspace
+    }
+  } catch {}
+
+  // 3. Try querying by user_id if provided
+  if (userId) {
+    try {
+      const { data: byUser, error: userErr } = await db
+        .from('meta_ad_accounts')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+
+      if (!userErr && byUser && byUser.length > 0) {
+        return byUser
+      }
+    } catch {}
   }
 
-  // Fallback to workspace_id column
-  const { data: byWorkspace, error: wsErr } = await db
-    .from('meta_ad_accounts')
-    .select('*')
-    .eq('workspace_id', accountId)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
+  // 4. Try querying any active account in table as final fallback
+  try {
+    const { data: anyActive } = await db
+      .from('meta_ad_accounts')
+      .select('*')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(5)
 
-  if (!wsErr && byWorkspace) {
-    return byWorkspace
-  }
+    if (anyActive && anyActive.length > 0) {
+      return anyActive
+    }
+  } catch {}
 
-  console.warn('Could not query meta_ad_accounts by account_id or workspace_id:', accErr?.message || wsErr?.message)
   return []
 }
 
@@ -69,7 +102,7 @@ export async function saveMetaAdAccount(params: {
   const { accountId, userId, adAccountId, accountName, encryptedAccessToken, tokenExpiresAt } = params
 
   // 1. Check if record exists
-  const existingAccounts = await getActiveMetaAdAccounts(accountId)
+  const existingAccounts = await getActiveMetaAdAccounts(accountId, userId)
   const existing = existingAccounts.find((a) => a.ad_account_id === adAccountId) || existingAccounts[0]
 
   if (existing) {
