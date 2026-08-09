@@ -107,7 +107,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // /admin routes — must be authenticated AND is_platform_admin
-  if (request.nextUrl.pathname.startsWith('/admin')) {
+  if ((request.nextUrl.pathname.startsWith('/admin/') || request.nextUrl.pathname === '/admin') && request.nextUrl.pathname !== '/admin-forbidden') {
     if (!user) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'

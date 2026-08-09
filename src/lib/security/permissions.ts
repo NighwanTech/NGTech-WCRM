@@ -116,6 +116,7 @@ export const PERMISSION_DEPENDENCIES: Partial<Record<Permission, Permission>> = 
 export const ROLE_PERMISSION_MAP: Record<string, Set<Permission>> = {
   owner: new Set(['all']),
   admin: new Set([
+    'all',
     'security:read',
     'audit:read',
     'sessions:read',
@@ -136,6 +137,9 @@ export const ROLE_PERMISSION_MAP: Record<string, Set<Permission>> = {
     'sequences:manage',
     'settings:write',
     'team:manage',
+    'billing:manage',
+    'meta_ads:read',
+    'meta_ads:manage',
   ]),
   manager: new Set([
     'security:read',
@@ -151,6 +155,8 @@ export const ROLE_PERMISSION_MAP: Record<string, Set<Permission>> = {
     'broadcasts:launch',
     'sequences:manage',
     'team:manage',
+    'meta_ads:read',
+    'meta_ads:manage',
   ]),
   agent: new Set([
     'sessions:read',
