@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Sparkles, MessageSquare, Users, ShoppingBag, Check, Rocket, Loader2, Building2 } from "lucide-react"
+import { ArrowLeft, Sparkles, MessageSquare, Users, ShoppingBag, Check, Rocket, Loader2, Building2, Palette, Image as ImageIcon } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { AIAdStrategyOutput } from "@/lib/meta/ai-ad-engine"
+import { toast } from "sonner"
 
 function CreateAIAdContent() {
   const router = useRouter()
@@ -37,7 +38,37 @@ function CreateAIAdContent() {
   const [selectedPrimaryText, setSelectedPrimaryText] = useState("")
   const [selectedCta, setSelectedCta] = useState("Send WhatsApp Message")
 
+  // Graphics Studio State
+  const [graphicMode, setGraphicMode] = useState<"ai" | "upload" | "presets">("ai")
+  const [imageUrl, setImageUrl] = useState("https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&auto=format&fit=crop&q=80")
+  const [aiGraphicPrompt, setAiGraphicPrompt] = useState("")
+  const [generatingGraphic, setGeneratingGraphic] = useState(false)
+
   const [launching, setLaunching] = useState(false)
+
+  const handleGenerateAIGraphic = async (customPrompt?: string) => {
+    setGeneratingGraphic(true)
+    try {
+      const res = await fetch("/api/meta/ai/generate-graphic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: customPrompt || aiGraphicPrompt || businessName || businessType,
+          headline: selectedHeadline,
+          businessType,
+        }),
+      })
+      const data = await res.json()
+      if (data.success && data.imageUrl) {
+        setImageUrl(data.imageUrl)
+        toast.success("AI Graphic banner generated!")
+      }
+    } catch {
+      toast.error("Failed to generate graphic")
+    } finally {
+      setGeneratingGraphic(false)
+    }
+  }
 
   // Fetch connected ad accounts on mount
   useEffect(() => {
@@ -377,7 +408,146 @@ function CreateAIAdContent() {
 
             <div className="pt-4 flex justify-between">
               <Button variant="outline" onClick={() => setStep(3)}>Back</Button>
-              <Button onClick={() => setStep(5)} className="gap-2">
+              <Button onClick={() => setStep(4.5)} className="gap-2 font-bold">
+                Continue to Ad Graphics
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* STEP 4.5: AD CREATIVE GRAPHICS (UPLOAD VS ASK AI VS PRESETS) */}
+      {step === 4.5 && (
+        <Card className="border bg-card shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="w-5 h-5 text-primary" /> Ad Graphics Studio
+            </CardTitle>
+            <CardDescription>Choose your ad visual banner — Ask AI to generate one, upload your own, or pick a template.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Mode Switcher */}
+            <div className="flex rounded-xl bg-muted p-1 text-sm font-semibold max-w-md">
+              <button
+                type="button"
+                onClick={() => setGraphicMode("ai")}
+                className={`flex-1 py-1.5 text-center rounded-lg transition-all text-xs font-bold ${
+                  graphicMode === "ai" ? "bg-background text-primary shadow-xs" : "text-muted-foreground"
+                }`}
+              >
+                ✨ Ask AI to Create
+              </button>
+              <button
+                type="button"
+                onClick={() => setGraphicMode("upload")}
+                className={`flex-1 py-1.5 text-center rounded-lg transition-all text-xs font-bold ${
+                  graphicMode === "upload" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
+                }`}
+              >
+                📤 Upload / URL
+              </button>
+              <button
+                type="button"
+                onClick={() => setGraphicMode("presets")}
+                className={`flex-1 py-1.5 text-center rounded-lg transition-all text-xs font-bold ${
+                  graphicMode === "presets" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
+                }`}
+              >
+                🖼️ Niche Templates
+              </button>
+            </div>
+
+            {/* AI Generation Mode */}
+            {graphicMode === "ai" && (
+              <div className="p-4 rounded-xl border bg-primary/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="font-bold text-xs text-primary flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4" /> AI Ad Banner Prompt
+                  </Label>
+                  <span className="text-[10px] text-muted-foreground">Creates High-CTR Visuals</span>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Input
+                    value={aiGraphicPrompt}
+                    onChange={(e) => setAiGraphicPrompt(e.target.value)}
+                    placeholder={`e.g. High-converting modern banner for ${selectedHeadline || businessName}`}
+                    className="font-medium text-sm bg-background flex-1"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => handleGenerateAIGraphic()}
+                    disabled={generatingGraphic}
+                    className="gap-2 font-bold shrink-0 bg-primary text-primary-foreground shadow-sm w-full sm:w-auto"
+                  >
+                    {generatingGraphic ? <Loader2 className="w-4 h-4 animate-spin" /> : <Palette className="w-4 h-4" />}
+                    Generate Graphic
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Upload Mode */}
+            {graphicMode === "upload" && (
+              <div className="p-4 rounded-xl border bg-muted/20 space-y-2">
+                <Label htmlFor="createImgUrl" className="font-semibold text-xs">Image URL / Asset Link</Label>
+                <Input
+                  id="createImgUrl"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://images.unsplash.com/... or your custom banner link"
+                  className="font-mono text-xs bg-background"
+                />
+              </div>
+            )}
+
+            {/* Presets Mode */}
+            {graphicMode === "presets" && (
+              <div className="p-4 rounded-xl border bg-muted/20 space-y-3">
+                <Label className="font-semibold text-xs">Curated High-Converting Business Templates</Label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+                  {[
+                    { label: "🏥 Medical & Doctors", query: "doctor medical hospital" },
+                    { label: "💍 Events & Weddings", query: "wedding event stage" },
+                    { label: "🏋️ Fitness & Sports", query: "fitness sports workout" },
+                    { label: "✈️ Travel & Resorts", query: "luxury resort travel" },
+                  ].map((item, idx) => (
+                    <Button
+                      key={idx}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleGenerateAIGraphic(item.query)}
+                      disabled={generatingGraphic}
+                      className="text-xs h-9 font-medium bg-background hover:bg-primary/5 justify-center"
+                    >
+                      {item.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Live Visual Graphic Preview */}
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Graphic Preview</Label>
+              <div className="w-full max-w-md h-52 rounded-xl overflow-hidden border bg-muted relative">
+                <img
+                  src={imageUrl}
+                  alt="Ad Banner Preview"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    ;(e.target as HTMLElement).setAttribute(
+                      "src",
+                      "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&auto=format&fit=crop&q=80"
+                    )
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 flex justify-between">
+              <Button variant="outline" onClick={() => setStep(4)}>Back</Button>
+              <Button onClick={() => setStep(5)} className="gap-2 font-bold">
                 Continue to Launch
               </Button>
             </div>

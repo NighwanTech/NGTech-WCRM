@@ -77,12 +77,40 @@ export function CampaignEditModal({
   const [ctaText, setCtaText] = useState("Send WhatsApp Message")
   const [imageUrl, setImageUrl] = useState("https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&auto=format&fit=crop&q=60")
 
+  // Graphics Studio State (Upload vs AI Generation)
+  const [graphicMode, setGraphicMode] = useState<"upload" | "ai" | "presets">("ai")
+  const [aiGraphicPrompt, setAiGraphicPrompt] = useState("")
+  const [generatingGraphic, setGeneratingGraphic] = useState(false)
+
   // 4. AI Strategic Co-Pilot State
   const [auditing, setAuditing] = useState(false)
   const [aiAudit, setAiAudit] = useState<any>(null)
   const [copiedText, setCopiedText] = useState<string | null>(null)
 
   const isACTIVE = status === "ACTIVE"
+
+  const handleGenerateAIGraphic = async (customPrompt?: string) => {
+    setGeneratingGraphic(true)
+    try {
+      const res = await fetch("/api/meta/ai/generate-graphic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: customPrompt || aiGraphicPrompt || name,
+          headline,
+        }),
+      })
+      const data = await res.json()
+      if (data.success && data.imageUrl) {
+        setImageUrl(data.imageUrl)
+        toast.success("AI Ad Graphic generated and applied to live preview!")
+      }
+    } catch {
+      toast.error("Failed to generate AI graphic")
+    } finally {
+      setGeneratingGraphic(false)
+    }
+  }
 
   // Fetch Meta Graph hierarchy details on mount if open
   useEffect(() => {
@@ -533,7 +561,7 @@ export function CampaignEditModal({
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="cta" className="font-semibold text-xs">Call To Action (CTA)</Label>
                     <select
@@ -551,16 +579,108 @@ export function CampaignEditModal({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="imgUrl" className="font-semibold text-xs">Creative Image URL</Label>
+                    <Label className="font-semibold text-xs">Ad Graphics Source</Label>
+                    <div className="flex rounded-lg bg-muted p-0.5 text-xs font-medium">
+                      <button
+                        type="button"
+                        onClick={() => setGraphicMode("ai")}
+                        className={`flex-1 py-1 text-center rounded-md transition-all text-[11px] font-bold ${
+                          graphicMode === "ai" ? "bg-background text-primary shadow-xs" : "text-muted-foreground"
+                        }`}
+                      >
+                        ✨ Ask AI
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setGraphicMode("upload")}
+                        className={`flex-1 py-1 text-center rounded-md transition-all text-[11px] font-bold ${
+                          graphicMode === "upload" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
+                        }`}
+                      >
+                        📤 Upload / URL
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setGraphicMode("presets")}
+                        className={`flex-1 py-1 text-center rounded-md transition-all text-[11px] font-bold ${
+                          graphicMode === "presets" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
+                        }`}
+                      >
+                        🖼️ Presets
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* GRAPHIC MODE 1: ASK AI TO GENERATE */}
+                {graphicMode === "ai" && (
+                  <div className="p-3.5 rounded-xl border bg-primary/5 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-bold text-primary flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5" /> AI Ad Graphic Generator
+                      </Label>
+                      <span className="text-[10px] text-muted-foreground">Generates 4K Ad Visuals</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        value={aiGraphicPrompt}
+                        onChange={(e) => setAiGraphicPrompt(e.target.value)}
+                        placeholder={`e.g. Modern commercial banner for ${headline || name}`}
+                        className="text-xs font-medium bg-background"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => handleGenerateAIGraphic()}
+                        disabled={generatingGraphic}
+                        className="text-xs font-bold gap-1.5 shrink-0 bg-primary text-primary-foreground shadow-sm"
+                      >
+                        {generatingGraphic ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Palette className="w-3.5 h-3.5" />}
+                        Generate
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* GRAPHIC MODE 2: UPLOAD / CUSTOM URL */}
+                {graphicMode === "upload" && (
+                  <div className="space-y-1.5 p-3 rounded-xl border bg-muted/20">
+                    <Label htmlFor="imgUrl" className="font-semibold text-xs">Image URL / Media Asset Link</Label>
                     <Input
                       id="imgUrl"
                       value={imageUrl}
                       onChange={(e) => setImageUrl(e.target.value)}
-                      className="text-xs"
-                      placeholder="https://..."
+                      className="text-xs font-mono bg-background"
+                      placeholder="https://images.unsplash.com/... or your uploaded banner link"
                     />
                   </div>
-                </div>
+                )}
+
+                {/* GRAPHIC MODE 3: NICHE PRESETS */}
+                {graphicMode === "presets" && (
+                  <div className="space-y-2 p-3 rounded-xl border bg-muted/20">
+                    <Label className="font-semibold text-xs">1-Click Niche Advertising Templates</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { label: "🏥 Medical & Doctors", query: "doctor medical hospital" },
+                        { label: "💍 Events & Weddings", query: "wedding event stage" },
+                        { label: "🏋️ Fitness & Sports", query: "fitness sports workout" },
+                        { label: "✈️ Travel & Resorts", query: "luxury resort travel" },
+                      ].map((item, idx) => (
+                        <Button
+                          key={idx}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleGenerateAIGraphic(item.query)}
+                          disabled={generatingGraphic}
+                          className="text-xs justify-start h-8 font-medium bg-background hover:bg-primary/5"
+                        >
+                          {item.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="pt-3 border-t flex justify-end gap-2">
                   <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
@@ -573,38 +693,39 @@ export function CampaignEditModal({
 
               {/* Live Mobile Feed Ad Preview (5 cols) */}
               <div className="lg:col-span-5 flex flex-col items-center">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
-                  <Smartphone className="w-3.5 h-3.5" /> Live Mobile Feed Preview
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+                  <Smartphone className="w-3.5 h-3.5 text-primary" /> Live Mobile Feed Preview (Facebook / Instagram)
                 </Label>
 
                 {/* Facebook / Instagram Feed Mockup Card */}
-                <div className="w-full max-w-[320px] rounded-2xl border bg-card shadow-lg overflow-hidden text-xs">
+                <div className="w-full max-w-[360px] rounded-2xl border bg-card shadow-xl overflow-hidden text-xs transition-all">
                   {/* Header */}
                   <div className="p-3 flex items-center justify-between border-b bg-muted/20">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary text-[10px]">
-                        AI
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-emerald-600/20 text-emerald-700 flex items-center justify-center font-black text-xs">
+                        {name.substring(0, 2).toUpperCase()}
                       </div>
                       <div>
-                        <p className="font-bold text-xs text-foreground leading-tight truncate max-w-[170px]">{name}</p>
-                        <p className="text-[10px] text-muted-foreground">Sponsored • 🌐</p>
+                        <p className="font-bold text-xs text-foreground leading-tight truncate max-w-[200px]">{name}</p>
+                        <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                          Sponsored • <span className="text-[10px]">🌐</span>
+                        </p>
                       </div>
                     </div>
                   </div>
 
                   {/* Primary Text */}
-                  <div className="p-3 text-xs leading-relaxed text-foreground whitespace-pre-line line-clamp-3">
+                  <div className="p-3 text-xs leading-relaxed text-foreground whitespace-pre-line max-h-28 overflow-y-auto scrollbar-thin">
                     {primaryText}
                   </div>
 
                   {/* Creative Image */}
-                  <div className="w-full h-44 bg-muted overflow-hidden relative">
+                  <div className="w-full h-48 bg-muted overflow-hidden relative border-y">
                     <img
                       src={imageUrl}
                       alt="Ad Creative"
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        // Fallback placeholder image
                         ;(e.target as HTMLElement).setAttribute(
                           "src",
                           "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&auto=format&fit=crop&q=60"
@@ -614,14 +735,32 @@ export function CampaignEditModal({
                   </div>
 
                   {/* CTA Bar */}
-                  <div className="p-3 bg-muted/40 border-t flex items-center justify-between gap-2">
-                    <div className="space-y-0.5 max-w-[170px]">
-                      <p className="text-[10px] uppercase font-bold text-muted-foreground truncate">{destination.toUpperCase()}</p>
+                  <div className="p-3 bg-muted/30 border-b flex items-center justify-between gap-3">
+                    <div className="space-y-0.5 flex-1 min-w-0">
+                      <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider truncate">
+                        {destination === "whatsapp" ? "WHATSAPP.COM" : "OFFICIAL WEBSITE"}
+                      </p>
                       <p className="font-bold text-xs text-foreground truncate">{headline}</p>
                     </div>
-                    <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] h-8 px-2.5 gap-1 shrink-0">
-                      <MessageSquare className="w-3 h-3" /> {ctaText}
+                    <Button size="sm" className="bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold text-xs h-8 px-3 gap-1.5 shrink-0 shadow-sm">
+                      <MessageCircle className="w-3.5 h-3.5" /> {ctaText}
                     </Button>
+                  </div>
+
+                  {/* Social Action Bar (Like, Comment, Share) */}
+                  <div className="px-4 py-2 bg-card flex items-center justify-between text-muted-foreground">
+                    <div className="flex items-center gap-4">
+                      <span className="flex items-center gap-1 hover:text-red-500 cursor-pointer transition-colors">
+                        <Heart className="w-3.5 h-3.5" /> Like
+                      </span>
+                      <span className="flex items-center gap-1 hover:text-blue-500 cursor-pointer transition-colors">
+                        <MessageSquare className="w-3.5 h-3.5" /> Comment
+                      </span>
+                      <span className="flex items-center gap-1 hover:text-emerald-500 cursor-pointer transition-colors">
+                        <Share2 className="w-3.5 h-3.5" /> Share
+                      </span>
+                    </div>
+                    <Bookmark className="w-3.5 h-3.5" />
                   </div>
                 </div>
               </div>
