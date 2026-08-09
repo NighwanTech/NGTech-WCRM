@@ -18,14 +18,18 @@ export default function MetaAdsSettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [isConnected, setIsConnected] = useState(false)
+  const [accountName, setAccountName] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
         const res = await fetch("/api/meta/settings")
         const data = await res.json()
-        if (data.success && data.pixelId) {
-          setPixelId(data.pixelId)
+        if (data.success) {
+          if (data.pixelId) setPixelId(data.pixelId)
+          setIsConnected(data.isConnected || false)
+          setAccountName(data.accountName || null)
         }
       } catch (err) {
         console.error("Failed to fetch meta settings", err)
@@ -101,12 +105,22 @@ export default function MetaAdsSettingsPage() {
         <CardContent className="space-y-4">
           <div className="p-4 rounded-lg bg-muted/40 border flex items-center justify-between">
             <div>
-              <p className="font-medium text-sm text-foreground">Facebook Business OAuth</p>
-              <p className="text-xs text-muted-foreground">App ID: 843808418636023</p>
+              <p className="font-medium text-sm text-foreground">
+                {isConnected ? `Connected: ${accountName || 'Meta Ad Account'}` : 'Facebook Business OAuth'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {isConnected ? 'Active Authorization Token' : 'App ID: 843808418636023'}
+              </p>
             </div>
-            <Button onClick={handleFacebookOAuthLogin} className="bg-[#1877F2] hover:bg-[#166FE5] text-white gap-2">
-              Connect with Facebook
-            </Button>
+            {isConnected ? (
+              <Button variant="outline" onClick={handleFacebookOAuthLogin} className="gap-2 text-emerald-600 border-emerald-200 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-700">
+                <CheckCircle2 className="w-4 h-4" /> Re-Authenticate
+              </Button>
+            ) : (
+              <Button onClick={handleFacebookOAuthLogin} className="bg-[#1877F2] hover:bg-[#166FE5] text-white gap-2">
+                Connect with Facebook
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
