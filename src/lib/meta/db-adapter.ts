@@ -192,6 +192,25 @@ export async function updateMetaPixelId(accountId: string, pixelId: string): Pro
 /**
  * Disconnect / Detach all Meta Ad Accounts for a given account / workspace / user ID
  */
+/**
+ * Disconnect / Detach a single Meta Ad Account by ad_account_id
+ */
+export async function disconnectSingleMetaAdAccount(adAccountId: string, accountId: string): Promise<boolean> {
+  const db = getDb()
+
+  try {
+    await db
+      .from('meta_ad_accounts')
+      .update({ status: 'disconnected' })
+      .eq('ad_account_id', adAccountId)
+  } catch {}
+
+  return true
+}
+
+/**
+ * Disconnect / Detach all Meta Ad Accounts for a given account / workspace / user ID
+ */
 export async function disconnectMetaAdAccounts(accountId: string, userId?: string): Promise<boolean> {
   const db = getDb()
 

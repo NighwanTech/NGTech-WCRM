@@ -18,7 +18,8 @@ import {
   ExternalLink,
   AlertCircle,
   RefreshCw,
-  LineChart
+  LineChart,
+  Trash2
 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
@@ -49,6 +50,8 @@ export default function MetaAdsSettingsPage() {
   const [isExchanging, setIsExchanging] = useState(false)
   const [exchangeError, setExchangeError] = useState<string | null>(null)
   const [exchangeSuccess, setExchangeSuccess] = useState(false)
+  const [disconnecting, setDisconnecting] = useState(false)
+  const [detachingId, setDetachingId] = useState<string | null>(null)
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -132,10 +135,8 @@ export default function MetaAdsSettingsPage() {
     }
   }, [fetchSettings])
 
-  const [disconnecting, setDisconnecting] = useState(false)
-
   const handleDisconnectMetaAccount = async () => {
-    if (!confirm("Are you sure you want to detach and disconnect this Meta Ad Account?")) {
+    if (!confirm("Are you sure you want to disconnect and detach ALL Meta Ad Accounts?")) {
       return
     }
     setDisconnecting(true)
@@ -151,6 +152,24 @@ export default function MetaAdsSettingsPage() {
       console.error("Failed to disconnect", e)
     } finally {
       setDisconnecting(false)
+    }
+  }
+
+  const handleDetachSingleAccount = async (adAccountId: string) => {
+    if (!confirm(`Are you sure you want to detach this Ad Account (${adAccountId})?`)) return
+    setDetachingId(adAccountId)
+    try {
+      const res = await fetch(`/api/meta/settings?adAccountId=${encodeURIComponent(adAccountId)}`, {
+        method: "DELETE",
+      })
+      const data = await res.json()
+      if (data.success) {
+        setAdAccounts((prev) => prev.filter((a) => a.ad_account_id !== adAccountId))
+      }
+    } catch (err) {
+      console.error("Failed to detach account", err)
+    } finally {
+      setDetachingId(null)
     }
   }
 
@@ -298,7 +317,7 @@ export default function MetaAdsSettingsPage() {
                   variant="outline"
                   className="text-destructive hover:bg-destructive/10 border-destructive/30 gap-1.5 text-xs font-semibold"
                 >
-                  {disconnecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Disconnect / Detach"}
+                  {disconnecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Disconnect All Accounts"}
                 </Button>
               )}
 
@@ -351,6 +370,22 @@ export default function MetaAdsSettingsPage() {
                           <Rocket className="w-3.5 h-3.5" /> Run Ads
                         </Button>
                       </Link>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDetachSingleAccount(adAcc.ad_account_id)}
+                        disabled={detachingId === adAcc.ad_account_id}
+                        className="text-destructive hover:bg-destructive/10 text-xs px-2.5 border border-destructive/20 gap-1 font-medium"
+                        title="Detach only this ad account"
+                      >
+                        {detachingId === adAcc.ad_account_id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <>
+                            <Trash2 className="w-3.5 h-3.5" /> Detach
+                          </>
+                        )}
+                      </Button>
                     </div>
                   </div>
                 ))}

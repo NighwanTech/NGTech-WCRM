@@ -45,8 +45,17 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   return withZeroTrustGuard(request, { permission: 'meta_ads:manage' }, async (ctx) => {
     try {
+      const { searchParams } = new URL(request.url)
+      const targetAdAccountId = searchParams.get('adAccountId')
+
+      if (targetAdAccountId) {
+        const { disconnectSingleMetaAdAccount } = await import('@/lib/meta/db-adapter')
+        await disconnectSingleMetaAdAccount(targetAdAccountId, ctx.accountId)
+        return NextResponse.json({ success: true, message: `Ad Account ${targetAdAccountId} successfully detached` })
+      }
+
       await disconnectMetaAdAccounts(ctx.accountId, ctx.userId)
-      return NextResponse.json({ success: true, message: 'Meta Ad Account successfully disconnected' })
+      return NextResponse.json({ success: true, message: 'All Meta Ad Accounts successfully disconnected' })
     } catch (error: any) {
       console.error('Disconnect meta error:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
