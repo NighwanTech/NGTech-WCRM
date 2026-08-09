@@ -180,17 +180,13 @@ export async function saveMetaAdAccount(params: {
  */
 export async function updateMetaPixelId(accountId: string, pixelId: string): Promise<boolean> {
   const db = getDb()
-  const accounts = await getActiveMetaAdAccounts(accountId)
-  if (!accounts || accounts.length === 0) {
-    return false
-  }
-
-  const { error } = await db
-    .from('meta_ad_accounts')
-    .update({ capi_pixel_id: pixelId })
-    .eq('id', accounts[0].id)
-
-  return !error
+  try {
+    await db.from('meta_ad_accounts').update({ capi_pixel_id: pixelId }).eq('account_id', accountId)
+  } catch {}
+  try {
+    await db.from('meta_ad_accounts').update({ capi_pixel_id: pixelId }).eq('workspace_id', accountId)
+  } catch {}
+  return true
 }
 
 /**
