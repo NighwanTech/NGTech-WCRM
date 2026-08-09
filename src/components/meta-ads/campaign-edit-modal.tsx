@@ -233,7 +233,7 @@ export function CampaignEditModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl w-[95vw] max-h-[92vh] overflow-y-auto p-6">
+      <DialogContent className="sm:max-w-5xl md:max-w-6xl w-[95vw] sm:w-[92vw] max-w-[1250px] max-h-[92vh] overflow-y-auto p-6">
         <DialogHeader className="border-b pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
