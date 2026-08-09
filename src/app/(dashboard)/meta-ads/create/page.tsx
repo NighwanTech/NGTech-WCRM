@@ -1,22 +1,27 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Sparkles, MessageSquare, Users, ShoppingBag, Check, Rocket, Loader2 } from "lucide-react"
+import { ArrowLeft, Sparkles, MessageSquare, Users, ShoppingBag, Check, Rocket, Loader2, Building2 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { AIAdStrategyOutput } from "@/lib/meta/ai-ad-engine"
 
-export default function CreateAIAdPage() {
+function CreateAIAdContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const initialAdAccountId = searchParams.get("adAccountId") || ""
+
   const { account } = useAuth()
   const workspaceId = account?.id
+
+  const [adAccounts, setAdAccounts] = useState<any[]>([])
+  const [selectedAdAccountId, setSelectedAdAccountId] = useState<string>(initialAdAccountId)
 
   const [step, setStep] = useState(1)
   const [goal, setGoal] = useState("whatsapp")
@@ -33,6 +38,21 @@ export default function CreateAIAdPage() {
   const [selectedCta, setSelectedCta] = useState("Send WhatsApp Message")
 
   const [launching, setLaunching] = useState(false)
+
+  // Fetch connected ad accounts on mount
+  useEffect(() => {
+    fetch("/api/meta/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.adAccounts && data.adAccounts.length > 0) {
+          setAdAccounts(data.adAccounts)
+          if (!selectedAdAccountId) {
+            setSelectedAdAccountId(initialAdAccountId || data.adAccounts[0].ad_account_id)
+          }
+        }
+      })
+      .catch((err) => console.error("Failed to load ad accounts for builder", err))
+  }, [initialAdAccountId, selectedAdAccountId])
 
   // Step 2 -> Step 3: Trigger AI Generation
   const handleGenerateStrategy = async () => {
@@ -73,6 +93,7 @@ export default function CreateAIAdPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           workspaceId,
+          adAccountId: selectedAdAccountId,
           name: `${businessName} AI Campaign`,
           objective: strategy?.suggestedObjective || "OUTCOME_ENGAGEMENT",
           dailyBudget,
@@ -87,7 +108,7 @@ export default function CreateAIAdPage() {
 
       const data = await res.json()
       if (data.success) {
-        router.push("/meta-ads")
+        router.push(selectedAdAccountId ? `/meta-ads?adAccountId=${selectedAdAccountId}` : "/meta-ads")
       }
     } catch (err) {
       console.error("Ad launch failed:", err)
@@ -99,44 +120,76 @@ export default function CreateAIAdPage() {
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/meta-ads">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-        </Link>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight">AI Meta Ad Builder</h1>
-            <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary border-primary/20">
-              <Sparkles className="w-3 h-3 animate-pulse" /> Autonomous Ad OS
-            </Badge>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Link href="/meta-ads">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          </Link>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold tracking-tight">AI Meta Ad Builder</h1>
+              <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary border-primary/20">
+                <Sparkles className="w-3 h-3 animate-pulse" /> Autonomous Ad OS
+              </Badge>
+            </div>
+            <p className="text-muted-foreground text-sm">
+              Launch high-converting Facebook & Instagram ads powered by AI targeting and copy generation.
+            </p>
           </div>
-          <p className="text-muted-foreground text-sm">
-            Launch high-converting Facebook & Instagram ads powered by AI targeting and copy generation.
-          </p>
         </div>
+
+        {/* Target Ad Account Selector */}
+        {adAccounts.length > 0 && (
+          <div className="flex items-center gap-2 bg-muted/70 px-3.5 py-2 rounded-xl border shadow-sm self-start md:self-auto">
+            <Building2 className="w-4 h-4 text-primary shrink-0" />
+            <div className="space-y-0.5">
+              <p className="text-[10px] uppercase font-bold text-muted-foreground">Target Ad Account</p>
+              <select
+                value={selectedAdAccountId}
+                onChange={(e) => setSelectedAdAccountId(e.target.value)}
+                className="bg-transparent text-xs font-bold text-foreground focus:outline-none cursor-pointer max-w-[220px] truncate"
+              >
+                {adAccounts.map((acc) => (
+                  <option key={acc.id || acc.ad_account_id} value={acc.ad_account_id} className="bg-popover text-popover-foreground">
+                    {acc.account_name || acc.ad_account_id}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Progress Steps */}
-      <div className="flex items-center justify-between border-b pb-4 text-xs font-semibold text-muted-foreground">
-        <span className={step >= 1 ? "text-primary font-bold" : ""}>1. Business Goal</span>
-        <span>→</span>
-        <span className={step >= 2 ? "text-primary font-bold" : ""}>2. Business Profile</span>
-        <span>→</span>
-        <span className={step >= 3 ? "text-primary font-bold" : ""}>3. AI Target Audience</span>
-        <span>→</span>
-        <span className={step >= 4 ? "text-primary font-bold" : ""}>4. AI Ad Copy</span>
-        <span>→</span>
-        <span className={step >= 5 ? "text-primary font-bold" : ""}>5. Budget & Launch</span>
+      {/* STEP INDICATOR */}
+      <div className="flex items-center justify-between max-w-2xl mx-auto py-2">
+        {[
+          { num: 1, label: "Goal" },
+          { num: 2, label: "Profile" },
+          { num: 3, label: "Audience" },
+          { num: 4, label: "Ad Copy" },
+          { num: 5, label: "Launch" },
+        ].map((s) => (
+          <div key={s.num} className="flex items-center gap-2">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-colors ${
+                step >= s.num ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {step > s.num ? <Check className="w-4 h-4" /> : s.num}
+            </div>
+            <span className="text-xs font-medium hidden md:inline">{s.label}</span>
+          </div>
+        ))}
       </div>
 
-      {/* STEP 1: BUSINESS GOAL */}
+      {/* STEP 1: CAMPAIGN GOAL */}
       {step === 1 && (
         <Card className="border bg-card shadow-sm">
           <CardHeader>
-            <CardTitle>Select Your Primary Ad Goal</CardTitle>
-            <CardDescription>What business result do you want to achieve with this campaign?</CardDescription>
+            <CardTitle>What is your primary advertising goal?</CardTitle>
+            <CardDescription>Select the core objective for this autonomous ad campaign.</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div
@@ -145,7 +198,7 @@ export default function CreateAIAdPage() {
                 goal === "whatsapp" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
               }`}
             >
-              <MessageSquare className="w-8 h-8 text-amber-500 mb-3" />
+              <MessageSquare className="w-8 h-8 text-emerald-500 mb-3" />
               <h4 className="font-bold text-base">Click-to-WhatsApp</h4>
               <p className="text-xs text-muted-foreground mt-1">Drive prospects straight into WhatsApp automated AI chats.</p>
             </div>
@@ -167,7 +220,7 @@ export default function CreateAIAdPage() {
                 goal === "sales" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
               }`}
             >
-              <ShoppingBag className="w-8 h-8 text-emerald-500 mb-3" />
+              <ShoppingBag className="w-8 h-8 text-indigo-500 mb-3" />
               <h4 className="font-bold text-base">Website Conversions</h4>
               <p className="text-xs text-muted-foreground mt-1">Drive targeted website traffic and product sales.</p>
             </div>
@@ -337,9 +390,33 @@ export default function CreateAIAdPage() {
         <Card className="border bg-card shadow-sm">
           <CardHeader>
             <CardTitle>Set Daily Budget & Launch Ad</CardTitle>
-            <CardDescription>Review campaign budget and publish to Meta in one click.</CardDescription>
+            <CardDescription>Review campaign budget, target ad account, and publish to Meta in one click.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Account Selector in Step 5 */}
+            {adAccounts.length > 0 && (
+              <div className="p-3.5 rounded-xl border bg-muted/40 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-semibold text-muted-foreground">Publishing To:</span>
+                  <span className="text-xs font-bold text-foreground">
+                    {adAccounts.find((a) => a.ad_account_id === selectedAdAccountId)?.account_name || selectedAdAccountId}
+                  </span>
+                </div>
+                <select
+                  value={selectedAdAccountId}
+                  onChange={(e) => setSelectedAdAccountId(e.target.value)}
+                  className="bg-background border rounded-lg px-2.5 py-1 text-xs font-semibold text-foreground focus:outline-none cursor-pointer"
+                >
+                  {adAccounts.map((acc) => (
+                    <option key={acc.id || acc.ad_account_id} value={acc.ad_account_id}>
+                      {acc.account_name || acc.ad_account_id}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="budget">Daily Ad Budget (₹ INR)</Label>
               <Input
@@ -360,7 +437,7 @@ export default function CreateAIAdPage() {
 
             <div className="pt-4 flex justify-between">
               <Button variant="outline" onClick={() => setStep(4)}>Back</Button>
-              <Button onClick={handleLaunchAd} disabled={launching} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
+              <Button onClick={handleLaunchAd} disabled={launching} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 font-bold shadow-md">
                 {launching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Rocket className="w-4 h-4" />}
                 Launch Campaign via Meta API
               </Button>
@@ -369,5 +446,13 @@ export default function CreateAIAdPage() {
         </Card>
       )}
     </div>
+  )
+}
+
+export default function CreateAIAdPage() {
+  return (
+    <Suspense fallback={<div className="p-6 max-w-4xl mx-auto flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}>
+      <CreateAIAdContent />
+    </Suspense>
   )
 }

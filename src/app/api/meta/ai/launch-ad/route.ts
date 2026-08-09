@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   return withZeroTrustGuard(request, { permission: 'meta_ads:manage' }, async (ctx) => {
     try {
       const body = await request.json()
-      const { name, objective, dailyBudget, headline, primaryText, ctaText, ageMin, ageMax, location } = body
+      const { name, objective, dailyBudget, headline, primaryText, ctaText, ageMin, ageMax, location, adAccountId } = body
 
       if (!name || !headline || !primaryText) {
         return NextResponse.json({ error: 'name, headline, and primaryText are required' }, { status: 400 })
@@ -17,9 +17,11 @@ export async function POST(request: Request) {
 
       const db = getAdminClient()
 
-      // 1. Fetch connected Meta Ad Account
-      const accounts = await getActiveMetaAdAccounts(ctx.accountId)
-      const adAccount = accounts?.[0] || null
+      // 1. Fetch connected Meta Ad Account (match target adAccountId if provided)
+      const accounts = await getActiveMetaAdAccounts(ctx.accountId, ctx.userId)
+      const adAccount = adAccountId 
+        ? (accounts.find(a => a.ad_account_id === adAccountId) || accounts?.[0] || null)
+        : (accounts?.[0] || null)
 
       let metaCampaignId = null
 

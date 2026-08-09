@@ -7,7 +7,7 @@ import { AIInsightsPanel } from "@/components/meta-ads/ai-insights-panel"
 import { AdFunnelView } from "@/components/meta-ads/ad-funnel-view"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Megaphone, RefreshCw, Settings, FileText, Plus, Sparkles, Rocket, Image as ImageIcon, LineChart, BrainCircuit, Activity } from "lucide-react"
+import { Megaphone, RefreshCw, Settings, FileText, Plus, Rocket, Image as ImageIcon, LineChart, BrainCircuit, Activity, Building2 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { MetaCampaign } from "@/lib/meta/graph-api"
@@ -20,13 +20,18 @@ export default function MetaAdsDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [campaigns, setCampaigns] = useState<MetaCampaign[]>([])
   const [analytics, setAnalytics] = useState<any>(null)
+  const [adAccounts, setAdAccounts] = useState<any[]>([])
+  const [selectedAccountId, setSelectedAccountId] = useState<string>("")
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (targetAccId?: string) => {
     setLoading(true)
     try {
+      const activeId = targetAccId !== undefined ? targetAccId : selectedAccountId
+      const queryParam = activeId ? `?adAccountId=${encodeURIComponent(activeId)}` : ""
+
       const [campRes, anaRes] = await Promise.all([
-        fetch(`/api/meta/campaigns`),
-        fetch(`/api/meta/analytics?days=30`)
+        fetch(`/api/meta/campaigns${queryParam}`),
+        fetch(`/api/meta/analytics?days=30${queryParam ? `&${queryParam.slice(1)}` : ""}`)
       ])
       
       const campData = await campRes.json()
@@ -35,12 +40,24 @@ export default function MetaAdsDashboardPage() {
       setConnected(campData.connected)
       setCampaigns(campData.campaigns || [])
       setAnalytics(anaData.analytics || null)
+
+      if (campData.adAccounts && campData.adAccounts.length > 0) {
+        setAdAccounts(campData.adAccounts)
+        if (!activeId) {
+          setSelectedAccountId(campData.selectedAccount?.ad_account_id || campData.adAccounts[0].ad_account_id)
+        }
+      }
     } catch (err) {
       console.error("Failed to fetch meta ads dashboard data:", err)
       setConnected(false)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleAccountChange = (newAccId: string) => {
+    setSelectedAccountId(newAccId)
+    fetchDashboardData(newAccId)
   }
 
   useEffect(() => {
@@ -71,13 +88,32 @@ export default function MetaAdsDashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Link href="/meta-ads/create">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Ad Account Switcher */}
+          {adAccounts.length > 0 && (
+            <div className="flex items-center gap-2 bg-muted/70 px-3 py-1.5 rounded-lg border shadow-sm">
+              <Building2 className="w-4 h-4 text-primary shrink-0" />
+              <span className="text-xs text-muted-foreground font-semibold shrink-0">Account:</span>
+              <select
+                value={selectedAccountId}
+                onChange={(e) => handleAccountChange(e.target.value)}
+                className="bg-transparent text-xs font-bold text-foreground focus:outline-none cursor-pointer max-w-[220px] truncate"
+              >
+                {adAccounts.map((acc) => (
+                  <option key={acc.id || acc.ad_account_id} value={acc.ad_account_id} className="bg-popover text-popover-foreground">
+                    {acc.account_name || acc.ad_account_id}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <Link href={selectedAccountId ? `/meta-ads/create?adAccountId=${selectedAccountId}` : `/meta-ads/create`}>
             <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 font-bold shadow-md">
               <Rocket className="w-4 h-4" /> Create Ad with AI
             </Button>
           </Link>
-          <Button variant="outline" size="sm" onClick={fetchDashboardData} disabled={loading} className="gap-2">
+          <Button variant="outline" size="sm" onClick={() => fetchDashboardData()} disabled={loading} className="gap-2">
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
           </Button>
           <Link href="/meta-ads/lead-forms">
@@ -165,7 +201,13 @@ export default function MetaAdsDashboardPage() {
       {/* Campaigns Table */}
       <Card className="border bg-card shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-xl font-bold">Active Meta Ad Campaigns</CardTitle>
+          <CardTitle className="text-xl font-bold">
+            {selectedAccountId ? (
+              <span>Campaigns for <span className="text-primary font-mono text-base">{adAccounts.find(a => a.ad_account_id === selectedAccountId)?.account_name || selectedAccountId}</span></span>
+            ) : (
+              "Active Meta Ad Campaigns"
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <CampaignsTable campaigns={campaigns} loading={loading} />

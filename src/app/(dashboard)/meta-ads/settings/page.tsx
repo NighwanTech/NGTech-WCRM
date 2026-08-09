@@ -17,7 +17,8 @@ import {
   Building2, 
   ExternalLink,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
+  LineChart
 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
@@ -340,9 +341,14 @@ export default function MetaAdsSettingsPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Link href="/meta-ads/create">
-                        <Button size="sm" variant="outline" className="text-xs gap-1">
-                          <Rocket className="w-3.5 h-3.5 text-emerald-600" /> Run Ads
+                      <Link href={`/meta-ads?adAccountId=${encodeURIComponent(adAcc.ad_account_id)}`}>
+                        <Button size="sm" variant="ghost" className="text-xs gap-1 border">
+                          <LineChart className="w-3.5 h-3.5 text-blue-500" /> View Dashboard
+                        </Button>
+                      </Link>
+                      <Link href={`/meta-ads/create?adAccountId=${encodeURIComponent(adAcc.ad_account_id)}`}>
+                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1 font-semibold">
+                          <Rocket className="w-3.5 h-3.5" /> Run Ads
                         </Button>
                       </Link>
                     </div>

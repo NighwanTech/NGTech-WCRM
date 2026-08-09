@@ -6,21 +6,28 @@ import { decryptToken } from '@/lib/meta/token-manager'
 import { withZeroTrustGuard } from '@/lib/security/zero-trust-guard'
 
 /**
- * GET - Fetch Meta Ad Campaigns for a given account
+ * GET - Fetch Meta Ad Campaigns for a given ad account
  */
 export async function GET(request: Request) {
   return withZeroTrustGuard(request, { permission: 'meta_ads:read' }, async (ctx) => {
     try {
-      const accounts = await getActiveMetaAdAccounts(ctx.accountId)
-      const adAccount = accounts?.[0] || null
+      const { searchParams } = new URL(request.url)
+      const requestedAdAccountId = searchParams.get('adAccountId')
 
-      if (!adAccount) {
+      const accounts = await getActiveMetaAdAccounts(ctx.accountId, ctx.userId)
+      if (!accounts || accounts.length === 0) {
         return NextResponse.json({
           connected: false,
           campaigns: [],
+          adAccounts: [],
           message: 'No active Meta Ad Account connected to this account.',
         })
       }
+
+      // Pick selected ad account or default to primary
+      const adAccount = requestedAdAccountId 
+        ? (accounts.find(a => a.ad_account_id === requestedAdAccountId) || accounts[0])
+        : accounts[0]
 
       // 2. Fetch live campaigns from Meta Graph API if access token is present
       const decryptedToken = decryptToken(adAccount.access_token)
@@ -58,20 +65,38 @@ export async function GET(request: Request) {
           .from('meta_campaign_cache')
           .select('*')
           .eq('account_id', ctx.accountId)
+          .order('last_synced_at', { ascending: false })
 
-        campaigns = cached || []
+        campaigns = (cached || []).map((c) => ({
+          id: c.campaign_id,
+          name: c.name,
+          status: c.status,
+          objective: c.objective,
+          daily_budget: c.daily_budget?.toString() || '0',
+          spend: c.spend?.toString() || '0',
+          impressions: c.impressions?.toString() || '0',
+          clicks: c.clicks?.toString() || '0',
+        }))
       }
 
       return NextResponse.json({
         connected: true,
-        adAccount: {
-          id: adAccount.ad_account_id,
-          name: adAccount.account_name,
+        adAccounts: accounts.map(a => ({
+          id: a.id,
+          ad_account_id: a.ad_account_id,
+          account_name: a.account_name,
+          status: a.status,
+        })),
+        selectedAccount: {
+          id: adAccount.id,
+          ad_account_id: adAccount.ad_account_id,
+          account_name: adAccount.account_name,
+          status: adAccount.status,
         },
         campaigns,
       })
     } catch (error: any) {
-      console.error('Error fetching Meta campaigns:', error)
+      console.error('Fetch campaigns error:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
   })
