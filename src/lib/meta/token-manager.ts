@@ -38,19 +38,47 @@ export function decryptToken(text: string): string {
 }
 
 /**
+ * Exchanges an OAuth authorization code from Facebook Login redirect for an access token.
+ */
+export async function exchangeCodeForAccessToken(code: string, redirectUri: string): Promise<{
+  accessToken: string
+  expiresIn?: number
+}> {
+  const appId = process.env.META_APP_ID || process.env.NEXT_PUBLIC_META_APP_ID || '843808418636023'
+  const appSecret = process.env.META_APP_SECRET || '44ae97f737651f0a9df9bda0588b3a13'
+  const apiVersion = process.env.META_API_VERSION || 'v20.0'
+
+  const url = `https://graph.facebook.com/${apiVersion}/oauth/access_token?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&client_secret=${appSecret}&code=${encodeURIComponent(code)}`
+
+  const response = await fetch(url)
+  const data = await response.json()
+
+  if (data.error) {
+    throw new Error(`Meta code exchange failed: ${data.error.message || JSON.stringify(data.error)}`)
+  }
+
+  // Attempt to exchange short-lived token for 60-day long-lived token
+  try {
+    const longLived = await exchangeForLongLivedToken(data.access_token)
+    return longLived
+  } catch {
+    return {
+      accessToken: data.access_token,
+      expiresIn: data.expires_in,
+    }
+  }
+}
+
+/**
  * Exchanges a short-lived Meta user token for a 60-day long-lived access token.
  */
 export async function exchangeForLongLivedToken(shortLivedToken: string): Promise<{
   accessToken: string
   expiresIn?: number
 }> {
-  const appId = process.env.META_APP_ID
-  const appSecret = process.env.META_APP_SECRET
+  const appId = process.env.META_APP_ID || process.env.NEXT_PUBLIC_META_APP_ID || '843808418636023'
+  const appSecret = process.env.META_APP_SECRET || '44ae97f737651f0a9df9bda0588b3a13'
   const apiVersion = process.env.META_API_VERSION || 'v20.0'
-
-  if (!appId || !appSecret) {
-    throw new Error('META_APP_ID and META_APP_SECRET environment variables are required.')
-  }
 
   const url = `https://graph.facebook.com/${apiVersion}/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${shortLivedToken}`
 

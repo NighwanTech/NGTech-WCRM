@@ -6,19 +6,25 @@ export async function GET(request: Request) {
   return withZeroTrustGuard(request, { permission: 'meta_ads:read' }, async (ctx) => {
     try {
       const db = supabaseAdmin()
-      const { data } = await db
+      const { data, error } = await db
         .from('meta_ad_accounts')
-        .select('capi_pixel_id, account_name, ad_account_id')
-        .eq('workspace_id', ctx.accountId)
+        .select('id, ad_account_id, account_name, capi_pixel_id, status, created_at')
+        .eq('account_id', ctx.accountId)
         .eq('status', 'active')
-        .limit(1)
-        .maybeSingle()
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Database query error on meta_ad_accounts:', error)
+      }
+
+      const primary = data?.[0] || null
 
       return NextResponse.json({ 
         success: true, 
-        pixelId: data?.capi_pixel_id || '',
-        isConnected: !!data,
-        accountName: data?.account_name || data?.ad_account_id || null
+        pixelId: primary?.capi_pixel_id || '',
+        isConnected: !!data && data.length > 0,
+        accountName: primary?.account_name || primary?.ad_account_id || null,
+        adAccounts: data || [],
       })
     } catch (error: any) {
       console.error('Fetch meta settings error:', error)
@@ -37,7 +43,7 @@ export async function POST(request: Request) {
       const { data: adAccount } = await db
         .from('meta_ad_accounts')
         .select('id')
-        .eq('workspace_id', ctx.accountId)
+        .eq('account_id', ctx.accountId)
         .eq('status', 'active')
         .limit(1)
         .maybeSingle()

@@ -1,17 +1,39 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, CheckCircle2, ShieldCheck, Save } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { 
+  ArrowLeft, 
+  CheckCircle2, 
+  ShieldCheck, 
+  Save, 
+  Loader2, 
+  Megaphone, 
+  Rocket, 
+  Building2, 
+  ExternalLink,
+  AlertCircle,
+  RefreshCw
+} from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { RulesManager } from "@/components/meta-ads/rules-manager"
 
+interface AdAccountItem {
+  id: string
+  ad_account_id: string
+  account_name: string
+  capi_pixel_id?: string
+  status: string
+  created_at: string
+}
+
 export default function MetaAdsSettingsPage() {
-  const { account, user } = useAuth()
+  const { account } = useAuth()
   const workspaceId = account?.id
 
   const [pixelId, setPixelId] = useState("")
@@ -20,38 +42,84 @@ export default function MetaAdsSettingsPage() {
   const [saved, setSaved] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
   const [accountName, setAccountName] = useState<string | null>(null)
+  const [adAccounts, setAdAccounts] = useState<AdAccountItem[]>([])
+  
+  // Exchange state
+  const [isExchanging, setIsExchanging] = useState(false)
+  const [exchangeError, setExchangeError] = useState<string | null>(null)
+  const [exchangeSuccess, setExchangeSuccess] = useState(false)
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await fetch("/api/meta/settings")
-        const data = await res.json()
-        if (data.success) {
-          if (data.pixelId) setPixelId(data.pixelId)
-          setIsConnected(data.isConnected || false)
-          setAccountName(data.accountName || null)
-        }
-      } catch (err) {
-        console.error("Failed to fetch meta settings", err)
-      } finally {
-        setLoading(false)
+  const fetchSettings = useCallback(async () => {
+    try {
+      const res = await fetch("/api/meta/settings")
+      const data = await res.json()
+      if (data.success) {
+        if (data.pixelId) setPixelId(data.pixelId)
+        setIsConnected(Boolean(data.isConnected))
+        setAccountName(data.accountName || null)
+        setAdAccounts(data.adAccounts || [])
       }
-    }
-    fetchSettings()
-
-    // Handle OAuth return params
-    const params = new URLSearchParams(window.location.search)
-    if (params.has("success") || params.has("code")) {
-      setSaved(true)
-      setTimeout(() => setSaved(false), 5000)
+    } catch (err) {
+      console.error("Failed to fetch meta settings", err)
+    } finally {
+      setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    fetchSettings()
+  }, [fetchSettings])
+
+  // Handle OAuth code exchange automatically when returning from Facebook
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get("code")
+    const error = params.get("error")
+
+    if (error) {
+      setExchangeError(`Meta OAuth returned error: ${decodeURIComponent(error)}`)
+      window.history.replaceState({}, document.title, window.location.pathname)
+      return
+    }
+
+    if (code) {
+      setIsExchanging(true)
+      setExchangeError(null)
+
+      const redirectUri = `${window.location.origin}/api/meta/auth/callback`
+
+      fetch("/api/meta/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, redirectUri }),
+      })
+        .then(async (res) => {
+          const data = await res.json()
+          if (!res.ok || data.error) {
+            throw new Error(data.error || "Failed to exchange Meta authorization code")
+          }
+          setExchangeSuccess(true)
+          setIsConnected(true)
+          await fetchSettings()
+          setTimeout(() => setExchangeSuccess(false), 8000)
+        })
+        .catch((err: any) => {
+          console.error("OAuth code exchange failed:", err)
+          setExchangeError(err.message || "Failed to connect Meta account.")
+        })
+        .finally(() => {
+          setIsExchanging(false)
+          // Clean the code param from address bar so refresh does not re-exchange
+          window.history.replaceState({}, document.title, window.location.pathname)
+        })
+    }
+  }, [fetchSettings])
 
   const handleFacebookOAuthLogin = () => {
     const appId = process.env.NEXT_PUBLIC_META_APP_ID || "843808418636023"
     const redirectUri = encodeURIComponent(`${window.location.origin}/api/meta/auth/callback`)
     const scope = encodeURIComponent("ads_management,ads_read,business_management,pages_show_list,pages_read_engagement")
-
+    
     const fbAuthUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code`
 
     window.location.href = fbAuthUrl
@@ -78,50 +146,162 @@ export default function MetaAdsSettingsPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/meta-ads">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="w-5 h-5" />
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/meta-ads">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Meta Ads Connection Settings</h1>
+            <p className="text-muted-foreground text-sm">
+              Manage your Facebook OAuth authorization, Ad Accounts, and Meta Conversions API (CAPI).
+            </p>
+          </div>
+        </div>
+
+        <Link href="/meta-ads/create">
+          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-2 shadow-sm">
+            <Rocket className="w-4 h-4" /> Create Ad with AI
           </Button>
         </Link>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Meta Ads Connection Settings</h1>
-          <p className="text-muted-foreground text-sm">
-            Manage your Facebook OAuth authorization, Ad Accounts, and Meta Conversions API (CAPI).
-          </p>
-        </div>
       </div>
 
-      {/* Account Connection */}
+      {/* OAuth Exchange Progress Notification */}
+      {isExchanging && (
+        <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-500/10 text-blue-900 dark:text-blue-200 flex items-center gap-3 animate-pulse">
+          <Loader2 className="w-5 h-5 animate-spin text-blue-600 shrink-0" />
+          <div>
+            <p className="font-semibold text-sm">Finalizing Meta Business Connection...</p>
+            <p className="text-xs text-muted-foreground">Exchanging authorization code and fetching your Ad Accounts from Graph API.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Exchange Success Notification */}
+      {exchangeSuccess && (
+        <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <div>
+              <p className="font-semibold text-sm">Meta Account Successfully Connected!</p>
+              <p className="text-xs text-muted-foreground">Your Ad Accounts are synced and ready to launch campaigns.</p>
+            </div>
+          </div>
+          <Link href="/meta-ads">
+            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 text-xs font-semibold">
+              <Megaphone className="w-3.5 h-3.5" /> View Campaigns
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      {/* Exchange Error Notification */}
+      {exchangeError && (
+        <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
+            <div>
+              <p className="font-semibold text-sm">Connection Issue</p>
+              <p className="text-xs">{exchangeError}</p>
+            </div>
+          </div>
+          <Button size="sm" variant="outline" onClick={handleFacebookOAuthLogin} className="text-xs">
+            Try Again
+          </Button>
+        </div>
+      )}
+
+      {/* Account Connection Card */}
       <Card className="border bg-card shadow-sm">
         <CardHeader>
-          <CardTitle className="text-lg font-bold flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-primary" /> Meta Business Account Authorization
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-primary" /> Meta Business Account Authorization
+            </CardTitle>
+            {isConnected ? (
+              <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-semibold px-2.5 py-0.5">
+                ● Connected & Active
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-muted-foreground">
+                Not Connected
+              </Badge>
+            )}
+          </div>
           <CardDescription>
-            Connect your Facebook account to grant AIWCRM access to your Ad Accounts and Lead Ads webhooks.
+            Connect your Facebook account to grant AIWCRM access to your Ad Accounts and Click-to-WhatsApp Ads.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-4 rounded-lg bg-muted/40 border flex items-center justify-between">
-            <div>
-              <p className="font-medium text-sm text-foreground">
-                {isConnected ? `Connected: ${accountName || 'Meta Ad Account'}` : 'Facebook Business OAuth'}
-              </p>
+          <div className="p-4 rounded-xl bg-muted/40 border flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-muted-foreground" />
+                <p className="font-semibold text-sm text-foreground">
+                  {isConnected ? (accountName || "Meta Business Ad Account") : "Facebook Business OAuth"}
+                </p>
+              </div>
               <p className="text-xs text-muted-foreground">
-                {isConnected ? 'Active Authorization Token' : 'App ID: 843808418636023'}
+                {isConnected 
+                  ? "60-Day Auto-Renewing Token Active • Graph API v20.0" 
+                  : "Meta App ID: 843808418636023 (Verified Tech Provider)"}
               </p>
             </div>
-            {isConnected ? (
-              <Button variant="outline" onClick={handleFacebookOAuthLogin} className="gap-2 text-emerald-600 border-emerald-200 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-700">
-                <CheckCircle2 className="w-4 h-4" /> Re-Authenticate
+            
+            <div className="flex items-center gap-2">
+              <Button 
+                onClick={handleFacebookOAuthLogin} 
+                className={isConnected 
+                  ? "bg-muted hover:bg-muted/80 text-foreground border gap-2 text-xs" 
+                  : "bg-[#1877F2] hover:bg-[#166FE5] text-white gap-2 font-semibold shadow-sm"}
+              >
+                {isConnected ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5" /> Re-Authenticate Facebook
+                  </>
+                ) : (
+                  <>Connect with Facebook</>
+                )}
               </Button>
-            ) : (
-              <Button onClick={handleFacebookOAuthLogin} className="bg-[#1877F2] hover:bg-[#166FE5] text-white gap-2">
-                Connect with Facebook
-              </Button>
-            )}
+            </div>
           </div>
+
+          {/* List of Connected Ad Accounts */}
+          {adAccounts.length > 0 && (
+            <div className="space-y-2 pt-2">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Connected Ad Accounts ({adAccounts.length})
+              </Label>
+              <div className="space-y-2">
+                {adAccounts.map((adAcc) => (
+                  <div key={adAcc.id} className="p-3.5 rounded-lg border bg-background flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm text-foreground">{adAcc.account_name || "Ad Account"}</span>
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
+                          {adAcc.ad_account_id}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Status: <span className="text-emerald-600 font-medium capitalize">{adAcc.status}</span>
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Link href="/meta-ads/create">
+                        <Button size="sm" variant="outline" className="text-xs gap-1">
+                          <Rocket className="w-3.5 h-3.5 text-emerald-600" /> Run Ads
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -156,6 +336,7 @@ export default function MetaAdsSettingsPage() {
           </div>
         </CardContent>
       </Card>
+
       {/* Rules Manager */}
       <RulesManager />
     </div>
