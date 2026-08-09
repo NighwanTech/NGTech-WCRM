@@ -310,26 +310,16 @@ export default function MetaAdsSettingsPage() {
             </div>
             
             <div className="flex items-center gap-2">
-              {isConnected && (
-                <Button 
-                  onClick={handleDisconnectMetaAccount}
-                  disabled={disconnecting}
-                  variant="outline"
-                  className="text-destructive hover:bg-destructive/10 border-destructive/30 gap-1.5 text-xs font-semibold"
-                >
-                  {disconnecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Disconnect All Accounts"}
-                </Button>
-              )}
-
               <Button 
                 onClick={handleFacebookOAuthLogin} 
                 className={isConnected 
                   ? "bg-muted hover:bg-muted/80 text-foreground border gap-2 text-xs" 
                   : "bg-[#1877F2] hover:bg-[#166FE5] text-white gap-2 font-semibold shadow-sm"}
+                title="Connect a different Facebook account or refresh permissions with Meta"
               >
                 {isConnected ? (
                   <>
-                    <RefreshCw className="w-3.5 h-3.5" /> Switch / Re-Authenticate
+                    <RefreshCw className="w-3.5 h-3.5" /> Re-Authorize Facebook OAuth
                   </>
                 ) : (
                   <>Connect with Facebook</>
@@ -340,13 +330,16 @@ export default function MetaAdsSettingsPage() {
 
           {/* List of Connected Ad Accounts */}
           {adAccounts.length > 0 && (
-            <div className="space-y-2 pt-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Connected Ad Accounts ({adAccounts.length})
-              </Label>
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Connected Ad Accounts ({adAccounts.length}) — Switch or Manage Internally
+                </Label>
+              </div>
+
               <div className="space-y-2">
                 {adAccounts.map((adAcc) => (
-                  <div key={adAcc.id} className="p-3.5 rounded-lg border bg-background flex items-center justify-between">
+                  <div key={adAcc.id} className="p-3.5 rounded-lg border bg-background flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-foreground">{adAcc.account_name || "Ad Account"}</span>
@@ -359,10 +352,10 @@ export default function MetaAdsSettingsPage() {
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Link href={`/meta-ads?adAccountId=${encodeURIComponent(adAcc.ad_account_id)}`}>
-                        <Button size="sm" variant="ghost" className="text-xs gap-1 border">
-                          <LineChart className="w-3.5 h-3.5 text-blue-500" /> View Dashboard
+                        <Button size="sm" variant="outline" className="text-xs gap-1 font-semibold border-primary/30 text-primary hover:bg-primary/5">
+                          <RefreshCw className="w-3.5 h-3.5" /> Switch to this Account
                         </Button>
                       </Link>
                       <Link href={`/meta-ads/create?adAccountId=${encodeURIComponent(adAcc.ad_account_id)}`}>
@@ -429,6 +422,32 @@ export default function MetaAdsSettingsPage() {
 
       {/* Rules Manager */}
       <RulesManager />
+
+      {/* Danger Zone: Disconnect Meta Integration */}
+      {isConnected && (
+        <Card className="border border-destructive/30 bg-destructive/5 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-bold text-destructive flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" /> Danger Zone: Disconnect All Accounts
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Revoke Meta Graph API authorization and detach all connected ad accounts from this workspace.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0 flex justify-end">
+            <Button
+              onClick={handleDisconnectMetaAccount}
+              disabled={disconnecting}
+              variant="destructive"
+              size="sm"
+              className="gap-1.5 text-xs font-semibold shadow-sm"
+            >
+              {disconnecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              Disconnect All Meta Accounts
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
