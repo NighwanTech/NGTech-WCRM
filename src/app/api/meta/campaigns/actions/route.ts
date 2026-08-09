@@ -51,6 +51,11 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
       }
 
+      if (result?.error) {
+        const errorMsg = result.error.error_user_msg || result.error.message || JSON.stringify(result.error)
+        return NextResponse.json({ error: `Meta Error: ${errorMsg}` }, { status: 400 })
+      }
+
       // Update cache in background
       try {
         await db

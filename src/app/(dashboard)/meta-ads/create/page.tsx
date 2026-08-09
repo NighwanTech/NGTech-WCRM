@@ -27,7 +27,8 @@ import {
   Heart, 
   Share2, 
   Bookmark, 
-  Save 
+  Save,
+  UploadCloud 
 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
@@ -71,10 +72,28 @@ function CreateAIAdContent() {
   // =====================
   // GRAPHICS STUDIO STATE
   // =====================
-  const [graphicMode, setGraphicMode] = useState<"ai" | "upload" | "presets">("ai")
+  const [graphicMode, setGraphicMode] = useState<"upload" | "ai" | "presets">("upload")
   const [imageUrl, setImageUrl] = useState("https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&auto=format&fit=crop&q=80")
   const [aiGraphicPrompt, setAiGraphicPrompt] = useState("")
   const [generatingGraphic, setGeneratingGraphic] = useState(false)
+
+  // File Upload Handler
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File size must be under 10MB")
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setImageUrl(event.target.result as string)
+        toast.success(`Image uploaded: ${file.name}`)
+      }
+    }
+    reader.readAsDataURL(file)
+  }
 
   // =====================
   // WIZARD STATE
@@ -179,6 +198,7 @@ function CreateAIAdContent() {
           ageMin: manualAgeMin,
           ageMax: manualAgeMax,
           location: manualLocation,
+          imageUrl,
         }),
       })
 
@@ -246,6 +266,7 @@ function CreateAIAdContent() {
           ageMin: strategy?.audience.ageMin || 18,
           ageMax: strategy?.audience.ageMax || 65,
           location,
+          imageUrl,
         }),
       })
 
@@ -253,10 +274,12 @@ function CreateAIAdContent() {
       if (data.success) {
         toast.success("Campaign launched live on Meta!")
         router.push(selectedAdAccountId ? `/meta-ads?adAccountId=${selectedAdAccountId}` : "/meta-ads")
+      } else {
+        toast.error(data.error || "Failed to launch campaign on Meta")
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Ad launch failed:", err)
-      toast.error("Ad launch failed")
+      toast.error(err.message || "Ad launch failed")
     } finally {
       setLaunching(false)
     }
@@ -571,13 +594,39 @@ function CreateAIAdContent() {
                   )}
 
                   {graphicMode === "upload" && (
-                    <div className="p-3 rounded-xl border bg-muted/20 space-y-1.5">
-                      <Input
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        placeholder="https://images.unsplash.com/... or paste custom banner link"
-                        className="text-xs font-mono bg-background"
+                    <div className="p-4 rounded-xl border-2 border-dashed border-primary/30 bg-muted/10 hover:bg-muted/30 transition-all text-center space-y-3">
+                      <input
+                        type="file"
+                        id="manualBannerFileInput"
+                        accept="image/png, image/jpeg, image/webp"
+                        onChange={handleFileUpload}
+                        className="hidden"
                       />
+                      <label
+                        htmlFor="manualBannerFileInput"
+                        className="cursor-pointer flex flex-col items-center justify-center gap-2 py-2"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shadow-xs">
+                          <UploadCloud className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-xs text-foreground">Click to Browse & Upload Image from Computer</p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">Supports JPG, PNG, WEBP (Auto-saved to Meta)</p>
+                        </div>
+                        <Button type="button" size="sm" variant="outline" className="pointer-events-none text-xs gap-1.5 font-semibold mt-1">
+                          <UploadCloud className="w-3.5 h-3.5" /> Choose Image File
+                        </Button>
+                      </label>
+
+                      <div className="pt-2 border-t flex items-center gap-2">
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground shrink-0">Or URL:</span>
+                        <Input
+                          value={imageUrl}
+                          onChange={(e) => setImageUrl(e.target.value)}
+                          placeholder="https://..."
+                          className="h-8 text-xs font-mono bg-background"
+                        />
+                      </div>
                     </div>
                   )}
 
@@ -915,8 +964,203 @@ function CreateAIAdContent() {
                   ))}
                 </div>
 
+                {/* CUSTOMIZE & EDIT AD COPY INPUTS */}
+                <div className="p-4 rounded-xl border bg-muted/20 space-y-4 pt-4 border-t">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                      <Sliders className="w-3.5 h-3.5 text-primary" /> ✏️ Edit & Customize Selected Copy
+                    </Label>
+                    <span className="text-[10px] text-muted-foreground">You can edit or type anything custom</span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Ad Headline</Label>
+                    <Input
+                      value={selectedHeadline}
+                      onChange={(e) => setSelectedHeadline(e.target.value)}
+                      className="font-bold text-sm bg-background"
+                      placeholder="Edit or type custom headline..."
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Ad Primary Text (Copy)</Label>
+                    <Textarea
+                      rows={4}
+                      value={selectedPrimaryText}
+                      onChange={(e) => setSelectedPrimaryText(e.target.value)}
+                      className="text-xs leading-relaxed bg-background font-medium"
+                      placeholder="Edit or type custom primary text..."
+                    />
+                  </div>
+                </div>
+
                 <div className="pt-4 flex justify-between">
                   <Button variant="outline" onClick={() => setStep(3)}>Back</Button>
+                  <Button onClick={() => setStep(4.5)} className="gap-2 font-bold">
+                    Continue to Ad Graphics
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* STEP 4.5: AD CREATIVE GRAPHICS IN WIZARD MODE */}
+          {step === 4.5 && (
+            <Card className="border bg-card shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="w-5 h-5 text-primary" /> Ad Graphics Studio
+                </CardTitle>
+                <CardDescription>Choose your ad visual banner — Ask AI to generate one, upload your own, or pick a template.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Mode Switcher */}
+                <div className="flex rounded-xl bg-muted p-1 text-sm font-semibold max-w-md">
+                  <button
+                    type="button"
+                    onClick={() => setGraphicMode("ai")}
+                    className={`flex-1 py-1.5 text-center rounded-lg transition-all text-xs font-bold ${
+                      graphicMode === "ai" ? "bg-background text-primary shadow-xs" : "text-muted-foreground"
+                    }`}
+                  >
+                    ✨ Ask AI to Create
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGraphicMode("upload")}
+                    className={`flex-1 py-1.5 text-center rounded-lg transition-all text-xs font-bold ${
+                      graphicMode === "upload" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
+                    }`}
+                  >
+                    📤 Upload / URL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGraphicMode("presets")}
+                    className={`flex-1 py-1.5 text-center rounded-lg transition-all text-xs font-bold ${
+                      graphicMode === "presets" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
+                    }`}
+                  >
+                    🖼️ Niche Templates
+                  </button>
+                </div>
+
+                {/* AI Generation Mode */}
+                {graphicMode === "ai" && (
+                  <div className="p-4 rounded-xl border bg-primary/5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="font-bold text-xs text-primary flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4" /> AI Ad Banner Prompt
+                      </Label>
+                      <span className="text-[10px] text-muted-foreground">Creates High-CTR Visuals</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Input
+                        value={aiGraphicPrompt}
+                        onChange={(e) => setAiGraphicPrompt(e.target.value)}
+                        placeholder={`e.g. High-converting modern banner for ${selectedHeadline || businessName}`}
+                        className="font-medium text-sm bg-background flex-1"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => handleGenerateAIGraphic()}
+                        disabled={generatingGraphic}
+                        className="gap-2 font-bold shrink-0 bg-primary text-primary-foreground shadow-sm w-full sm:w-auto"
+                      >
+                        {generatingGraphic ? <Loader2 className="w-4 h-4 animate-spin" /> : <Palette className="w-4 h-4" />}
+                        Generate Graphic
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Upload Mode */}
+                {graphicMode === "upload" && (
+                  <div className="p-4 rounded-xl border-2 border-dashed border-primary/30 bg-muted/10 hover:bg-muted/30 transition-all text-center space-y-3">
+                    <input
+                      type="file"
+                      id="wizardBannerFileInput"
+                      accept="image/png, image/jpeg, image/webp"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="wizardBannerFileInput"
+                      className="cursor-pointer flex flex-col items-center justify-center gap-2 py-2"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shadow-xs">
+                        <UploadCloud className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-xs text-foreground">Click to Browse & Upload Image from Computer</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Supports JPG, PNG, WEBP (Saved to your Meta ad creative)</p>
+                      </div>
+                      <Button type="button" size="sm" variant="outline" className="pointer-events-none text-xs gap-1.5 font-semibold mt-1">
+                        <UploadCloud className="w-3.5 h-3.5" /> Choose Image File
+                      </Button>
+                    </label>
+
+                    <div className="pt-2 border-t flex items-center gap-2">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground shrink-0">Or URL:</span>
+                      <Input
+                        id="createImgUrl"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        placeholder="https://..."
+                        className="h-8 text-xs font-mono bg-background"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Presets Mode */}
+                {graphicMode === "presets" && (
+                  <div className="p-4 rounded-xl border bg-muted/20 space-y-3">
+                    <Label className="font-semibold text-xs">Curated High-Converting Business Templates</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+                      {[
+                        { label: "🏥 Medical & Doctors", query: "doctor medical hospital" },
+                        { label: "💍 Events & Weddings", query: "wedding event stage" },
+                        { label: "🛕 Religious / Pind Daan", query: "spiritual river temple ceremony" },
+                        { label: "🏋️ Fitness & Sports", query: "fitness sports workout" },
+                      ].map((item, idx) => (
+                        <Button
+                          key={idx}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleGenerateAIGraphic(item.query)}
+                          disabled={generatingGraphic}
+                          className="text-xs h-9 font-medium bg-background hover:bg-primary/5 justify-center"
+                        >
+                          {item.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Live Visual Graphic Preview */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Graphic Preview</Label>
+                  <div className="w-full max-w-md h-52 rounded-xl overflow-hidden border bg-muted relative">
+                    <img
+                      src={imageUrl}
+                      alt="Ad Banner Preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        ;(e.target as HTMLElement).setAttribute(
+                          "src",
+                          "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&auto=format&fit=crop&q=80"
+                        )
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 flex justify-between">
+                  <Button variant="outline" onClick={() => setStep(4)}>Back</Button>
                   <Button onClick={() => setStep(5)} className="gap-2 font-bold">
                     Continue to Launch
                   </Button>

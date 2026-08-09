@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   return withZeroTrustGuard(request, { permission: 'meta_ads:manage' }, async (ctx) => {
     try {
       const body = await request.json()
-      const { name, objective, dailyBudget, headline, primaryText, ctaText, ageMin, ageMax, location, adAccountId } = body
+      const { name, objective, dailyBudget, headline, primaryText, ctaText, ageMin, ageMax, location, adAccountId, imageUrl } = body
 
       if (!name || !headline || !primaryText) {
         return NextResponse.json({ error: 'name, headline, and primaryText are required' }, { status: 400 })
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
           headline,
           primaryText,
           ctaText: ctaText || 'Send WhatsApp Message',
+          imageUrl: imageUrl || undefined,
         })
 
         metaCampaignId = launchResult.campaignId || null
@@ -95,6 +96,7 @@ export async function POST(request: Request) {
             headline,
             primary_text: primaryText,
             cta_text: ctaText || 'Send WhatsApp Message',
+            image_url: imageUrl || null,
           })
         } catch {
           // ignore creative insert error

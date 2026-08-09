@@ -92,8 +92,9 @@ export function AssetLibrary() {
         created_at: new Date().toISOString(),
         is_ai_generated: false,
         approval_status: 'APPROVED',
+        source: 'MANUAL',
       }
-      setAssets([newAsset as Asset, ...assets])
+      setAssets([newAsset as unknown as Asset, ...assets])
     }
   }
 

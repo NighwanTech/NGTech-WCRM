@@ -30,7 +30,8 @@ import {
   TrendingUp, 
   ExternalLink,
   Sliders,
-  DollarSign
+  DollarSign,
+  UploadCloud
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -78,9 +79,26 @@ export function CampaignEditModal({
   const [imageUrl, setImageUrl] = useState("https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&auto=format&fit=crop&q=60")
 
   // Graphics Studio State (Upload vs AI Generation)
-  const [graphicMode, setGraphicMode] = useState<"upload" | "ai" | "presets">("ai")
+  const [graphicMode, setGraphicMode] = useState<"upload" | "ai" | "presets">("upload")
   const [aiGraphicPrompt, setAiGraphicPrompt] = useState("")
   const [generatingGraphic, setGeneratingGraphic] = useState(false)
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File size must be under 10MB")
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setImageUrl(event.target.result as string)
+        toast.success(`Image uploaded: ${file.name}`)
+      }
+    }
+    reader.readAsDataURL(file)
+  }
 
   // 4. AI Strategic Co-Pilot State
   const [auditing, setAuditing] = useState(false)
@@ -147,7 +165,7 @@ export function CampaignEditModal({
     setSaving(true)
     try {
       if (name !== campaign.name) {
-        await fetch("/api/meta/campaigns/actions", {
+        const res1 = await fetch("/api/meta/campaigns/actions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -157,9 +175,15 @@ export function CampaignEditModal({
             adAccountId,
           }),
         })
+        const d1 = await res1.json()
+        if (!res1.ok || d1.error) {
+          toast.error(d1.error || "Failed to update campaign name on Meta")
+          setSaving(false)
+          return
+        }
       }
 
-      await fetch("/api/meta/campaigns/actions", {
+      const res2 = await fetch("/api/meta/campaigns/actions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -169,6 +193,12 @@ export function CampaignEditModal({
           adAccountId,
         }),
       })
+      const d2 = await res2.json()
+      if (!res2.ok || d2.error) {
+        toast.error(d2.error || "Failed to update daily budget on Meta")
+        setSaving(false)
+        return
+      }
 
       const updated = {
         ...campaign,
@@ -177,9 +207,9 @@ export function CampaignEditModal({
         status,
       }
       onUpdate(updated)
-      toast.success("All Campaign & Ad Set changes published to Meta!")
-    } catch {
-      toast.error("Failed to update campaign on Meta")
+      toast.success("All changes synced live to your Meta Ads Account!")
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update campaign on Meta")
     } finally {
       setSaving(false)
     }
@@ -202,13 +232,17 @@ export function CampaignEditModal({
         }),
       })
       const data = await res.json()
-      if (data.success) {
-        setStatus(newStatus)
-        onUpdate({ ...campaign, status: newStatus })
-        toast.success(`Campaign ${newStatus === "ACTIVE" ? "activated live" : "paused"} on Meta!`)
+      if (!res.ok || data.error) {
+        toast.error(data.error || "Failed to toggle status on Meta")
+        return
       }
-    } catch {
-      toast.error("Failed to toggle campaign status")
+
+      const updated = { ...campaign, status: newStatus as any }
+      onUpdate(updated)
+      setStatus(newStatus)
+      toast.success(`Campaign status updated to ${newStatus} on Meta!`)
+    } catch (err: any) {
+      toast.error(err.message || "Failed to change campaign status")
     } finally {
       setSaving(false)
     }
@@ -643,15 +677,40 @@ export function CampaignEditModal({
 
                 {/* GRAPHIC MODE 2: UPLOAD / CUSTOM URL */}
                 {graphicMode === "upload" && (
-                  <div className="space-y-1.5 p-3 rounded-xl border bg-muted/20">
-                    <Label htmlFor="imgUrl" className="font-semibold text-xs">Image URL / Media Asset Link</Label>
-                    <Input
-                      id="imgUrl"
-                      value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                      className="text-xs font-mono bg-background"
-                      placeholder="https://images.unsplash.com/... or your uploaded banner link"
+                  <div className="p-3.5 rounded-xl border-2 border-dashed border-primary/30 bg-muted/10 hover:bg-muted/30 transition-all text-center space-y-2.5">
+                    <input
+                      type="file"
+                      id="editModalBannerFileInput"
+                      accept="image/png, image/jpeg, image/webp"
+                      onChange={handleFileUpload}
+                      className="hidden"
                     />
+                    <label
+                      htmlFor="editModalBannerFileInput"
+                      className="cursor-pointer flex flex-col items-center justify-center gap-1.5 py-1.5"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center shadow-xs">
+                        <UploadCloud className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-xs text-foreground">Click to Browse & Upload Image from Computer</p>
+                        <p className="text-[10px] text-muted-foreground">JPG, PNG, WEBP (Directly synced to Meta Ad Creative)</p>
+                      </div>
+                      <Button type="button" size="sm" variant="outline" className="pointer-events-none text-xs gap-1 font-semibold h-7 mt-0.5">
+                        <UploadCloud className="w-3 h-3" /> Choose Image File
+                      </Button>
+                    </label>
+
+                    <div className="pt-2 border-t flex items-center gap-2">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground shrink-0">Or URL:</span>
+                      <Input
+                        id="imgUrl"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        className="h-7 text-xs font-mono bg-background"
+                        placeholder="https://..."
+                      />
+                    </div>
                   </div>
                 )}
 
