@@ -93,11 +93,11 @@ export function WhatsAppConfig() {
     useState<RegistrationProbe | null>(null);
 
   const webhookUrl =
-    process.env.NEXT_PUBLIC_SITE_URL
-      ? `${process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')}/api/whatsapp/webhook`
-      : typeof window !== 'undefined'
+    typeof window !== 'undefined'
       ? `${window.location.origin}/api/whatsapp/webhook`
-      : '';
+      : process.env.NEXT_PUBLIC_SITE_URL
+      ? `${process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')}/api/whatsapp/webhook`
+      : 'https://www.aiwcrm.com/api/whatsapp/webhook';
 
   const fetchConfig = useCallback(async (acctId: string) => {
     setLoading(true);

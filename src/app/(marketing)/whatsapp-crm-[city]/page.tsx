@@ -237,10 +237,10 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
     openGraph: {
       title: data.headline,
       description: data.description,
-      url: `https://wacrm.in/whatsapp-crm-${city.toLowerCase()}`,
+      url: getSiteUrl(`/whatsapp-crm-${city.toLowerCase()}`),
     },
     alternates: {
-      canonical: `https://wacrm.in/whatsapp-crm-${city.toLowerCase()}`,
+      canonical: getSiteUrl(`/whatsapp-crm-${city.toLowerCase()}`),
     },
   };
 }
@@ -323,7 +323,7 @@ export default async function CityLandingPage({ params }: { params: Promise<{ ci
               '@type': 'LocalBusiness',
               name: `AIWCRM - WhatsApp CRM ${data.name}`,
               description: data.description,
-              url: `https://wacrm.in/whatsapp-crm-${cityKey}`,
+              url: getSiteUrl(`/whatsapp-crm-${cityKey}`),
               address: {
                 '@type': 'PostalAddress',
                 addressLocality: data.name,

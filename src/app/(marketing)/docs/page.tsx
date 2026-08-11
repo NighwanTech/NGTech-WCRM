@@ -24,16 +24,21 @@ import {
 } from 'lucide-react';
 import { getDocCategoriesFromDB } from '@/lib/services/docs-cms.service';
 
+import { getSiteUrl } from '@/lib/site-config';
+
 export const metadata: Metadata = {
-  title: 'AI WCRM Documentation & Enterprise User Manual',
-  description: 'Complete user manual, API references, BYOK setup guides, workflow automations, and troubleshooting for AI WCRM.',
-  keywords: ['AI WCRM Docs', 'WhatsApp CRM User Manual', 'BYOK Setup Guide', 'Meta Cloud API Docs', 'AI WCRM API'],
+  title: 'AIWCRM Documentation & Enterprise User Manual',
+  description: 'Complete user manual, API references, BYOK setup guides, workflow automations, and troubleshooting for AIWCRM.',
+  keywords: ['AIWCRM Docs', 'WhatsApp CRM User Manual', 'BYOK Setup Guide', 'Meta Cloud API Docs', 'AIWCRM API'],
   openGraph: {
-    title: 'AI WCRM Enterprise Documentation & User Manual',
-    description: 'Comprehensive technical documentation and guides for AI WCRM.',
-    url: 'https://wacrm.in/docs',
-    siteName: 'AI WCRM',
+    title: 'AIWCRM Enterprise Documentation & User Manual',
+    description: 'Comprehensive technical documentation and guides for AIWCRM.',
+    url: getSiteUrl('/docs'),
+    siteName: 'AIWCRM',
     type: 'website'
+  },
+  alternates: {
+    canonical: getSiteUrl('/docs'),
   }
 };
 

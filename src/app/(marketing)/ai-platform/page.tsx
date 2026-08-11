@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, Cpu, Sparkles, Zap, KeyRound, ShieldCheck, CheckCircle2, Bot, RefreshCw, MessageSquareText } from 'lucide-react';
 import { EnterpriseAiEngineSection } from '@/components/marketing/enterprise-ai-engine';
 import { AiFailoverVisualSection } from '@/components/marketing/ai-failover-visual';
+import { AiPlatformModuleShowcase } from '@/components/marketing/ai-platform-module-showcase';
 
 export const metadata = {
   title: "Multi-Model AI Platform, Meta Ads Engine & Auto-Failover | AIWCRM",
@@ -59,6 +60,9 @@ export default function AiPlatformPage() {
           </div>
         </div>
       </section>
+
+      {/* Interactive AI Platform & Voice Module Showcase */}
+      <AiPlatformModuleShowcase />
 
       {/* AI Features Grid */}
       <section className="py-20 bg-background">

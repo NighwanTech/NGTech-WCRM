@@ -345,24 +345,97 @@ Predict:
 
 function buildFallbackStrategy(input: AIAdStrategyInput): AIAdStrategyOutput {
   const { businessName, businessType, location, goal } = input
+  const combined = `${businessName} ${businessType}`.toLowerCase()
+
+  // 1. Medical / Doctor / MBBS / Fellowship Niche
+  if (
+    combined.includes('medical') ||
+    combined.includes('doctor') ||
+    combined.includes('mbbs') ||
+    combined.includes('fellowship') ||
+    combined.includes('hospital') ||
+    combined.includes('clinic') ||
+    combined.includes('health') ||
+    combined.includes('imc')
+  ) {
+    return {
+      suggestedObjective: 'OUTCOME_LEADS',
+      audience: {
+        ageMin: 24,
+        ageMax: 55,
+        gender: 'ALL',
+        interests: ['Doctor of Medicine', 'Medical School', 'Physician', 'Healthcare', 'Clinical Medicine'],
+        location: location || 'India',
+      },
+      headlines: [
+        '🩺 Medical Fellowship 2026 Admissions Open',
+        '🎓 Advanced Clinical Fellowship for Doctors',
+        '⚡ Boost Your Medical Career with Top Fellowship',
+      ],
+      primaryTexts: [
+        `Are you a Doctor looking to upgrade your clinical skills? 🩺 Join India's premier Fellowship Program.\n\n✅ Comprehensive Hands-on Clinical Training\n✅ Top Faculty Mentorship & Certification\n✅ Flexible Learning Modules\n\n👉 Tap below to connect with our Admission Counselors on WhatsApp!`,
+        `Specialized Clinical Fellowship Admissions 2026! 🏥\n\n• Advanced Clinical Curriculum\n• Direct Hospital Mentorship\n• 100% WhatsApp Admission Guidance\n\nApply today! Click below ⬇️`,
+        `Limited batch seats for Clinical & Medical Fellowship! 🎓 Elevate your career with recognized certifications.\n\nChat with us on WhatsApp for syllabus & fee details!`,
+      ],
+      ctaOptions: ['Apply Now', 'Send WhatsApp Message', 'Learn More'],
+      recommendedDailyBudget: 500,
+    }
+  }
+
+  // 2. Pind Daan / Gaya / Spiritual / Religious Niche
+  if (
+    combined.includes('pind daan') ||
+    combined.includes('pinddan') ||
+    combined.includes('gaya') ||
+    combined.includes('puja') ||
+    combined.includes('pitru') ||
+    combined.includes('spiritual') ||
+    combined.includes('temple') ||
+    combined.includes('pandit')
+  ) {
+    return {
+      suggestedObjective: 'OUTCOME_ENGAGEMENT',
+      audience: {
+        ageMin: 35,
+        ageMax: 65,
+        gender: 'ALL',
+        interests: ['Hinduism', 'Pilgrimage', 'Pitri Paksha', 'Gaya, India', 'Vedic rituals'],
+        location: location || 'India',
+      },
+      headlines: [
+        '🙏 Gaya Pind Daan Online Booking',
+        '✨ Pitru Dosh Puja at Gaya Ji',
+        '📲 Chat for Gaya Pind Daan Package',
+      ],
+      primaryTexts: [
+        `Perform sacred Pind Daan at Gaya Ji with certified Teerth Purohits. 🙏\n\n✅ Complete Vedic Ritual Management\n✅ Hotel & Transport Assistance\n✅ Pure Sattvik Food Arrangement\n\n👉 Tap below to chat on WhatsApp for package details!`,
+        `Offer peace to your ancestors with authentic Pind Daan rituals in Gaya. 🛕\n\n• 10+ Years Experience\n• Authentic Teerth Purohits\n• Transparent Packages\n\nClick below to connect on WhatsApp!`,
+        `Ensure eternal peace for your forefathers this year at Gaya Ji. 🌸\n\nChat with us on WhatsApp to plan your sacred visit!`,
+      ],
+      ctaOptions: ['Send WhatsApp Message', 'Book Now', 'Contact Us'],
+      recommendedDailyBudget: 500,
+    }
+  }
+
+  // 3. Default General Business
   return {
     suggestedObjective: goal === 'whatsapp' ? 'OUTCOME_ENGAGEMENT' : 'OUTCOME_LEADS',
     audience: {
       ageMin: 22,
-      ageMax: 48,
+      ageMax: 50,
       gender: 'ALL',
-      interests: [`${businessType}`, 'Business Owners', 'Digital Marketing', 'Entrepreneurs'],
+      interests: [`${businessType || businessName}`, 'Business Owners', 'Digital Marketing', 'Entrepreneurs'],
       location: location || 'India',
     },
     headlines: [
-      `🔥 Grow ${businessName} with AI Automation`,
-      `🚀 Instant Leads & WhatsApp Sales for ${businessName}`,
-      `⚡ Get 3x More Customers for ${businessName}`,
+      `🔥 Grow ${businessName} with Verified Leads`,
+      `🚀 Instant WhatsApp Inquiries for ${businessName}`,
+      `⚡ Connect with More Clients Today`,
     ],
     primaryTexts: [
-      `Transform your sales process with ${businessName}! 🚀\n\n✅ 24/7 Automated WhatsApp Auto-Replies\n✅ Capture High-Intent Leads Instantly\n✅ Zero Setup Friction\n\n👉 Click below to chat with us on WhatsApp now!`,
-      `Looking to scale ${businessType}? We've got you covered! 💥\n\n🎯 Targeted High-Quality Leads\n📊 Real-Time Analytics & Tracking\n💬 Automated Conversation Workflows\n\nGet started today! Click below ⬇️`,
-      `Stop wasting ad budget! Try ${businessName} for maximum ROI. 📈\n\n• Instant Lead Response\n• Seamless CRM Automation\n• Boost Conversions by up to 300%\n\nTap below to connect instantly on WhatsApp!`,
+      `Looking for authentic solutions tailored for ${businessName}? 🚀\n\n✅ Fast response & dedicated support\n✅ Transparent packages\n✅ 1-on-1 personalized guidance\n\n👉 Click below to chat with our team on WhatsApp!`,
+      `Transform your results with ${businessName}! 💥\n\n🎯 Targeted High-Quality Inquiries\n📊 Real-Time Support\n💬 Instant WhatsApp Connect\n\nGet started today! Click below ⬇️`,
+      `Get in touch with ${businessName} today! 📈\n\n• Dedicated consultation\n• Zero setup friction\n• Exclusive offers available\n\nTap below to connect instantly on WhatsApp!`,
     ],
     ctaOptions: ['Send WhatsApp Message', 'Learn More', 'Contact Us'],
     recommendedDailyBudget: 500,

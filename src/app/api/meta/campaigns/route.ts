@@ -24,10 +24,14 @@ export async function GET(request: Request) {
         })
       }
 
-      // Pick selected ad account or default to primary
-      const adAccount = requestedAdAccountId 
-        ? (accounts.find(a => a.ad_account_id === requestedAdAccountId) || accounts[0])
-        : accounts[0]
+      let adAccount = accounts[0]
+      if (requestedAdAccountId) {
+        const found = accounts.find(a => a.ad_account_id === requestedAdAccountId)
+        if (!found) {
+          return NextResponse.json({ error: 'Access Denied: Requested Ad Account does not belong to this tenant' }, { status: 403 })
+        }
+        adAccount = found
+      }
 
       // 2. Fetch live campaigns from Meta Graph API if access token is present
       const decryptedToken = decryptToken(adAccount.access_token)

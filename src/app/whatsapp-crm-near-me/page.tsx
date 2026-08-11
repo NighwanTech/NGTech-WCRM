@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { getSiteUrl } from '@/lib/site-config';
 import Link from 'next/link';
 import {
   CheckCircle2,
@@ -44,13 +45,13 @@ export const metadata: Metadata = {
     'WhatsApp AI chatbot near me',
   ],
   alternates: {
-    canonical: 'https://wacrm.in/whatsapp-crm-near-me',
+    canonical: getSiteUrl('/whatsapp-crm-near-me'),
   },
   openGraph: {
     title: 'WhatsApp CRM Near Me | Official Meta Approved API Provider',
     description: 'Connect with India’s top-rated WhatsApp CRM & Business API provider near you. Instant setup, AI auto-replies, and local support.',
-    url: 'https://wacrm.in/whatsapp-crm-near-me',
-    siteName: 'WCRM',
+    url: getSiteUrl('/whatsapp-crm-near-me'),
+    siteName: 'AIWCRM',
     locale: 'en_IN',
     type: 'website',
   },

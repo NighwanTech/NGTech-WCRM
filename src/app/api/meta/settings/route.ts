@@ -8,12 +8,13 @@ export async function GET(request: Request) {
       const accounts = await getActiveMetaAdAccounts(ctx.accountId, ctx.userId)
       const primary = accounts?.[0] || null
 
+      const safeAccounts = (accounts || []).map(({ access_token, ...safe }) => safe)
       return NextResponse.json({ 
         success: true, 
         pixelId: primary?.capi_pixel_id || '',
         isConnected: Boolean(accounts && accounts.length > 0),
         accountName: primary?.account_name || primary?.ad_account_id || null,
-        adAccounts: accounts || [],
+        adAccounts: safeAccounts,
       })
     } catch (error: any) {
       console.error('Fetch meta settings error:', error)

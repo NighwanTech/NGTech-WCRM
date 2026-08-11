@@ -26,10 +26,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.aiwcrm.com'),
   title: {
-    default: "AiWCRM | Enterprise WhatsApp CRM Platform & API",
-    template: "%s — AiWCRM",
+    default: "AIWCRM | Enterprise WhatsApp AI Platform & Meta Ads OS",
+    template: "%s | AIWCRM",
   },
-  description: "Meta-Approved WhatsApp CRM software by Nighwan Technology Pvt. Ltd. Shared multi-agent inbox, AI chatbots, bulk broadcast campaigns, and automated sales pipelines.",
+  description: "AIWCRM is the #1 Enterprise AI Platform for WhatsApp Cloud API, Retell Voice AI, Meta Ads OS, BYOK multi-LLM routing, and Kanban sales pipelines.",
   keywords: [
     "AIWCRM",
     "WhatsApp CRM India",

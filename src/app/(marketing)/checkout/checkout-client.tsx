@@ -87,19 +87,41 @@ export default function CheckoutClient() {
   const total = subtotal + tax
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value })
+    const { id, value } = e.target
+    if (id === 'phone') {
+      const sanitized = value.replace(/[^\d+\s-]/g, '')
+      setFormData({ ...formData, phone: sanitized })
+      return
+    }
+    setFormData({ ...formData, [id]: value })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     
+    // 1. Email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      toast.error('Please enter a valid work email address.')
+      setIsSubmitting(false)
+      return
+    }
+
+    // 2. Phone validation
+    const digitsOnly = formData.phone.replace(/\D/g, '')
+    if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+      toast.error('Please enter a valid phone number with 7 to 15 digits.')
+      setIsSubmitting(false)
+      return
+    }
+
     try {
       const res = await fetch('/api/checkout/manual', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          email: formData.email.trim(),
           plan: planSlug,
           billingCycle: billing || 'monthly',
           price: total

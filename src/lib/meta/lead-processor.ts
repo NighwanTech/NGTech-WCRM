@@ -62,19 +62,8 @@ export async function processMetaLead(
       .eq('form_id', formId)
       .maybeSingle()
 
-    // Find account_id from mapping or fallback to first active meta_ad_account
-    let accountId = mapping?.account_id
-
-    if (!accountId) {
-      const { data: adAcc } = await db
-        .from('meta_ad_accounts')
-        .select('account_id, access_token')
-        .eq('status', 'active')
-        .limit(1)
-        .maybeSingle()
-
-      accountId = adAcc?.account_id
-    }
+    // Find account_id from mapping
+    const accountId = mapping?.account_id
 
     if (!accountId) {
       return { success: false, error: 'No workspace linked to this lead form or ad account.' }

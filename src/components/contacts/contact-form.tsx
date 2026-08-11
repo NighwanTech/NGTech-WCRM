@@ -313,7 +313,7 @@ export function ContactForm({
               id="cf-phone"
               value={phone}
               onChange={(e) => {
-                const val = e.target.value;
+                const val = e.target.value.replace(/[^\d+\s-]/g, '');
                 setPhone(val);
                 if (dupMatch) setDupMatch(null);
                 setPhoneError(validatePhone(val));

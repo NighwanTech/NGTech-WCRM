@@ -85,7 +85,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticRoutes,
     ...features.map((f) => `/features/${f}`),
     ...industries.map((i) => `/solutions/${i}`),
-    ...cities.map((c) => `/whatsapp-crm/${c}`),
+    ...cities.map((c) => `/whatsapp-crm-${c}`),
     ...competitors.map((comp) => `/vs/${comp}`),
   ].map((route) => ({
     url: getSiteUrl(route),
@@ -94,7 +94,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority:
       route === '' || route === '/whatsapp-crm-near-me'
         ? 1.0
-        : route.startsWith('/whatsapp-crm/')
+        : route.startsWith('/whatsapp-crm-')
         ? 0.9
         : route.startsWith('/vs/')
         ? 0.85

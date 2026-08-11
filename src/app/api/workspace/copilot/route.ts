@@ -13,7 +13,7 @@ interface CopilotStep {
 
 export async function POST(req: Request) {
   try {
-    const { query } = await req.json()
+    const { query, pathname } = await req.json()
     const text = (query || '').toLowerCase().trim()
 
     const routing = await getFeatureRouting()
@@ -225,7 +225,7 @@ Strict Instructions:
         const { text: aiGeneratedText } = await generateText({
           model: groq('llama-3.1-8b-instant'),
           prompt: `You are WCRM AI Saathi, the official smart assistant for AIWCRM.
-You are embedded in the user's dashboard (pathname: ${reqBody.pathname}).
+You are embedded in the user's dashboard (pathname: ${pathname || 'unknown'}).
 The user is asking a question about a specific page or feature.
 Explain how to use or navigate this in AIWCRM in a friendly, 2-3 sentence response.`,
         })

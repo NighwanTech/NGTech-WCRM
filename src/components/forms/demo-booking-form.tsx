@@ -29,16 +29,42 @@ export function DemoBookingForm() {
     }
   }, [])
 
+  const [phone, setPhone] = useState("")
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value
+    const sanitized = raw.replace(/[^\d+\s-]/g, "")
+    setPhone(sanitized)
+  }
+
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsSubmitting(true)
+    setErrorMsg(null)
 
     const formData = new FormData(event.currentTarget)
-    
+    const emailVal = String(formData.get("email") || "").trim()
+
+    // 1. Email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+      setErrorMsg("Please enter a valid work email address.")
+      setIsSubmitting(false)
+      return
+    }
+
+    // 2. Phone validation
+    const digitsOnly = phone.replace(/\D/g, "")
+    if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+      setErrorMsg("Please enter a valid WhatsApp mobile number with 7 to 15 digits.")
+      setIsSubmitting(false)
+      return
+    }
+
     const payload = {
       name: formData.get("name"),
-      email: formData.get("email"),
-      phone: formData.get("phone"),
+      email: emailVal,
+      phone: phone,
       company: formData.get("company"),
       industry: formData.get("industry"),
       volume: formData.get("volume"),
@@ -58,15 +84,13 @@ export function DemoBookingForm() {
 
       if (response.ok) {
         setIsSuccess(true)
-        // Optionally redirect to a thank you page or scheduler
-        // router.push("/book-demo/success")
       } else {
         const errData = await response.json().catch(() => null)
-        alert(errData?.error || "Something went wrong. Please try again.")
+        setErrorMsg(errData?.error || "Something went wrong. Please try again.")
       }
     } catch (error: any) {
       console.error(error)
-      alert(error.message || "Failed to submit form.")
+      setErrorMsg(error.message || "Failed to submit form.")
     } finally {
       setIsSubmitting(false)
     }
@@ -91,6 +115,11 @@ export function DemoBookingForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
+      {errorMsg && (
+        <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs font-bold">
+          {errorMsg}
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="space-y-2">
           <label htmlFor="name" className="text-sm font-medium text-foreground">Full Name *</label>
@@ -104,7 +133,7 @@ export function DemoBookingForm() {
         
         <div className="space-y-2">
           <label htmlFor="phone" className="text-sm font-medium text-foreground">WhatsApp Number *</label>
-          <input id="phone" name="phone" type="tel" required className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" placeholder="+91 98765 43210" />
+          <input id="phone" name="phone" type="tel" inputMode="tel" value={phone} onChange={handlePhoneChange} required className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" placeholder="+91 98765 43210" />
         </div>
         
         <div className="space-y-2">

@@ -36,6 +36,9 @@ import { GovernanceDashboard } from '@/components/settings/governance-dashboard'
 import { RateLimitsGovernanceTab } from '@/components/settings/rate-limits-governance-tab'
 import { ComplianceGovernanceWorkspace } from '@/components/settings/compliance-governance-workspace'
 import { WebhookOperationsCenter } from '@/components/settings/webhook-operations-center'
+import { SecurityHealthDashboard } from '@/components/settings/security-health-dashboard'
+import { EnterpriseOperationsCenter } from '@/components/settings/enterprise-operations-center'
+import { EnterpriseControlCenter } from '@/components/settings/enterprise-control-center'
 
 interface AuditLogItem {
   id: string
@@ -242,6 +245,7 @@ export default function SecurityDashboardPage() {
 
         {/* Tab 1: Overview */}
         <TabsContent value="overview" className="space-y-6">
+          <SecurityHealthDashboard />
           {/* Security Health Score Banner */}
           <div className="rounded-xl border bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 p-6 text-white shadow-md flex items-center justify-between">
             <div className="space-y-1">
@@ -454,14 +458,16 @@ export default function SecurityDashboardPage() {
 
         {/* Tab 10: Governance Hub */}
         {can('security:read') && (
-          <TabsContent value="governance_hub">
+          <TabsContent value="governance_hub" className="space-y-6">
+            <EnterpriseControlCenter />
             <GovernanceDashboard />
           </TabsContent>
         )}
 
-        {/* Tab 9: System Health */}
+        {/* Tab 9: System Health & Telemetry */}
         {can('system_health:read') && (
           <TabsContent value="health" className="space-y-6">
+            <EnterpriseOperationsCenter />
             <div className="rounded-xl border bg-card p-6 shadow-sm space-y-6">
               <div className="flex items-center justify-between border-b pb-4">
                 <div>

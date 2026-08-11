@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { IndustrySolutionsClient, INDUSTRIES_DATA } from '@/components/marketing/industry-solutions-client';
+import { IndustrySolutionsClient } from '@/components/marketing/industry-solutions-client';
+import { INDUSTRIES_DATA } from '@/lib/data/industry-solutions-data';
+import { getSiteUrl } from '@/lib/site-config';
 
 export const dynamicParams = true;
 
@@ -14,6 +16,8 @@ export async function generateMetadata({ params }: { params: Promise<{ industry:
   const data = INDUSTRIES_DATA[industrySlug];
   if (!data) return {};
 
+  const pageUrl = getSiteUrl(`/solutions/${industrySlug}`);
+
   return {
     title: `${data.name} WhatsApp CRM & AI Workflows | AIWCRM`,
     description: data.heroDesc,
@@ -25,10 +29,11 @@ export async function generateMetadata({ params }: { params: Promise<{ industry:
     openGraph: {
       title: `${data.name} WhatsApp CRM & AI Workflows | AIWCRM`,
       description: data.heroDesc,
-      url: `https://aiwcrm.com/solutions/${industrySlug}`,
+      url: pageUrl,
+      siteName: 'AIWCRM',
     },
     alternates: {
-      canonical: `https://aiwcrm.com/solutions/${industrySlug}`,
+      canonical: pageUrl,
     },
   };
 }

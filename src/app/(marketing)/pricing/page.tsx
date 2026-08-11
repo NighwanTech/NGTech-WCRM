@@ -106,7 +106,7 @@ export default async function PricingPage() {
       price: p.price_monthly,
       priceCurrency: 'INR',
       priceValidUntil: '2027-12-31',
-      url: `https://wacrm.in/pricing`,
+      url: getSiteUrl('/pricing'),
     }))
   };
 

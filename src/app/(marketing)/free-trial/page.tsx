@@ -24,6 +24,14 @@ function FreeTrialInner() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [phone, setPhone] = useState('')
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value
+    // Strictly filter out letters and non-phone characters (allow digits, leading +, spaces, hyphens)
+    const sanitized = raw.replace(/[^\d+\s-]/g, '')
+    setPhone(sanitized)
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -31,6 +39,22 @@ function FreeTrialInner() {
     setError(null)
 
     const formData = new FormData(e.currentTarget)
+    const emailVal = String(formData.get('email') || '').trim()
+
+    // 1. Email Validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+      setError('Please enter a valid business email address.')
+      setLoading(false)
+      return
+    }
+
+    // 2. Phone Validation
+    const digitsOnly = phone.replace(/\D/g, '')
+    if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+      setError('Please enter a valid WhatsApp mobile number with 7 to 15 digits.')
+      setLoading(false)
+      return
+    }
 
     try {
       const response = await fetch('/api/leads', {
@@ -38,8 +62,8 @@ function FreeTrialInner() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fullName: formData.get('fullName'),
-          email: formData.get('email'),
-          mobileNumber: formData.get('phone'),
+          email: emailVal,
+          mobileNumber: phone,
           companyName: formData.get('company'),
           teamSize: formData.get('teamSize') || `${agentsParam} Agents`,
           messageVolume: formData.get('messageVolume') || `${leadsParam} Leads`,
@@ -185,6 +209,9 @@ function FreeTrialInner() {
                   <input
                     name="phone"
                     type="tel"
+                    inputMode="tel"
+                    value={phone}
+                    onChange={handlePhoneChange}
                     required
                     placeholder="+91 98765 43210"
                     className="w-full rounded-xl border border-border bg-background p-3 text-xs outline-none focus:border-emerald-500"

@@ -69,7 +69,8 @@ export default function MetaAdsSettingsPage() {
         setAdAccounts(accountsList)
 
         // Read stored active account or fallback to first
-        const stored = typeof window !== "undefined" ? localStorage.getItem("meta_active_ad_account_id") : null
+        const storageKey = `meta_active_ad_account_id_${workspaceId || 'default'}`
+        const stored = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null
         if (stored && accountsList.some((a: any) => a.ad_account_id === stored)) {
           setSelectedAdAccountId(stored)
         } else if (accountsList.length > 0) {
@@ -81,7 +82,7 @@ export default function MetaAdsSettingsPage() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [workspaceId])
 
   useEffect(() => {
     fetchSettings()
@@ -90,7 +91,8 @@ export default function MetaAdsSettingsPage() {
   const handleSwitchAccount = (adAcc: AdAccountItem) => {
     setSelectedAdAccountId(adAcc.ad_account_id)
     if (typeof window !== "undefined") {
-      localStorage.setItem("meta_active_ad_account_id", adAcc.ad_account_id)
+      const storageKey = `meta_active_ad_account_id_${workspaceId || 'default'}`
+      localStorage.setItem(storageKey, adAcc.ad_account_id)
     }
     toast.success(`Active Account switched to: ${adAcc.account_name || adAcc.ad_account_id}`)
   }

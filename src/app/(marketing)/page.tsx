@@ -20,8 +20,8 @@ import { PromoPopup } from '@/components/marketing/promo-popup';
 import { createClient } from '@/lib/supabase/server';
 
 export const metadata = {
-  title: "AIWCRM | The Enterprise AI Platform for Sales, Marketing & Customer Engagement",
-  description: "Unified Enterprise AI Platform combining WhatsApp Cloud API, Retell & ElevenLabs Voice AI, Autonomous Meta Ads OS, BYOK Multi-LLM engines (Gemini 3.6, OpenAI, Groq), Kanban Pipelines, and Enterprise Governance.",
+  title: "Enterprise WhatsApp AI Platform & Meta Ads OS",
+  description: "AIWCRM is the #1 Enterprise AI Platform for WhatsApp Cloud API, Retell Voice AI, Meta Ads OS, BYOK multi-LLM routing, and Kanban sales pipelines.",
   keywords: [
     "AIWCRM",
     "Enterprise AI Platform",
@@ -39,8 +39,8 @@ export const metadata = {
     "Geo-Targeted WhatsApp Marketing"
   ],
   openGraph: {
-    title: "AIWCRM | The Enterprise AI Platform for Sales, Marketing & Engagement",
-    description: "Unified Enterprise AI Platform with Voice AI, Meta Ads OS, BYOK Multi-LLM Routing & Kanban Sales Pipelines.",
+    title: "AIWCRM | Enterprise WhatsApp AI Platform & Meta Ads OS",
+    description: "AIWCRM is the #1 Enterprise AI Platform for WhatsApp Cloud API, Retell Voice AI, Meta Ads OS, BYOK multi-LLM routing, and Kanban sales pipelines.",
     url: "https://www.aiwcrm.com",
     siteName: "AIWCRM",
     locale: "en_IN",

@@ -230,13 +230,13 @@ export function EnterpriseHeader() {
 
                   {[
                     { icon: GraduationCap, title: 'Education & EdTech', desc: 'Instant student counseling & PDF prospectuses.', href: '/solutions/education' },
-                    { icon: Building2, title: 'Real Estate & Property', desc: 'Meta Lead Ads to WhatsApp site visits.', href: '/solutions/real-estate' },
-                    { icon: ShoppingBag, title: 'D2C & E-Commerce', desc: 'Abandoned cart recovery & COD verification.', href: '/solutions/ecommerce' },
+                    { icon: Building2, title: 'Real Estate & Property', desc: 'Meta Lead Ads to WhatsApp site visits.', href: '/solutions/realestate' },
+                    { icon: ShoppingBag, title: 'D2C & E-Commerce', desc: 'Abandoned cart recovery & COD verification.', href: '/solutions/retail' },
                     { icon: HeartPulse, title: 'Healthcare & Clinics', desc: 'Appointment booking & PDF lab reports.', href: '/solutions/healthcare' },
-                    { icon: Landmark, title: 'BFSI & FinTech', desc: 'Loan pre-approvals & KYC document upload.', href: '/solutions#bfsi' },
-                    { icon: Hotel, title: 'Hospitality & Travel', desc: 'Direct room reservations & 24/7 guest bot.', href: '/solutions#hospitality' },
-                    { icon: Globe, title: 'Government & Public Sector', desc: 'Civic complaint ticketing & public alerts.', href: '/solutions#government' },
-                    { icon: Briefcase, title: 'B2B Enterprise', desc: 'Multi-region team inbox & ERP webhooks.', href: '/solutions#b2b' }
+                    { icon: Landmark, title: 'BFSI & FinTech', desc: 'Loan pre-approvals & KYC document upload.', href: '/solutions/bfsi' },
+                    { icon: Hotel, title: 'Hospitality & Travel', desc: 'Direct room reservations & 24/7 guest bot.', href: '/solutions/hospitality' },
+                    { icon: Globe, title: 'Government & Public Sector', desc: 'Civic complaint ticketing & public alerts.', href: '/solutions/government' },
+                    { icon: Briefcase, title: 'B2B Enterprise', desc: 'Multi-region team inbox & ERP webhooks.', href: '/solutions/b2b' }
                   ].map((item, idx) => (
                     <Link 
                       key={idx} 

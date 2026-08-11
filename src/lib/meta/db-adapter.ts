@@ -24,6 +24,8 @@ function getDb(): SupabaseClient {
  * Fetch all active Meta Ad accounts for a given account / workspace ID / user ID
  */
 export async function getActiveMetaAdAccounts(accountId: string, userId?: string): Promise<MetaAdAccountRecord[]> {
+  if (!accountId) return []
+
   const db = getDb()
 
   // 1. Try querying by account_id
@@ -70,20 +72,7 @@ export async function getActiveMetaAdAccounts(accountId: string, userId?: string
     } catch {}
   }
 
-  // 4. Try querying any active account in table as final fallback
-  try {
-    const { data: anyActive } = await db
-      .from('meta_ad_accounts')
-      .select('*')
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(5)
-
-    if (anyActive && anyActive.length > 0) {
-      return anyActive
-    }
-  } catch {}
-
+  // Strictly return empty array if no account matches - NO GLOBAL FALLBACK!
   return []
 }
 
@@ -98,10 +87,12 @@ export async function saveMetaAdAccount(params: {
   encryptedAccessToken: string
   tokenExpiresAt?: string | null
 }): Promise<MetaAdAccountRecord | null> {
+  if (!params.accountId) return null
+
   const db = getDb()
   const { accountId, userId, adAccountId, accountName, encryptedAccessToken, tokenExpiresAt } = params
 
-  // 1. Check if record exists for this specific adAccountId
+  // 1. Check if record exists for this specific adAccountId under this account/user
   const existingAccounts = await getActiveMetaAdAccounts(accountId, userId)
   const existing = existingAccounts.find((a) => a.ad_account_id === adAccountId)
 
@@ -179,6 +170,7 @@ export async function saveMetaAdAccount(params: {
  * Update CAPI Pixel ID
  */
 export async function updateMetaPixelId(accountId: string, pixelId: string): Promise<boolean> {
+  if (!accountId) return false
   const db = getDb()
   try {
     await db.from('meta_ad_accounts').update({ capi_pixel_id: pixelId }).eq('account_id', accountId)
@@ -190,12 +182,10 @@ export async function updateMetaPixelId(accountId: string, pixelId: string): Pro
 }
 
 /**
- * Disconnect / Detach all Meta Ad Accounts for a given account / workspace / user ID
- */
-/**
- * Disconnect / Detach a single Meta Ad Account by ad_account_id
+ * Disconnect / Detach a single Meta Ad Account by ad_account_id scoped strictly to accountId
  */
 export async function disconnectSingleMetaAdAccount(adAccountId: string, accountId: string): Promise<boolean> {
+  if (!accountId || !adAccountId) return false
   const db = getDb()
 
   try {
@@ -203,6 +193,7 @@ export async function disconnectSingleMetaAdAccount(adAccountId: string, account
       .from('meta_ad_accounts')
       .update({ status: 'disconnected' })
       .eq('ad_account_id', adAccountId)
+      .or(`account_id.eq.${accountId},workspace_id.eq.${accountId}`)
   } catch {}
 
   return true
@@ -212,6 +203,7 @@ export async function disconnectSingleMetaAdAccount(adAccountId: string, account
  * Disconnect / Detach all Meta Ad Accounts for a given account / workspace / user ID
  */
 export async function disconnectMetaAdAccounts(accountId: string, userId?: string): Promise<boolean> {
+  if (!accountId) return false
   const db = getDb()
 
   try {
@@ -239,4 +231,5 @@ export async function disconnectMetaAdAccounts(accountId: string, userId?: strin
 
   return true
 }
+
 
