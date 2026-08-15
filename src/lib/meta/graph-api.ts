@@ -230,6 +230,48 @@ export async function createAd(
 }
 
 /**
+ * Create an Ad Creative under an Ad Account
+ */
+export async function createAdCreative(
+  adAccountId: string,
+  payload: {
+    name: string
+    title: string
+    body: string
+    page_id?: string
+    image_url?: string
+  },
+  accessToken: string
+) {
+  const formattedAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`
+  const url = `${BASE_URL}/${formattedAccountId}/adcreatives`
+  
+  const bodyPayload: any = {
+    name: payload.name,
+    object_story_spec: {
+      page_id: payload.page_id || '100063920000000', // Fallback page ID
+      link_data: {
+        message: payload.body,
+        name: payload.title,
+        link: 'https://www.aiwcrm.com',
+        ...(payload.image_url ? { picture: payload.image_url } : {})
+      }
+    },
+    access_token: accessToken
+  }
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(bodyPayload)
+  })
+
+  const data = await res.json()
+  if (data.error) throw new Error(`Failed to create AdCreative: ${data.error.message}`)
+  return data
+}
+
+/**
  * Fetch Full Campaign Hierarchy Details (Campaign + AdSets + Ad Creatives)
  */
 export async function getCampaignFullDetails(
@@ -245,10 +287,67 @@ export async function getCampaignFullDetails(
       console.warn(`Graph API detailed fetch warning for ${campaignId}:`, data.error.message)
       return null
     }
-    return data
   } catch (err: any) {
     console.warn(`Failed to fetch full campaign details for ${campaignId}:`, err.message)
     return null
   }
 }
 
+/**
+ * Create Live Meta Campaign (Campaign -> AdSet -> Ad Creative Hierarchy)
+ */
+export async function createMetaCampaignLive(
+  adAccountId: string,
+  accessToken: string,
+  payload: {
+    name: string
+    objective: string
+    dailyBudget: number
+    location: string
+    headline: string
+    primaryText: string
+    cta: string
+  }
+) {
+  const formattedAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`
+  
+  // 1. Create Campaign Level
+  const campUrl = `${BASE_URL}/${formattedAccountId}/campaigns`
+  const campRes = await fetch(campUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: payload.name,
+      objective: payload.objective || 'OUTCOME_LEADS',
+      status: 'PAUSED', // Safety default on live publishing
+      special_ad_categories: ['NONE'],
+      access_token: accessToken
+    })
+  })
+  const campData = await campRes.json()
+  if (campData.error) throw new Error(`Meta Graph API Campaign Error: ${campData.error.message}`)
+
+  const metaCampaignId = campData.id
+
+  // 2. Create Ad Set Level
+  const adsetRes = await createAdSet(
+    adAccountId,
+    {
+      name: `${payload.name} - AdSet`,
+      campaign_id: metaCampaignId,
+      daily_budget: Math.round(payload.dailyBudget * 100), // Convert INR to Cents/Paise
+      billing_event: 'IMPRESSIONS',
+      optimization_goal: 'LEAD_GENERATION',
+      targeting: {
+        geo_locations: { countries: ['IN'] }
+      },
+      status: 'PAUSED'
+    },
+    accessToken
+  )
+
+  return {
+    metaCampaignId,
+    metaAdSetId: adsetRes.id
+  }
+}

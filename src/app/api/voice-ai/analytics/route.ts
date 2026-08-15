@@ -62,18 +62,23 @@ export async function GET(req: Request) {
       providerBreakdown[prov] = (providerBreakdown[prov] ?? 0) + 1;
     }
 
+    const humanHandoffCount = allCalls.filter((c) => c.human_handoff === true || c.handoff === true || c.transferred_to_human === true).length;
+    const humanHandoffRate = totalCalls > 0 ? Math.round((humanHandoffCount / totalCalls) * 100) : 0;
+    const aiResolutionRate = totalCalls > 0 ? Math.round(((totalCalls - humanHandoffCount) / totalCalls) * 100) : 100;
+    const revenueFromCalls = allCalls.reduce((sum, c) => sum + (Number(c.deal_value_inr) || Number(c.revenue_inr) || 0), 0);
+
     const metrics: VoiceAnalyticsMetrics = {
       totalCalls,
       connectedCalls,
       connectedRate:      Math.round(connectedRate),
       avgDurationSeconds: Math.round(avgDuration),
-      aiResolutionRate:   0, // TODO: track human handoff flag
-      humanHandoffRate:   0,
+      aiResolutionRate,
+      humanHandoffRate,
       totalCostInr:       Math.round(totalCost * 100) / 100,
       costPerCall:        totalCalls > 0 ? Math.round((totalCost / totalCalls) * 100) / 100 : 0,
       sentimentBreakdown,
       languagesUsed,
-      revenueFromCalls:   0, // TODO: link to closed deals
+      revenueFromCalls,
     };
 
     return NextResponse.json({ metrics, providerBreakdown, period });

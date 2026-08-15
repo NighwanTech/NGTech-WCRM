@@ -41,39 +41,35 @@ export function DecisionCenter() {
   }, [])
 
   const fetchDecisions = async () => {
-    // In a real app, this would be fetched from /api/meta/decisions
     setLoading(true)
-    setTimeout(() => {
-      setDecisions([
-        {
-          id: 'dec-1',
-          action_type: 'SCALE',
-          target_id: 'Campaign B (Lookalike)',
-          ai_rationale: 'ROAS is 285% higher than average and CPL is trending downwards. Scaling budget by 20% is recommended.',
-          confidence_score: 92,
-          status: 'PENDING_APPROVAL',
-          created_at: new Date().toISOString(),
-          expected_impact: { budget_adjustment: 20 },
-          estimated_cost_cents: 2,
-        },
-        {
-          id: 'dec-2',
-          action_type: 'PAUSE',
-          target_id: 'Campaign C (Retargeting)',
-          ai_rationale: 'Creative fatigue detected. CTR dropped by 45% over 3 days. Recommend pausing to avoid wasting spend.',
-          confidence_score: 88,
-          status: 'AUTO_EXECUTED',
-          created_at: new Date(Date.now() - 86400000).toISOString(),
-          estimated_cost_cents: 1,
-        }
-      ])
+    try {
+      const res = await fetch('/api/meta/decisions')
+      const data = await res.json()
+      if (data.success && data.decisions) {
+        setDecisions(data.decisions)
+      }
+    } catch (err) {
+      console.error('Failed to fetch AI decisions:', err)
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   const handleAction = async (id: string, action: 'APPROVE' | 'REJECT') => {
-    toast.success(`Decision ${action.toLowerCase()}ed successfully.`)
-    setDecisions(prev => prev.map(d => d.id === id ? { ...d, status: action === 'APPROVE' ? 'APPROVED' : 'REJECTED' } : d))
+    try {
+      const res = await fetch('/api/meta/decisions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decisionId: id, action }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast.success(`Decision ${action.toLowerCase()}ed successfully.`)
+        setDecisions(prev => prev.map(d => d.id === id ? { ...d, status: action === 'APPROVE' ? 'APPROVED' : 'REJECTED' } : d))
+      }
+    } catch {
+      toast.error('Failed to update decision status.')
+    }
   }
 
   const submitFeedback = async (type: 'HELPFUL' | 'NOT_HELPFUL') => {

@@ -24,6 +24,8 @@ interface Asset {
   created_at: string
 }
 
+import { MetaAdsHeader } from './meta-ads-header'
+
 export function AssetLibrary() {
   const [assets, setAssets] = useState<Asset[]>([])
   const [loading, setLoading] = useState(true)
@@ -43,16 +45,16 @@ export function AssetLibrary() {
       setAssets([
         {
           id: '1',
-          name: 'AI Generated: Summer Sale...',
+          name: 'Hero Product Ad Banner',
           type: 'IMAGE',
-          public_url: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=1024',
+          public_url: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&auto=format&fit=crop&q=80',
           source: 'AI_GENERATED',
           approval_status: 'APPROVED',
           created_at: new Date().toISOString()
         }
       ])
       setLoading(false)
-    }, 1000)
+    }, 500)
   }
 
   const handleGenerate = async () => {
@@ -100,17 +102,12 @@ export function AssetLibrary() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/meta-ads">
-          <Button variant="outline" size="sm" className="hidden md:flex">
-            &larr; Back to Dashboard
-          </Button>
-        </Link>
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Creative Asset Library</h2>
-          <p className="text-muted-foreground">Manage your ad creatives and generate AI variations.</p>
-        </div>
-      </div>
+      <MetaAdsHeader
+        title="Creative Asset Library"
+        description="Manage your ad creatives, brand media, and generated AI variations."
+        icon={ImageIcon}
+        breadcrumbs={[{ label: 'Asset Library' }]}
+      />
       
       <div className="flex justify-between items-center">
         <div className="flex gap-2 w-full justify-end">

@@ -65,8 +65,9 @@ export function CampaignsTable({ campaigns: initialCampaigns, loading, adAccount
   }
 
   const handleOpenEdit = (campaign: MetaCampaign) => {
-    setEditingCampaign(campaign)
-    setModalOpen(true)
+    if (typeof window !== 'undefined') {
+      window.location.href = `/meta-ads/campaign/${campaign.id}`
+    }
   }
 
   const handleUpdateCampaign = (updated: MetaCampaign) => {
@@ -75,8 +76,8 @@ export function CampaignsTable({ campaigns: initialCampaigns, loading, adAccount
 
   return (
     <>
-      <div className="border rounded-lg overflow-hidden bg-card shadow-sm">
-        <Table>
+      <div className="border rounded-lg overflow-x-auto max-w-full bg-card shadow-sm">
+        <Table className="min-w-[700px]">
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead className="font-semibold">Campaign Name</TableHead>

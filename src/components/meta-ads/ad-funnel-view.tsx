@@ -12,11 +12,11 @@ interface FunnelProps {
 }
 
 export function AdFunnelView({
-  impressions = 12500,
-  clicks = 620,
-  whatsappChats = 280,
-  crmLeads = 115,
-  dealsWon = 18,
+  impressions = 0,
+  clicks = 0,
+  whatsappChats = 0,
+  crmLeads = 0,
+  dealsWon = 0,
 }: FunnelProps) {
   const steps = [
     { label: "Ad Impressions", value: impressions.toLocaleString(), icon: Eye, color: "text-blue-500", bg: "bg-blue-500/10" },

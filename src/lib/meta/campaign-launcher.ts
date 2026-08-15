@@ -6,7 +6,28 @@ export interface LaunchCampaignOptions {
   accessToken: string
   name: string
   objective: string
+  budgetType?: string
   dailyBudget: number
+  specialCategory?: string
+  adSetName?: string
+  conversionDestination?: string
+  engagementType?: string
+  performanceGoal?: string
+  adSetBudgetType?: string
+  ageMin?: number
+  ageMax?: number
+  gender?: string
+  location?: string
+  language?: string
+  demographicCategory?: string
+  interests?: string
+  placement?: string
+  adLevelName?: string
+  facebookPage?: string
+  instagramProfile?: string
+  whatsAppNumber?: string
+  creativeFormat?: 'poster' | 'video'
+  creativeSubTab?: string
   headline: string
   primaryText: string
   ctaText: string
@@ -24,20 +45,40 @@ export async function createMetaAdCampaign(options: LaunchCampaignOptions): Prom
   adId?: string
   error?: string
 }> {
-  const { adAccountId, accessToken, name, objective, dailyBudget, headline, primaryText, ctaText, imageUrl } = options
+  const {
+    adAccountId,
+    accessToken,
+    name,
+    objective,
+    dailyBudget,
+    specialCategory,
+    adSetName,
+    ageMin,
+    ageMax,
+    gender,
+    location,
+    interests,
+    headline,
+    primaryText,
+    ctaText,
+    imageUrl,
+  } = options
 
   const formattedAccountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`
 
   try {
-    // 1. Create Campaign
+    // Map Special Ad Category to Meta Graph API format
+    const metaSpecialCategory = specialCategory && specialCategory !== 'NONE' ? [specialCategory] : ['NONE']
+
+    // 1. Create Campaign on Meta Graph API
     const campaignRes = await fetch(`${BASE_URL}/${formattedAccountId}/campaigns?access_token=${accessToken}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: `[AIWCRM] ${name}`,
         objective: objective || 'OUTCOME_ENGAGEMENT',
-        status: 'PAUSED', // Start paused for review and safety
-        special_ad_categories: ['NONE'],
+        status: 'PAUSED', // Start paused for safety
+        special_ad_categories: metaSpecialCategory,
       }),
     })
 
@@ -50,22 +91,23 @@ export async function createMetaAdCampaign(options: LaunchCampaignOptions): Prom
 
     const campaignId = campaignData.id
 
-    // 2. Create AdSet
+    // 2. Create AdSet on Meta Graph API
     const adsetRes = await fetch(`${BASE_URL}/${formattedAccountId}/adsets?access_token=${accessToken}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: `AdSet - ${name}`,
+        name: adSetName ? `[AIWCRM] ${adSetName}` : `AdSet - ${name}`,
         campaign_id: campaignId,
-        daily_budget: Math.round(dailyBudget * 100), // convert to cents/paise
+        daily_budget: Math.round(dailyBudget * 100), // Convert to cents/paise
         billing_event: 'IMPRESSIONS',
         optimization_goal: 'REACH',
         bid_strategy: 'LOWEST_COST_WITHOUT_CAP',
         status: 'PAUSED',
         targeting: {
           geo_locations: { countries: ['IN'] },
-          age_min: 18,
-          age_max: 65,
+          age_min: ageMin || 18,
+          age_max: ageMax || 65,
+          ...(gender === 'MEN' ? { genders: [1] } : gender === 'WOMEN' ? { genders: [2] } : {}),
         },
       }),
     })

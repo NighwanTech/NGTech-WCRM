@@ -8,6 +8,8 @@ import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
+import { MetaAdsHeader } from '@/components/meta-ads/meta-ads-header'
+
 export default function PredictiveAnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [analytics, setAnalytics] = useState<any>(null)
@@ -49,25 +51,18 @@ export default function PredictiveAnalyticsPage() {
   const hasActiveAds = campaigns.some((c) => c.status === "ACTIVE")
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Link href="/meta-ads">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Executive Intelligence</h2>
-            <p className="text-muted-foreground text-sm">
-              Live AI-driven predictive analytics, CAC, and cross-channel CRM revenue attribution.
-            </p>
-          </div>
-        </div>
-        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 gap-1.5 py-1 px-3 self-start md:self-auto">
-          <Zap className="w-3.5 h-3.5" /> AI Attribution Active
-        </Badge>
-      </div>
+    <div className="w-full max-w-full min-w-0 space-y-6">
+      <MetaAdsHeader
+        title="Predictive Analytics & Intelligence"
+        description="Live AI-driven predictive analytics, CAC, and cross-channel CRM revenue attribution."
+        icon={TrendingUp}
+        breadcrumbs={[{ label: 'Predictive Analytics' }]}
+        actions={
+          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 gap-1.5 py-1 px-3 font-bold text-xs">
+            <Zap className="w-3.5 h-3.5" /> AI Attribution Active
+          </Badge>
+        }
+      />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

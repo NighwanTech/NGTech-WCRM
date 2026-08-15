@@ -7,10 +7,11 @@ import { AIInsightsPanel } from "@/components/meta-ads/ai-insights-panel"
 import { AdFunnelView } from "@/components/meta-ads/ad-funnel-view"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Megaphone, RefreshCw, Settings, FileText, Plus, Rocket, Image as ImageIcon, LineChart, BrainCircuit, Activity, Building2 } from "lucide-react"
+import { Megaphone, RefreshCw, Settings, FileText, Plus, Rocket, Image as ImageIcon, LineChart, BrainCircuit, Activity, Building2, Palette, Target, Sparkles, BookOpen, FlaskConical, GitCommit } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { MetaCampaign } from "@/lib/meta/graph-api"
+import { MetaAdsHeader } from "@/components/meta-ads/meta-ads-header"
 
 export default function MetaAdsDashboardPage() {
   const { account } = useAuth()
@@ -22,8 +23,10 @@ export default function MetaAdsDashboardPage() {
   const [analytics, setAnalytics] = useState<any>(null)
   const [adAccounts, setAdAccounts] = useState<any[]>([])
   const [selectedAccountId, setSelectedAccountId] = useState<string>("")
+  const [timeRangeDays, setTimeRangeDays] = useState<number>(30)
+  const [syncing, setSyncing] = useState<boolean>(false)
 
-  const fetchDashboardData = async (targetAccId?: string) => {
+  const fetchDashboardData = async (targetAccId?: string, rangeDays = timeRangeDays) => {
     setLoading(true)
     try {
       const activeId = targetAccId !== undefined ? targetAccId : selectedAccountId
@@ -31,7 +34,7 @@ export default function MetaAdsDashboardPage() {
 
       const [campRes, anaRes] = await Promise.all([
         fetch(`/api/meta/campaigns${queryParam}`),
-        fetch(`/api/meta/analytics?days=30${queryParam ? `&${queryParam.slice(1)}` : ""}`)
+        fetch(`/api/meta/analytics?days=${rangeDays}${queryParam ? `&${queryParam.slice(1)}` : ""}`)
       ])
       
       const campData = await campRes.json()
@@ -55,14 +58,26 @@ export default function MetaAdsDashboardPage() {
     }
   }
 
+  const handleSyncNow = async () => {
+    setSyncing(true)
+    try {
+      await fetch('/api/meta/v1/sync', { method: 'POST' })
+      await fetchDashboardData()
+    } catch (err) {
+      console.error("Failed to trigger sync", err)
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   const handleAccountChange = (newAccId: string) => {
     setSelectedAccountId(newAccId)
     fetchDashboardData(newAccId)
   }
 
   useEffect(() => {
-    fetchDashboardData()
-  }, [])
+    fetchDashboardData(undefined, timeRangeDays)
+  }, [timeRangeDays])
 
   // Aggregate metrics fallback if analytics missing
   const totalSpend = analytics?.totalSpend || 0
@@ -75,84 +90,119 @@ export default function MetaAdsDashboardPage() {
   const impressions = analytics?.impressions || 0
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Megaphone className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">AI Meta Ads OS</h1>
-          </div>
-          <p className="text-muted-foreground mt-1">
-            Autonomous Meta Ad creation, Click-to-WhatsApp attribution, and end-to-end CRM sales tracking.
-          </p>
-        </div>
+    <div className="w-full max-w-full min-w-0 space-y-6">
+      <MetaAdsHeader
+        title="Enterprise Campaign Operating System"
+        description="Unified Campaign Workspace: Strategy → Audience → Creative → Review → Campaign Studio → WhatsApp Lead → CRM Deal → Net ROI"
+        icon={Megaphone}
+        breadcrumbs={[]}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            {adAccounts.length > 0 && (
+              <div className="flex items-center gap-2 bg-muted/70 px-3 py-1.5 rounded-xl border shadow-2xs">
+                <Building2 className="w-4 h-4 text-primary shrink-0" />
+                <span className="text-xs text-muted-foreground font-semibold shrink-0">Account:</span>
+                <select
+                  value={selectedAccountId}
+                  onChange={(e) => handleAccountChange(e.target.value)}
+                  className="bg-transparent text-xs font-bold text-foreground focus:outline-none cursor-pointer max-w-[200px] truncate"
+                >
+                  {adAccounts.map((acc) => (
+                    <option key={acc.id || acc.ad_account_id} value={acc.ad_account_id} className="bg-popover text-popover-foreground">
+                      {acc.account_name || acc.ad_account_id}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Ad Account Switcher */}
-          {adAccounts.length > 0 && (
-            <div className="flex items-center gap-2 bg-muted/70 px-3 py-1.5 rounded-lg border shadow-sm">
-              <Building2 className="w-4 h-4 text-primary shrink-0" />
-              <span className="text-xs text-muted-foreground font-semibold shrink-0">Account:</span>
+            <div className="flex items-center gap-1.5 bg-muted/70 px-2.5 py-1.5 rounded-xl border shadow-2xs">
+              <span className="text-xs text-muted-foreground font-semibold shrink-0">Range:</span>
               <select
-                value={selectedAccountId}
-                onChange={(e) => handleAccountChange(e.target.value)}
-                className="bg-transparent text-xs font-bold text-foreground focus:outline-none cursor-pointer max-w-[220px] truncate"
+                value={timeRangeDays}
+                onChange={(e) => setTimeRangeDays(parseInt(e.target.value, 10))}
+                className="bg-transparent text-xs font-bold text-foreground focus:outline-none cursor-pointer"
               >
-                {adAccounts.map((acc) => (
-                  <option key={acc.id || acc.ad_account_id} value={acc.ad_account_id} className="bg-popover text-popover-foreground">
-                    {acc.account_name || acc.ad_account_id}
-                  </option>
-                ))}
+                <option value={7} className="bg-popover text-popover-foreground">Last 7 Days</option>
+                <option value={30} className="bg-popover text-popover-foreground">Last 30 Days</option>
+                <option value={90} className="bg-popover text-popover-foreground">Last 90 Days</option>
               </select>
             </div>
-          )}
 
-          <Link href={selectedAccountId ? `/meta-ads/create?adAccountId=${selectedAccountId}` : `/meta-ads/create`}>
-            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 font-bold shadow-md">
-              <Rocket className="w-4 h-4" /> Create Ad with AI
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSyncNow}
+              disabled={syncing}
+              className="gap-1.5 text-xs h-9 font-semibold text-primary border-primary/30 hover:bg-primary/5"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
+              {syncing ? "Syncing..." : "Sync Now"}
             </Button>
-          </Link>
-          <Button variant="outline" size="sm" onClick={() => fetchDashboardData()} disabled={loading} className="gap-2">
-            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
-          </Button>
-          <Link href="/meta-ads/lead-forms">
-            <Button variant="outline" size="sm" className="gap-2">
-              <FileText className="w-4 h-4" /> Lead Forms
-            </Button>
-          </Link>
-          <Link href="/meta-ads/settings">
-            <Button variant="outline" size="sm" className="gap-2">
-              <Settings className="w-4 h-4" /> Settings
-            </Button>
-          </Link>
-        </div>
-      </div>
 
-      {/* AI OS Modules Quick Links */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Link href="/meta-ads/assets">
-          <Button variant="outline" className="w-full h-auto py-4 flex flex-col items-center justify-center gap-2 hover:bg-muted/50 border-dashed">
-            <ImageIcon className="w-6 h-6 text-purple-500" />
-            <span className="font-semibold text-sm">Asset Library</span>
+            <Link href={selectedAccountId ? `/meta-ads/create?adAccountId=${selectedAccountId}` : `/meta-ads/create`}>
+              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 font-bold shadow-xs text-xs h-9">
+                <Rocket className="w-4 h-4" /> Create Ad with AI
+              </Button>
+            </Link>
+          </div>
+        }
+      />
+
+      {/* AI OS Modules Navigation Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-9 gap-3">
+        <Link href="/meta-ads/copilot">
+          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-primary/10 border-primary/30 text-primary">
+            <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+            <span className="font-bold text-[11px]">AI Copilot</span>
           </Button>
         </Link>
-        <Link href="/meta-ads/analytics">
-          <Button variant="outline" className="w-full h-auto py-4 flex flex-col items-center justify-center gap-2 hover:bg-muted/50 border-dashed">
-            <LineChart className="w-6 h-6 text-emerald-500" />
-            <span className="font-semibold text-sm">Predictive Analytics</span>
+        <Link href="/meta-ads/decision-ledger">
+          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400">
+            <GitCommit className="w-4 h-4 text-purple-500" />
+            <span className="font-bold text-[11px]">Decision Ledger</span>
           </Button>
         </Link>
-        <Link href="/meta-ads/decisions">
-          <Button variant="outline" className="w-full h-auto py-4 flex flex-col items-center justify-center gap-2 hover:bg-muted/50 border-dashed">
-            <BrainCircuit className="w-6 h-6 text-indigo-500" />
-            <span className="font-semibold text-sm">Decision Center</span>
+        <Link href="/meta-ads/create">
+          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-muted/50 border-dashed">
+            <Rocket className="w-4 h-4 text-emerald-600" />
+            <span className="font-bold text-[11px]">AI Studio</span>
           </Button>
         </Link>
-        <Link href="/meta-ads/ops">
-          <Button variant="outline" className="w-full h-auto py-4 flex flex-col items-center justify-center gap-2 hover:bg-muted/50 border-dashed">
-            <Activity className="w-6 h-6 text-amber-500" />
-            <span className="font-semibold text-sm">Operations Center</span>
+        <Link href={campaigns && campaigns.length > 0 ? `/meta-ads/campaign/${campaigns[0].id}?tab=creative` : `/meta-ads/creative-studio`}>
+          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-muted/50 border-dashed">
+            <Palette className="w-4 h-4 text-purple-600" />
+            <span className="font-bold text-[11px]">Creative Studio</span>
+          </Button>
+        </Link>
+        <Link href={campaigns && campaigns.length > 0 ? `/meta-ads/campaign/${campaigns[0].id}?tab=audience` : `/meta-ads/audience-studio`}>
+          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-muted/50 border-dashed">
+            <Target className="w-4 h-4 text-blue-600" />
+            <span className="font-bold text-[11px]">Audience Studio</span>
+          </Button>
+        </Link>
+        <Link href="/meta-ads/prompt-studio">
+          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-muted/50 border-dashed">
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <span className="font-bold text-[11px]">Prompt Studio</span>
+          </Button>
+        </Link>
+        <Link href="/meta-ads/knowledge-base">
+          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-muted/50 border-dashed">
+            <BookOpen className="w-4 h-4 text-cyan-600" />
+            <span className="font-bold text-[11px]">Knowledge Base</span>
+          </Button>
+        </Link>
+        <Link href="/meta-ads/experiments">
+          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-muted/50 border-dashed">
+            <FlaskConical className="w-4 h-4 text-pink-600" />
+            <span className="font-bold text-[11px]">Experiment Lab</span>
+          </Button>
+        </Link>
+        <Link href="/meta-ads/settings/sync-health">
+          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-muted/50 border-dashed">
+            <Activity className="w-4 h-4 text-emerald-500" />
+            <span className="font-bold text-[11px]">Sync Health</span>
           </Button>
         </Link>
       </div>

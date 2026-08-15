@@ -314,13 +314,13 @@ interface AppShellProps {
 
 export function AppShell({ sidebar, header, footer, children, flush }: AppShellProps) {
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen overflow-hidden bg-background w-full max-w-full">
       {sidebar}
-      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0 w-full max-w-full">
         {header}
         <main
           className={cn(
-            "flex-1 min-h-0 overflow-hidden",
+            "flex-1 min-h-0 min-w-0 max-w-full overflow-x-hidden",
             !flush && "overflow-y-auto p-4 sm:p-6"
           )}
         >

@@ -26,7 +26,10 @@ import {
   FileKey,
   Building,
   Key,
-  FileText
+  FileText,
+  Rocket,
+  Palette,
+  Sparkles
 } from 'lucide-react'
 
 export interface NavItemConfig {
@@ -86,7 +89,13 @@ export const NAVIGATION_CONFIG: NavGroupConfig[] = [
     items: [
       { id: 'broadcasts', href: '/broadcasts', label: 'Broadcasts', icon: Radio, permission: 'broadcasts:launch', description: 'WhatsApp campaigns' },
       { id: 'sequences', href: '/sequences', label: 'Sequences', icon: Route, permission: 'sequences:manage', description: 'Drip messaging flows' },
-      { id: 'meta-ads', href: '/meta-ads', label: 'Meta Ads', icon: Presentation, description: 'Facebook & Instagram ads' },
+      { id: 'meta-ads', href: '/meta-ads', label: 'Meta Ads OS', icon: Presentation, description: 'Autonomous AI Ad Operating System' },
+      { id: 'meta-ads-studio', href: '/meta-ads/create', label: '↳ AI Campaign Studio', icon: Rocket, description: 'Manual Pro & AI Wizard Studio' },
+      { id: 'meta-ads-creative', href: '/meta-ads/creative-studio', label: '↳ Creative Studio', icon: Palette, description: 'AI Banner, Video & Brand Kit' },
+      { id: 'meta-ads-audience', href: '/meta-ads/audience-studio', label: '↳ Audience Studio', icon: Target, description: 'Lookalikes & CRM Audiences' },
+      { id: 'meta-ads-prompts', href: '/meta-ads/prompt-studio', label: '↳ AI Prompt Studio', icon: Sparkles, description: 'Ad Prompt Intelligence' },
+      { id: 'meta-ads-kb', href: '/meta-ads/knowledge-base', label: '↳ Knowledge Base', icon: FileText, description: 'Meta Ads Guides & Playbooks' },
+      { id: 'meta-ads-experiments', href: '/meta-ads/experiments', label: '↳ AI Experiment Lab', icon: BrainCircuit, description: 'A/B & Multivariate Testing' },
       { id: 'templates', href: '/settings?tab=templates', label: 'Templates', icon: FileText, permission: 'settings:manage', description: 'Message templates' },
     ]
   },

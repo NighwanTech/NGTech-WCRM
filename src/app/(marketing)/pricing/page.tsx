@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { getSiteUrl } from '@/lib/site-config';
 import {
   getPricingPlansFromDB,
   getPricingFaqsFromDB,

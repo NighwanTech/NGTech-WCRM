@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { RulesManager } from '@/components/meta-ads/rules-manager'
 
+import { MetaAdsHeader } from '@/components/meta-ads/meta-ads-header'
+
 export default function AIOperationsCenter() {
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
@@ -35,28 +37,23 @@ export default function AIOperationsCenter() {
   }, [])
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Link href="/meta-ads">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">AI Operations & Learning Center</h2>
-            <p className="text-muted-foreground text-sm">Monitor AI token performance, cost governance, and autonomous rules.</p>
+    <div className="w-full max-w-full min-w-0 space-y-6">
+      <MetaAdsHeader
+        title="AI Operations & Learning Center"
+        description="Monitor AI token performance, cost governance, autonomous rules, and Graph API telemetry."
+        icon={Activity}
+        breadcrumbs={[{ label: 'Operations & Rules' }]}
+        actions={
+          <div className="flex gap-2">
+            <Badge variant="outline" className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20 font-bold text-xs">
+              <Activity className="w-3 h-3 mr-1" /> {stats.apiHealth}
+            </Badge>
+            <Badge variant="outline" className="bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20 font-bold text-xs">
+              <ShieldCheck className="w-3 h-3 mr-1" /> Governance Active
+            </Badge>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Badge variant="outline" className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20">
-            <Activity className="w-3 h-3 mr-1" /> {stats.apiHealth}
-          </Badge>
-          <Badge variant="outline" className="bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20">
-            <ShieldCheck className="w-3 h-3 mr-1" /> Governance Active
-          </Badge>
-        </div>
-      </div>
+        }
+      />
 
       {/* Top Level KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
