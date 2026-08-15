@@ -140,6 +140,12 @@ export default function MetaAdsDashboardPage() {
               {syncing ? "Syncing..." : "Sync Now"}
             </Button>
 
+            <Link href="/meta-ads/settings">
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9 font-semibold text-foreground border-border hover:bg-muted">
+                <Settings className="w-3.5 h-3.5 text-muted-foreground" /> Settings
+              </Button>
+            </Link>
+
             <Link href={selectedAccountId ? `/meta-ads/create?adAccountId=${selectedAccountId}` : `/meta-ads/create`}>
               <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 font-bold shadow-xs text-xs h-9">
                 <Rocket className="w-4 h-4" /> Create Ad with AI
