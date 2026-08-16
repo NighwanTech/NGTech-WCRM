@@ -105,6 +105,7 @@ export const NAVIGATION_CONFIG: NavGroupConfig[] = [
     groupIcon: Contact,
     colorClass: 'text-blue-600 dark:text-blue-400',
     items: [
+      { id: 'inbox', href: '/inbox', label: 'Universal Inbox', icon: MessageSquare, permission: 'messages:read', description: 'Omnichannel WhatsApp & lead conversations' },
       { id: 'contacts', href: '/contacts', label: 'Contacts & Companies', icon: Users, permission: 'contacts:read', description: 'Customer 360 database' },
       { id: 'pipelines', href: '/pipelines', label: 'Sales Pipelines', icon: GitBranch, description: 'Deal tracking & stages' },
       { id: 'team-performance', href: '/team-performance', label: 'Team Performance', icon: UsersRound, description: 'Agent productivity & metrics' },
