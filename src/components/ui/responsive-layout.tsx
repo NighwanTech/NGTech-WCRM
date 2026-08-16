@@ -320,8 +320,8 @@ export function AppShell({ sidebar, header, footer, children, flush }: AppShellP
         {header}
         <main
           className={cn(
-            "flex-1 min-h-0 min-w-0 max-w-full overflow-x-hidden",
-            !flush && "overflow-y-auto p-4 sm:p-6"
+            "flex-1 min-h-0 min-w-0 max-w-full flex flex-col h-full",
+            !flush ? "overflow-y-auto p-4 sm:p-6" : "overflow-hidden"
           )}
         >
           {children}
