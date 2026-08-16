@@ -97,7 +97,7 @@ export default function MetaAdsDashboardPage() {
         icon={Megaphone}
         breadcrumbs={[]}
         actions={
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 max-w-full">
             {adAccounts.length > 0 && (
               <div className="flex items-center gap-2 bg-muted/70 px-3 py-1.5 rounded-xl border shadow-2xs">
                 <Building2 className="w-4 h-4 text-primary shrink-0" />

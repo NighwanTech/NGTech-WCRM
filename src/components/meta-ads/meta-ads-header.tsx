@@ -132,10 +132,10 @@ export function MetaAdsHeader({
         </div>
 
         {/* Right Side: Optional Actions & Prev/Next Counter */}
-        <div className="flex items-center gap-2 flex-wrap shrink-0">
+        <div className="flex items-center gap-2 flex-wrap shrink-0 max-w-full">
           {actions}
 
-          <div className="flex items-center gap-1 bg-muted/70 px-2 py-1 rounded-lg border shadow-2xs">
+          <div className="hidden sm:flex items-center gap-1 bg-muted/70 px-2 py-1 rounded-lg border shadow-2xs">
             {prevModule ? (
               <Link href={prevModule.href} title={`Previous: ${prevModule.label}`}>
                 <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[11px] font-semibold gap-1 hover:bg-background">
