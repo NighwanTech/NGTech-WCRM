@@ -33,15 +33,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No authorization code provided from Meta.' }, { status: 400 })
     }
 
-    if (!process.env.META_APP_SECRET || !process.env.NEXT_PUBLIC_META_APP_ID) {
-       console.log('Embedded Signup attempted but META_APP_SECRET or NEXT_PUBLIC_META_APP_ID is not set in environment.')
-       return NextResponse.json({ 
-         error: 'Meta Developer credentials are not configured. Please contact the platform admin.' 
-       }, { status: 501 })
-    }
-
-    const appId = process.env.NEXT_PUBLIC_META_APP_ID
-    const appSecret = process.env.META_APP_SECRET
+    const appId = process.env.NEXT_PUBLIC_META_APP_ID || process.env.META_APP_ID || '843808418636023'
+    const appSecret = process.env.META_APP_SECRET || '44ae97f737651f0a9df9bda0588b3a13'
 
     // 1. Exchange code for user access token
     const tokenUrl = `https://graph.facebook.com/v19.0/oauth/access_token?client_id=${appId}&client_secret=${appSecret}&code=${code}`
