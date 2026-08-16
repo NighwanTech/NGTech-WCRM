@@ -47,32 +47,7 @@ export function NotificationCenter() {
     }
   }, [open])
 
-  const [notifications, setNotifications] = useState<SystemNotification[]>([
-    {
-      id: 'notif-1',
-      title: 'Campaign Published Live',
-      message: 'WhatsApp Lead Campaign published to Meta Graph API v20.0 (ID: act_29847120).',
-      type: 'publish_success',
-      timestamp: '2 min ago',
-      read: false
-    },
-    {
-      id: 'notif-2',
-      title: 'Digital Twin Simulation Ready',
-      message: 'Monte Carlo 1,000 runs completed. Forecast ROAS lift +4.2x (Low Policy Risk).',
-      type: 'simulation_complete',
-      timestamp: '15 min ago',
-      read: false
-    },
-    {
-      id: 'notif-3',
-      title: 'Graph API Sync Completed',
-      message: 'Synced 27 connected Meta Ad Accounts and 6 active campaign metric snapshots.',
-      type: 'sync_completed',
-      timestamp: '1 hour ago',
-      read: true
-    }
-  ])
+  const [notifications, setNotifications] = useState<SystemNotification[]>([])
 
   const unreadCount = notifications.filter(n => !n.read).length
 

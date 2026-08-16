@@ -1,14 +1,24 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Shield, RefreshCw, Activity, Layers, AlertCircle } from "lucide-react"
+import { Shield, RefreshCw, Activity, Layers, AlertCircle, Inbox } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+
+interface QueueJobItem {
+  id: string
+  job_type: string
+  status: string
+  retry_count: number
+  created_at: string
+}
 
 export default function AdminMetaAdsGovernancePage() {
   const [loading, setLoading] = useState(true)
+  const [queueJobs, setQueueJobs] = useState<QueueJobItem[]>([])
   const [stats, setStats] = useState({
     totalAccounts: 0,
     queuedEvents: 0,
@@ -16,22 +26,46 @@ export default function AdminMetaAdsGovernancePage() {
     failedEvents: 0,
   })
 
-  const fetchGovernanceStats = async () => {
+  const fetchGovernanceStats = useCallback(async () => {
     setLoading(true)
-    setTimeout(() => {
+    try {
+      const supabase = createClient()
+
+      // 1. Fetch connected Meta Ad Accounts count
+      const { count: accountsCount } = await supabase
+        .from("meta_ad_accounts")
+        .select("*", { count: "exact", head: true })
+
+      // 2. Fetch real queue jobs
+      const { data: jobs } = await supabase
+        .from("meta_queue_jobs")
+        .select("id, job_type, status, retry_count, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20)
+
+      const jobList: QueueJobItem[] = jobs || []
+      setQueueJobs(jobList)
+
+      const queued = jobList.filter(j => j.status === 'pending' || j.status === 'queued').length
+      const processed = jobList.filter(j => j.status === 'completed' || j.status === 'processed').length
+      const failed = jobList.filter(j => j.status === 'failed' || j.status === 'error').length
+
       setStats({
-        totalAccounts: 1,
-        queuedEvents: 0,
-        processedEvents: 12,
-        failedEvents: 0,
+        totalAccounts: accountsCount || 0,
+        queuedEvents: queued,
+        processedEvents: processed,
+        failedEvents: failed,
       })
+    } catch (err) {
+      console.warn("Failed to fetch meta ads governance stats:", err)
+    } finally {
       setLoading(false)
-    }, 600)
-  }
+    }
+  }, [])
 
   useEffect(() => {
     fetchGovernanceStats()
-  }, [])
+  }, [fetchGovernanceStats])
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -113,17 +147,44 @@ export default function AdminMetaAdsGovernancePage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell className="font-mono text-xs">q_meta_102938475</TableCell>
-                <TableCell className="text-sm font-medium">leadgen (Page Lead)</TableCell>
-                <TableCell>
-                  <Badge variant="default" className="bg-emerald-600">
-                    Processed
-                  </Badge>
-                </TableCell>
-                <TableCell>0</TableCell>
-                <TableCell className="text-right text-xs text-muted-foreground">Just now</TableCell>
-              </TableRow>
+              {queueJobs.length > 0 ? (
+                queueJobs.map((job) => (
+                  <TableRow key={job.id}>
+                    <TableCell className="font-mono text-xs">{job.id.slice(0, 14)}...</TableCell>
+                    <TableCell className="text-sm font-medium">{job.job_type}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="default"
+                        className={
+                          job.status === "completed" || job.status === "processed"
+                            ? "bg-emerald-600"
+                            : job.status === "failed" || job.status === "error"
+                            ? "bg-rose-600"
+                            : "bg-amber-600"
+                        }
+                      >
+                        {job.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{job.retry_count || 0}</TableCell>
+                    <TableCell className="text-right text-xs text-muted-foreground">
+                      {new Date(job.created_at).toLocaleTimeString()}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    <div className="space-y-1">
+                      <Inbox className="w-6 h-6 mx-auto opacity-50 text-muted-foreground" />
+                      <p className="font-medium text-xs text-foreground">No Webhook Events in Queue</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Incoming Meta Lead Gen and Click-to-WhatsApp webhook events will stream here live.
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>

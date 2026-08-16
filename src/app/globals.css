@@ -935,10 +935,30 @@ html[data-theme="rose"] {
   animation: signalPulse 3s ease-in-out infinite;
 }
 
-.animate-float-hero {
-  animation: floatHeroCard 4s ease-in-out infinite;
-}
-
 .animate-flow-dash {
   animation: flowDash 1.2s linear infinite;
+}
+
+/* Custom Sleek Always-Visible Scrollbars */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 9999px;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.75);
 }

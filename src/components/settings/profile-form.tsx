@@ -31,15 +31,23 @@ const ALLOWED_MIME = new Set([
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function ProfileForm() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, account, refreshProfile } = useAuth();
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const orgFileInputRef = useRef<HTMLInputElement>(null);
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [pendingAvatar, setPendingAvatar] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [removeAvatar, setRemoveAvatar] = useState(false);
+
+  // Organization branding state
+  const [orgName, setOrgName] = useState('');
+  const [pendingOrgLogo, setPendingOrgLogo] = useState<File | null>(null);
+  const [orgPreviewUrl, setOrgPreviewUrl] = useState<string | null>(null);
+  const [removeOrgLogo, setRemoveOrgLogo] = useState(false);
+
   const [saving, setSaving] = useState(false);
   const [emailChangePending, setEmailChangePending] = useState(false);
   const [departments, setDepartments] = useState<string[]>([]);
@@ -49,6 +57,9 @@ export function ProfileForm() {
     if (!profile || !user) return;
     setFullName(profile.full_name ?? '');
     setEmail(profile.email ?? '');
+    if (account?.name) {
+      setOrgName(account.name);
+    }
 
     async function fetchDepartments() {
       const { data, error } = await supabase
@@ -67,14 +78,15 @@ export function ProfileForm() {
       }
     }
     fetchDepartments();
-  }, [profile, user]);
+  }, [profile, user, account]);
 
   // Cleanup object URLs to avoid leaks.
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (orgPreviewUrl) URL.revokeObjectURL(orgPreviewUrl);
     };
-  }, [previewUrl]);
+  }, [previewUrl, orgPreviewUrl]);
 
   const currentAvatar =
     previewUrl ?? (!removeAvatar ? profile?.avatar_url ?? null : null);
@@ -112,6 +124,29 @@ export function ProfileForm() {
     setPendingAvatar(null);
     setPreviewUrl(null);
     setRemoveAvatar(true);
+  };
+
+  const onPickOrgLogo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    if (file.size > MAX_AVATAR_BYTES) {
+      toast.error('Logo image is too large (Maximum 2 MB)');
+      return;
+    }
+
+    if (orgPreviewUrl) URL.revokeObjectURL(orgPreviewUrl);
+    setPendingOrgLogo(file);
+    setOrgPreviewUrl(URL.createObjectURL(file));
+    setRemoveOrgLogo(false);
+  };
+
+  const onRemoveOrgLogo = () => {
+    if (orgPreviewUrl) URL.revokeObjectURL(orgPreviewUrl);
+    setPendingOrgLogo(null);
+    setOrgPreviewUrl(null);
+    setRemoveOrgLogo(true);
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -156,6 +191,40 @@ export function ProfileForm() {
         nextAvatarUrl = null;
       }
 
+      // Upload organization logo if pending
+      let nextOrgLogoUrl: string | null = (account as any)?.logo_url ?? null;
+      if (pendingOrgLogo && account?.id) {
+        const ext = pendingOrgLogo.name.split('.').pop()?.toLowerCase() || 'png';
+        const path = `accounts/${account.id}/logo-${Date.now()}.${ext}`;
+        const { error: uploadOrgError } = await supabase.storage
+          .from('avatars')
+          .upload(path, pendingOrgLogo, {
+            cacheControl: '3600',
+            upsert: true,
+            contentType: pendingOrgLogo.type,
+          });
+        if (!uploadOrgError) {
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from('avatars').getPublicUrl(path);
+          nextOrgLogoUrl = publicUrl;
+        }
+      } else if (removeOrgLogo) {
+        nextOrgLogoUrl = null;
+      }
+
+      // Update account organization name & logo if changed
+      if (account?.id) {
+        const trimmedOrg = orgName.trim();
+        await supabase
+          .from('accounts')
+          .update({
+            name: trimmedOrg || account.name,
+            logo_url: nextOrgLogoUrl,
+          })
+          .eq('id', account.id);
+      }
+
       // Persist name + avatar to profiles.
       const { error: updateError } = await supabase
         .from('profiles')
@@ -193,12 +262,15 @@ export function ProfileForm() {
       setPendingAvatar(null);
       setPreviewUrl(null);
       setRemoveAvatar(false);
+      setPendingOrgLogo(null);
+      setOrgPreviewUrl(null);
+      setRemoveOrgLogo(false);
       await refreshProfile();
 
       toast.success(
         emailSent
           ? 'Profile saved — check your email to confirm the address change'
-          : 'Profile saved',
+          : 'Profile & Organization Branding saved',
       );
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
@@ -212,8 +284,11 @@ export function ProfileForm() {
     !!profile &&
     (fullName.trim() !== (profile.full_name ?? '') ||
       email.trim().toLowerCase() !== (profile.email ?? '').toLowerCase() ||
+      orgName.trim() !== (account?.name ?? '') ||
       pendingAvatar !== null ||
-      removeAvatar);
+      removeAvatar ||
+      pendingOrgLogo !== null ||
+      removeOrgLogo);
 
   const joined = user?.created_at
     ? new Date(user.created_at).toLocaleDateString(undefined, {
@@ -319,6 +394,92 @@ export function ProfileForm() {
               )}
             </div>
 
+            {/* Organization / Workspace Branding Card for Admins */}
+            <div className="rounded-xl border border-border/80 bg-card p-4 space-y-4 shadow-2xs">
+              <div className="flex items-center justify-between pb-2 border-b border-border/60">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-foreground">
+                    🏢 Organization & Workspace Branding
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Custom logo & company name shown in the sidebar header and client invoices
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 p-1 overflow-hidden shadow-xs">
+                  {orgPreviewUrl || account?.logo_url ? (
+                    <img 
+                      src={orgPreviewUrl || account?.logo_url || '/logo.svg'} 
+                      alt="Organization Logo" 
+                      className="h-full w-full rounded-lg object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/logo.png'
+                      }}
+                    />
+                  ) : (
+                    <img 
+                      src="/logo.svg" 
+                      alt="AIWCRM Logo" 
+                      className="h-full w-full rounded-lg object-contain"
+                    />
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    ref={orgFileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    className="hidden"
+                    onChange={onPickOrgLogo}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => orgFileInputRef.current?.click()}
+                    disabled={saving}
+                    className="text-xs font-bold h-8 cursor-pointer"
+                  >
+                    <Upload className="size-3.5 mr-1" />
+                    {account?.logo_url || orgPreviewUrl ? 'Change Org Logo' : 'Upload Org Logo'}
+                  </Button>
+                  {(account?.logo_url || orgPreviewUrl) && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={onRemoveOrgLogo}
+                      disabled={saving}
+                      className="text-xs text-muted-foreground hover:text-rose-500 h-8 cursor-pointer"
+                    >
+                      <Trash2 className="size-3.5 mr-1" />
+                      Reset to Default AIWCRM Logo
+                    </Button>
+                  )}
+                  <p className="w-full text-[10.5px] text-muted-foreground">
+                    PNG, SVG, JPG. Replaces default logo across sidebar and workspace headers.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 pt-1">
+                <Label htmlFor="org-name" className="text-xs font-bold text-foreground">
+                  Organization / Company Name
+                </Label>
+                <Input
+                  id="org-name"
+                  value={orgName}
+                  onChange={(e) => setOrgName(e.target.value)}
+                  placeholder="e.g. Nighwan Tech / AIWCRM Enterprise"
+                  disabled={saving}
+                  className="h-9 text-xs font-bold"
+                />
+              </div>
+            </div>
+
             {/* Read-only block */}
             <div className="rounded-lg border border-border bg-muted p-4">
               <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -369,10 +530,10 @@ export function ProfileForm() {
         </Card>
 
         <div className="flex justify-end">
-          <Button type="submit" disabled={saving || !dirty || !profile}>
+          <Button type="submit" disabled={saving || !dirty || !profile} className="cursor-pointer">
             {saving ? (
               <>
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin mr-1.5" />
                 Saving…
               </>
             ) : (

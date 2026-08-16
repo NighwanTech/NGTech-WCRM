@@ -378,18 +378,20 @@ export default function MetaAdsSettingsPage() {
                   return (
                     <div 
                       key={adAcc.id} 
-                      className={`p-3.5 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
-                        isCurrentActive ? "border-emerald-500/60 bg-emerald-500/5 shadow-sm ring-1 ring-emerald-500/30" : "bg-background"
+                      className={`p-3.5 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all ${
+                        isCurrentActive ? "border-emerald-500/60 bg-emerald-500/5 shadow-sm ring-1 ring-emerald-500/30" : "bg-background hover:bg-muted/20"
                       }`}
                     >
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-foreground">{adAcc.account_name || "Ad Account"}</span>
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap min-w-0">
+                          <span className="font-bold text-sm text-foreground truncate max-w-[320px] lg:max-w-[420px]" title={adAcc.account_name || "Ad Account"}>
+                            {adAcc.account_name || "Ad Account"}
+                          </span>
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono shrink-0">
                             {adAcc.ad_account_id}
                           </Badge>
                           {isCurrentActive && (
-                            <Badge className="bg-emerald-600 text-white text-[10px] px-2 py-0 gap-1 font-semibold shadow-xs">
+                            <Badge className="bg-emerald-600 text-white text-[10px] px-2 py-0 gap-1 font-semibold shadow-xs shrink-0">
                               <Check className="w-3 h-3" /> Active Selected
                             </Badge>
                           )}
@@ -399,25 +401,25 @@ export default function MetaAdsSettingsPage() {
                         </p>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
                         {!isCurrentActive ? (
                           <Button 
                             size="sm" 
                             variant="outline" 
                             onClick={() => handleSwitchAccount(adAcc)}
-                            className="text-xs gap-1 font-semibold border-primary/30 text-primary hover:bg-primary/5"
+                            className="text-xs gap-1 font-semibold border-primary/30 text-primary hover:bg-primary/5 shrink-0"
                           >
                             <RefreshCw className="w-3.5 h-3.5" /> Switch to this Account
                           </Button>
                         ) : (
                           <Link href={`/meta-ads?adAccountId=${encodeURIComponent(adAcc.ad_account_id)}`}>
-                            <Button size="sm" variant="outline" className="text-xs gap-1 font-semibold border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10">
+                            <Button size="sm" variant="outline" className="text-xs gap-1 font-semibold border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 shrink-0">
                               <LineChart className="w-3.5 h-3.5" /> View Dashboard
                             </Button>
                           </Link>
                         )}
                         <Link href={`/meta-ads/create?adAccountId=${encodeURIComponent(adAcc.ad_account_id)}`}>
-                          <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1 font-semibold">
+                          <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1 font-semibold shrink-0">
                             <Rocket className="w-3.5 h-3.5" /> Run Ads
                           </Button>
                         </Link>
@@ -426,7 +428,7 @@ export default function MetaAdsSettingsPage() {
                           variant="ghost"
                           onClick={() => handleDetachSingleAccount(adAcc.ad_account_id)}
                           disabled={detachingId === adAcc.ad_account_id}
-                          className="text-destructive hover:bg-destructive/10 text-xs px-2.5 border border-destructive/20 gap-1 font-medium"
+                          className="text-destructive hover:bg-destructive/10 text-xs px-2.5 border border-destructive/20 gap-1 font-medium shrink-0"
                           title="Detach only this ad account"
                         >
                           {detachingId === adAcc.ad_account_id ? (

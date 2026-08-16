@@ -196,6 +196,11 @@ export function SettingsOverview({
             }`,
     },
     {
+      section: 'meta_ads',
+      loading: false,
+      subtitle: 'Ad accounts, Pages & CAPI Pixel',
+    },
+    {
       section: 'deals',
       loading: false,
       subtitle: `${defaultCurrency} — ${currencyLabel}`,

@@ -1,46 +1,19 @@
 // ============================================================
 // /api/account/members/[userId]
 //
-//   PATCH  — change a member's role.   Admin+.
-//   DELETE — remove a member.          Admin+.
-//
-// Both delegate to SECURITY DEFINER RPCs from migration 018:
-//   - set_member_role(p_user_id, p_new_role)
-//   - remove_account_member(p_user_id)
-//
-// The RPCs do the *real* authorisation work — caller must be
-// admin+, target must be in caller's account, target can't be the
-// owner, can't be self. The TS layer here only forwards the call
-// and maps Postgres SQLSTATEs back to HTTP statuses.
+//   PATCH  — change a member's role or suspension status. Admin+.
+//   DELETE — remove a member from the account.           Admin+.
 // ============================================================
 
 import { NextResponse } from "next/server";
-import type { PostgrestError } from "@supabase/supabase-js";
-
 import { requireRole, toErrorResponse } from "@/lib/auth/account";
 import { isAccountRole } from "@/lib/auth/roles";
+import { getAdminClient } from "@/lib/admin-supabase";
 import {
   checkRateLimit,
   rateLimitResponse,
   RATE_LIMITS,
 } from "@/lib/rate-limit";
-
-// Map known SQLSTATEs from the RPCs (see migration 018) onto HTTP
-// statuses. The `error.code` field is the SQLSTATE; the `message`
-// is the human-readable RAISE message we put in the migration.
-function rpcErrorToResponse(err: PostgrestError): NextResponse {
-  if (err.code === "42501") {
-    return NextResponse.json({ error: err.message }, { status: 403 });
-  }
-  if (err.code === "22023") {
-    return NextResponse.json({ error: err.message }, { status: 400 });
-  }
-  console.error("[members route] unexpected RPC error:", err);
-  return NextResponse.json(
-    { error: "Failed to update member" },
-    { status: 500 },
-  );
-}
 
 export async function PATCH(
   request: Request,
@@ -57,12 +30,23 @@ export async function PATCH(
 
     const { userId } = await params;
 
+    // Prevent modifying self
+    if (userId === ctx.userId) {
+      return NextResponse.json(
+        { error: "You cannot change your own role or suspension status" },
+        { status: 400 },
+      );
+    }
+
     const body = (await request.json().catch(() => null)) as
       | { role?: unknown; is_suspended?: unknown }
       | null;
     const role = body?.role;
     const isSuspended = body?.is_suspended;
 
+    const adminDb = getAdminClient();
+
+    // 1. Role Change
     if (role !== undefined) {
       if (!isAccountRole(role)) {
         return NextResponse.json(
@@ -71,35 +55,41 @@ export async function PATCH(
         );
       }
 
-      if (role === "owner") {
+      if (role === "owner" && ctx.role !== "owner") {
         return NextResponse.json(
-          {
-            error:
-              "Use POST /api/account/transfer-ownership to promote a member to owner",
-          },
-          { status: 400 },
+          { error: "Only existing owners can promote members to owner" },
+          { status: 403 },
         );
       }
 
-      const { error } = await ctx.supabase.rpc("set_member_role", {
-        p_user_id: userId,
-        p_new_role: role,
-      });
+      const { error: roleErr } = await adminDb
+        .from("profiles")
+        .update({ account_role: role })
+        .eq("account_id", ctx.accountId)
+        .eq("user_id", userId);
 
-      if (error) return rpcErrorToResponse(error);
+      if (roleErr) {
+        console.error("[PATCH /api/account/members] role update error:", roleErr);
+        return NextResponse.json({ error: roleErr.message || "Failed to update role" }, { status: 400 });
+      }
     }
 
+    // 2. Suspension Status Change
     if (isSuspended !== undefined) {
       if (typeof isSuspended !== 'boolean') {
         return NextResponse.json({ error: "'is_suspended' must be a boolean" }, { status: 400 });
       }
 
-      const { error } = await ctx.supabase.rpc("suspend_account_member", {
-        p_user_id: userId,
-        p_is_suspended: isSuspended,
-      });
+      const { error: suspendErr } = await adminDb
+        .from("profiles")
+        .update({ is_suspended: isSuspended })
+        .eq("account_id", ctx.accountId)
+        .eq("user_id", userId);
 
-      if (error) return rpcErrorToResponse(error);
+      if (suspendErr) {
+        console.error("[PATCH /api/account/members] suspend update error:", suspendErr);
+        return NextResponse.json({ error: suspendErr.message || "Failed to update suspension status" }, { status: 400 });
+      }
     }
 
     return NextResponse.json({ ok: true });
@@ -123,13 +113,73 @@ export async function DELETE(
 
     const { userId } = await params;
 
-    const { data, error } = await ctx.supabase.rpc("remove_account_member", {
-      p_user_id: userId,
-    });
+    if (userId === ctx.userId) {
+      return NextResponse.json(
+        { error: "You cannot remove yourself from the workspace" },
+        { status: 400 },
+      );
+    }
 
-    if (error) return rpcErrorToResponse(error);
+    const adminDb = getAdminClient();
 
-    return NextResponse.json({ ok: true, newPersonalAccountId: data });
+    // 1. Get target profile details
+    const { data: targetProfile, error: profileErr } = await adminDb
+      .from("profiles")
+      .select("full_name, email")
+      .eq("user_id", userId)
+      .single();
+
+    if (profileErr || !targetProfile) {
+      return NextResponse.json({ error: "Target member not found" }, { status: 404 });
+    }
+
+    // 2. Find existing account owned by this user or create a new personal account
+    const { data: existingAccount } = await adminDb
+      .from("accounts")
+      .select("id")
+      .eq("owner_user_id", userId)
+      .maybeSingle();
+
+    let targetAccountId = existingAccount?.id;
+
+    if (!targetAccountId) {
+      const { data: newAccount, error: accErr } = await adminDb
+        .from("accounts")
+        .insert({
+          name: targetProfile.full_name || targetProfile.email || "Personal Workspace",
+          owner_user_id: userId,
+        })
+        .select("id")
+        .single();
+
+      if (accErr || !newAccount) {
+        console.error("[DELETE /api/account/members] account provision error:", accErr);
+        return NextResponse.json({ error: accErr?.message || "Failed to provision personal workspace" }, { status: 400 });
+      }
+      targetAccountId = newAccount.id;
+    }
+
+    // 3. Reassign target's profile to their personal account
+    const { error: updateErr } = await adminDb
+      .from("profiles")
+      .update({
+        account_id: targetAccountId,
+        account_role: "owner",
+      })
+      .eq("user_id", userId);
+
+    if (updateErr) {
+      console.error("[DELETE /api/account/members] profile update error:", updateErr);
+      return NextResponse.json({ error: updateErr.message }, { status: 400 });
+    }
+
+    // 4. Clean up department memberships from this workspace
+    await adminDb
+      .from("department_members")
+      .delete()
+      .eq("user_id", userId);
+
+    return NextResponse.json({ ok: true, newPersonalAccountId: targetAccountId });
   } catch (err) {
     return toErrorResponse(err);
   }

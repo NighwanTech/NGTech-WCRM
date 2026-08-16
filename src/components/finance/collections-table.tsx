@@ -22,43 +22,24 @@ interface CollectionsTableProps {
   onSendReminder?: (id: string, type: 'whatsapp' | 'email') => void
 }
 
-const DEFAULT_COLLECTIONS: CollectionItem[] = [
-  {
-    id: 'inv-1',
-    invoiceNumber: 'INV-2026-881',
-    clientName: 'Germopick Healthcare',
-    clientPhone: '+91 9876543210',
-    amount: 284000,
-    dueDate: '2026-08-25',
-    agingBucket: '0-30 days',
-    status: 'Sent',
-    lastReminderSent: '2 days ago'
-  },
-  {
-    id: 'inv-2',
-    invoiceNumber: 'INV-2026-754',
-    clientName: 'TechSolutions Pvt Ltd',
-    clientPhone: '+91 9123456789',
-    amount: 150000,
-    dueDate: '2026-08-01',
-    agingBucket: '31-60 days',
-    status: 'Overdue',
-    lastReminderSent: 'Yesterday'
-  },
-  {
-    id: 'inv-3',
-    invoiceNumber: 'INV-2026-902',
-    clientName: 'Nexus Global Logistics',
-    clientPhone: '+91 9988776655',
-    amount: 500000,
-    dueDate: '2026-08-15',
-    agingBucket: '0-30 days',
-    status: 'Partial',
-    lastReminderSent: '5 hours ago'
-  }
-]
+const DEFAULT_COLLECTIONS: CollectionItem[] = []
 
-export function CollectionsTable({ collections = DEFAULT_COLLECTIONS, onSendReminder }: CollectionsTableProps) {
+export function CollectionsTable({
+  collections = DEFAULT_COLLECTIONS,
+  onSendReminder
+}: CollectionsTableProps) {
+  if (!collections || collections.length === 0) {
+    return (
+      <div className="rounded-xl border bg-card p-12 text-center space-y-2">
+        <Clock className="w-8 h-8 text-muted-foreground mx-auto opacity-50" />
+        <p className="font-bold text-foreground text-xs">No Pending Collections</p>
+        <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
+          Invoices and receivable aging balances will automatically sync here as sales deals close.
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="border rounded-xl bg-card overflow-hidden">
       <div className="p-4 border-b bg-muted/20 flex justify-between items-center">

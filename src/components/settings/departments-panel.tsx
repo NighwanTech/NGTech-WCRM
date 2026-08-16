@@ -44,7 +44,7 @@ interface DeptMember {
 }
 
 export function DepartmentsPanel() {
-  const { canEditSettings, user } = useAuth();
+  const { canEditSettings, user, account } = useAuth();
   
   const [departments, setDepartments] = useState<Department[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
@@ -60,8 +60,13 @@ export function DepartmentsPanel() {
     try {
       const supabase = createClient();
       
+      let deptQuery = supabase.from('departments').select('id, name, description').order('name');
+      if (account?.id) {
+        deptQuery = deptQuery.eq('account_id', account.id);
+      }
+
       const [deptRes, mres, dmMres] = await Promise.all([
-        supabase.from('departments').select('id, name, description').order('name'),
+        deptQuery,
         fetch('/api/account/members', { cache: 'no-store' }),
         supabase.from('department_members').select('department_id, user_id'),
       ]);
@@ -82,7 +87,7 @@ export function DepartmentsPanel() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [account?.id]);
 
   useEffect(() => {
     void loadEverything();
@@ -90,6 +95,10 @@ export function DepartmentsPanel() {
 
   async function handleCreateDepartment() {
     if (!newDeptName.trim()) return;
+    if (!account?.id) {
+      toast.error('Active account not loaded. Please refresh.');
+      return;
+    }
     setIsSubmitting(true);
     
     try {
@@ -97,6 +106,7 @@ export function DepartmentsPanel() {
       const { data, error } = await supabase
         .from('departments')
         .insert({
+          account_id: account.id,
           name: newDeptName.trim(),
           description: newDeptDesc.trim() || null
         })
@@ -106,7 +116,7 @@ export function DepartmentsPanel() {
       if (error) throw error;
       
       setDepartments(prev => [...prev, data]);
-      toast.success('Department created');
+      toast.success('Department created successfully!');
       setCreateOpen(false);
       setNewDeptName('');
       setNewDeptDesc('');

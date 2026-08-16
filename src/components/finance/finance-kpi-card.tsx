@@ -32,7 +32,7 @@ export function FinanceKpiCard({
           {title}
         </span>
         {badgeText && (
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeStyles}`}>
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border whitespace-nowrap shrink-0 ${badgeStyles}`}>
             {badgeText}
           </span>
         )}

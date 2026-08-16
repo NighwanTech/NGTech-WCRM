@@ -502,22 +502,16 @@ export function MembersTab() {
                       inline. Items align to the start on mobile so the
                       role dropdown lines up under the avatar. */}
                   <div className="flex items-center gap-2 sm:gap-3">
-                    {/* Role display / editor. Inline Select is admin+
-                        only AND not allowed on the owner row (owner
-                        changes go through transfer, which lands later). */}
-                    {canManageMembers && !isOwnerRow && !isSelf ? (
+                    {/* Role display / editor */}
+                    {canManageMembers && !isSelf ? (
                       <Select
                         value={member.role}
                         onValueChange={(v) =>
-                          // Base UI Select can emit null on clear. We
-                          // don't expose a clear affordance, so the
-                          // guard is defensive — but the typed
-                          // signature requires it.
                           v && handleRoleChange(member, v as AccountRole)
                         }
                       >
                         <SelectTrigger
-                          className="w-32 bg-muted border-border text-foreground"
+                          className="w-32 bg-muted border-border text-foreground text-xs font-semibold"
                           disabled={isBusy}
                         >
                           <SelectValue />
@@ -539,33 +533,29 @@ export function MembersTab() {
                       </span>
                     )}
 
-                    {canManageMembers && !isOwnerRow && !isSelf && (
+                    {/* Suspend / Deactivate toggle button */}
+                    {canManageMembers && !isSelf && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleSuspendToggle(member)}
                         disabled={isBusy}
-                        className={member.is_suspended ? 'border-amber-500/40 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20' : 'text-muted-foreground'}
-                        title={member.is_suspended ? "Activate account" : "Suspend account (on leave)"}
+                        className={member.is_suspended ? 'border-amber-500/40 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20' : 'text-muted-foreground hover:text-amber-500'}
+                        title={member.is_suspended ? "Activate account" : "Suspend / Deactivate agent"}
                       >
                         {member.is_suspended ? <Play className="size-4" /> : <Ban className="size-4" />}
                       </Button>
                     )}
 
-                    {/* Remove. Admin+ only; never on the owner row;
-                        never on yourself. Pre-polish styling was
-                        neutral-default + red-on-hover — the
-                        destructive intent was invisible until the
-                        user moused over. Now red is the default
-                        state with a darker shade on hover so the
-                        affordance reads at-a-glance. */}
-                    {canManageMembers && !isOwnerRow && !isSelf && (
+                    {/* Remove Member button */}
+                    {canManageMembers && !isSelf && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setRemovingMember(member)}
                         disabled={isBusy}
-                        className="border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:border-red-500/60 hover:text-red-200"
+                        className="border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/60 hover:text-red-300"
+                        title="Remove member from workspace"
                       >
                         <Trash2 className="size-4" />
                       </Button>

@@ -1,8 +1,10 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Building, Users, ChevronDown, Check, Sparkles } from "lucide-react"
+import { Building, Users, ChevronDown, Check, Plus } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { useAuth } from "@/hooks/use-auth"
+import Link from "next/link"
 
 export interface AgencyAccountItem {
   id: string
@@ -22,22 +24,32 @@ export interface AgencyClientSwitcherProps {
 }
 
 /**
- * CTO Refinement #10 — Agency & Client Multi-Tenant Switcher
+ * Agency & Client Multi-Tenant Switcher
  * Supports Agency -> Client -> Business -> Ad Account hierarchy.
  */
 export function AgencyClientSwitcher({ onSelectClient }: AgencyClientSwitcherProps) {
-  const [agencies] = useState<AgencyAccountItem[]>([
-    { id: "agency_1", name: "Apex Marketing Group (Agency)", clientsCount: 8 }
-  ])
+  const { account } = useAuth()
+  const workspaceName = account?.name || "Enterprise Workspace"
 
   const [clients, setClients] = useState<ClientAccountItem[]>([
-    { id: "client_1", name: "Germopick Healthcare", category: "Healthcare & Hygiene", adAccountsCount: 2 },
-    { id: "client_2", name: "Patna Housing Pvt Ltd", category: "Real Estate", adAccountsCount: 3 },
-    { id: "client_3", name: "Bihari Sweets & Food", category: "Restaurant & Food", adAccountsCount: 1 },
-    { id: "client_4", name: "St. Xavier Academy", category: "Education & School", adAccountsCount: 1 }
+    { id: "client_default", name: workspaceName, category: "Production", adAccountsCount: 1 }
   ])
 
-  const [selectedClient, setSelectedClient] = useState<ClientAccountItem>(clients[0])
+  const [selectedClient, setSelectedClient] = useState<ClientAccountItem>({
+    id: "client_default",
+    name: workspaceName,
+    category: "Production",
+    adAccountsCount: 1
+  })
+
+  useEffect(() => {
+    if (account?.name) {
+      const updated = { id: "client_default", name: account.name, category: "Production", adAccountsCount: 1 }
+      setClients([updated])
+      setSelectedClient(updated)
+    }
+  }, [account?.name])
+
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -90,12 +102,12 @@ export function AgencyClientSwitcher({ onSelectClient }: AgencyClientSwitcherPro
       {isOpen && (
         <div className="absolute left-0 mt-1.5 w-72 rounded-2xl border bg-popover text-popover-foreground shadow-2xl z-50 p-2 text-xs space-y-1">
           <div className="p-2 border-b bg-muted/20 rounded-xl space-y-0.5">
-            <span className="text-[10px] font-mono font-bold uppercase text-muted-foreground">Active Agency Workspace</span>
-            <p className="font-bold text-foreground">{agencies[0].name}</p>
+            <span className="text-[10px] font-mono font-bold uppercase text-muted-foreground">Active Workspace</span>
+            <p className="font-bold text-foreground truncate">{workspaceName}</p>
           </div>
 
           <div className="py-1">
-            <span className="text-[10px] font-mono font-bold uppercase text-muted-foreground px-2">Select Client Account</span>
+            <span className="text-[10px] font-mono font-bold uppercase text-muted-foreground px-2">Connected Accounts</span>
             <div className="mt-1 space-y-0.5 max-h-48 overflow-y-auto">
               {clients.map(client => {
                 const isSelected = client.id === selectedClient.id
@@ -109,13 +121,23 @@ export function AgencyClientSwitcher({ onSelectClient }: AgencyClientSwitcherPro
                   >
                     <div>
                       <p className="text-xs">{client.name}</p>
-                      <p className="text-[9px] text-muted-foreground">{client.category} • {client.adAccountsCount} Ad Accounts</p>
+                      <p className="text-[9px] text-muted-foreground">{client.category} • Active</p>
                     </div>
                     {isSelected && <Check className="w-3.5 h-3.5 text-primary" />}
                   </button>
                 )
               })}
             </div>
+          </div>
+
+          <div className="pt-1 border-t">
+            <Link
+              href="/settings?tab=meta_ads"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-primary hover:bg-primary/10 transition-colors font-bold text-[11px]"
+            >
+              <Plus className="w-3.5 h-3.5" /> Connect Another Ad Account / Client
+            </Link>
           </div>
         </div>
       )}

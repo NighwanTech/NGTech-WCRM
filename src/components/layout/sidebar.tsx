@@ -57,8 +57,8 @@ const ROLE_CHIP: Record<AccountRole, { icon: typeof Crown; label: string; classN
   viewer:  { icon: User,    label: "Viewer",  className: "border-border bg-card text-muted-foreground" },
 }
 
-/** Groups that remain expanded by default */
-const PERMANENT_GROUPS = ['home', 'marketing', 'crm', 'sales', 'lead-hub']
+/** Groups that remain permanently expanded without collapse capability (empty to allow show/hide on all groups) */
+const PERMANENT_GROUPS: string[] = []
 
 /** Badge styling mapping */
 const BADGE_COLORS: Record<string, string> = {
@@ -232,7 +232,11 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
     if (permission && !can(permission as any)) return false
     if (isTrialActive) return true
     const baseHref = href.split('?')[0]
-    if (['/meta-ads', '/dashboard', '/settings/security', '/intelligence/voice', '/decisions', '/settings'].includes(baseHref)) return true
+    if ([
+      '/meta-ads', '/dashboard', '/settings/security', '/intelligence/voice', 
+      '/decisions', '/settings', '/sales/proposals', '/sales/quotations', 
+      '/finance', '/finance/collections', '/pipelines', '/contacts'
+    ].includes(baseHref)) return true
     return enabledMenus.length > 0 ? (enabledMenus.includes(href) || enabledMenus.includes(baseHref)) : true
   }, [profileLoading, enabledMenus, isTrialActive, can])
 
@@ -267,8 +271,16 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
 
   // ── Route matching ──
   const isItemActive = useCallback((href: string) => {
-    return pathname === href || (href !== "/dashboard" && pathname.startsWith(href.split('?')[0]))
-  }, [pathname])
+    const baseHref = href.split('?')[0]
+    if (pathname === href || pathname === baseHref) return true
+
+    // Check if another nav item is an exact match or a more specific prefix match
+    const allHrefs = visibleGroups.flatMap(g => g.items.map(i => i.href.split('?')[0]))
+    const hasMoreSpecificMatch = allHrefs.some(h => h !== baseHref && (pathname === h || (pathname.startsWith(h + '/') && h.length > baseHref.length)))
+
+    if (hasMoreSpecificMatch) return false
+    return baseHref !== "/dashboard" && pathname.startsWith(baseHref + '/')
+  }, [pathname, visibleGroups])
 
   // ── Badge renderer ──
   const renderItemBadge = useCallback((item: { id: string; badge?: string }) => {
@@ -293,6 +305,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
   // ── Workspace info ──
   const workspaceName = activeWorkspace?.name || account?.name || 'AIWCRM'
   const workspaceInitial = workspaceName.charAt(0).toUpperCase()
+  const orgLogoUrl = (account as any)?.logo_url || activeWorkspace?.brandIcon || '/logo.svg'
 
   return (
     <>
@@ -331,13 +344,16 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                 <DropdownMenuTrigger
                   className="flex items-center gap-2.5 min-w-0 rounded-lg p-1.5 -ml-1 hover:bg-accent/60 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/20 text-left group"
                 >
-                  {/* Workspace Avatar / Logo */}
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shadow-sm transition-transform group-hover:scale-105">
-                    {activeWorkspace?.brandIcon ? (
-                      <img src={activeWorkspace.brandIcon} alt="" className="h-5 w-5 rounded object-contain" />
-                    ) : (
-                      <span className="text-xs font-black text-primary tracking-tight">{workspaceInitial}</span>
-                    )}
+                  {/* Workspace Avatar / Organization Logo */}
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shadow-2xs transition-transform group-hover:scale-105 overflow-hidden p-0.5">
+                    <img 
+                      src={orgLogoUrl} 
+                      alt={workspaceName} 
+                      className="h-full w-full rounded-md object-contain" 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/logo.png'
+                      }}
+                    />
                   </div>
                   <div className="flex flex-col min-w-0 flex-1">
                     <span className="text-[13px] font-bold text-foreground truncate leading-tight tracking-tight">
@@ -357,8 +373,15 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                   
                   {/* Current workspace card */}
                   <div className="flex items-center gap-3 px-2.5 py-2.5 rounded-lg bg-accent/50 border border-border/50 mx-1 mb-1">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 border border-primary/25 font-bold text-primary text-sm">
-                      {workspaceInitial}
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 border border-primary/25 font-bold text-primary text-sm overflow-hidden p-0.5">
+                      <img 
+                        src={orgLogoUrl} 
+                        alt={workspaceName} 
+                        className="h-full w-full rounded-md object-contain" 
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/logo.png'
+                        }}
+                      />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[13px] font-bold text-foreground truncate">{workspaceName}</p>
@@ -428,10 +451,17 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                 type="button"
                 onClick={() => setCollapsed(false)}
                 title={`Expand Sidebar (${workspaceName})`}
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary/20 mx-auto"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary/20 mx-auto overflow-hidden"
                 aria-label="Expand sidebar"
               >
-                <span className="text-xs font-black text-primary">{workspaceInitial}</span>
+                <img 
+                  src={orgLogoUrl} 
+                  alt={workspaceName} 
+                  className="h-full w-full rounded-md object-contain" 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/logo.png'
+                  }}
+                />
               </button>
             </div>
           )}

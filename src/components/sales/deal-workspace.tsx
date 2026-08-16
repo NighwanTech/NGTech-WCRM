@@ -53,32 +53,7 @@ const STAGE_OPTIONS = [
   { value: "CLOSING", label: "Closing / Final Approval", prob: 96, color: "text-emerald-500" },
 ]
 
-const INITIAL_DEALS: DealItem[] = [
-  {
-    id: "deal_201",
-    title: "Patna Luxury Commercial Complex Deal",
-    account: "Patna Real Estate Developers Ltd",
-    amountInr: 2500000,
-    winProbability: 89,
-    stage: "PROPOSAL_DELIVERED",
-    stageName: "Proposal Delivered",
-    healthScore: 94,
-    aiSummary: "High intent confirmed. Client requested 10% volume discount for Q3 booking.",
-    owner: "Sunil Kumar"
-  },
-  {
-    id: "deal_202",
-    title: "Hospital Medical Equipment Automation",
-    account: "Apollo Clinic Bihar",
-    amountInr: 1800000,
-    winProbability: 76,
-    stage: "NEEDS_ANALYSIS",
-    stageName: "Needs Analysis",
-    healthScore: 82,
-    aiSummary: "Stakeholders requested formal proposal & SLA compliance document.",
-    owner: "Priya Singh"
-  }
-]
+const INITIAL_DEALS: DealItem[] = []
 
 export function DealWorkspace() {
   const supabase = createClient()
@@ -124,11 +99,9 @@ export function DealWorkspace() {
           }
         } else {
           // Fallback members
+          const userName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Account Executive"
           const fallback = [
-            { id: "mem_1", name: profile?.full_name || user?.email?.split("@")[0] || "Sunil Kumar", email: user?.email || "sunil@wacrm.com", role: profile?.account_role || "agent" },
-            { id: "mem_2", name: "Priya Singh", email: "priya@wacrm.com", role: "agent" },
-            { id: "mem_3", name: "Rahul Sharma", email: "rahul@wacrm.com", role: "manager" },
-            { id: "mem_4", name: "Sandeep Kumar", email: "sandeep@nighwantech.com", role: "owner" },
+            { id: user?.id || "user_self", name: userName, email: user?.email || "user@enterprise.com", role: profile?.account_role || "owner" }
           ]
           setTeamMembers(fallback)
           setOwnerId(fallback[0].id)
@@ -405,13 +378,14 @@ export function DealWorkspace() {
 
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => toast.success("AI Proposal generated for " + d.title)}
-                      className="h-6 text-[10px] font-bold bg-primary text-primary-foreground gap-1 cursor-pointer"
-                    >
-                      <FileText className="w-3 h-3" /> Generate Proposal
-                    </Button>
+                    <Link href="/sales/proposals">
+                      <Button
+                        size="sm"
+                        className="h-6 text-[10px] font-bold bg-primary text-primary-foreground gap-1 cursor-pointer"
+                      >
+                        <FileText className="w-3 h-3" /> Generate Proposal
+                      </Button>
+                    </Link>
                     {d.stage !== "CLOSED_WON" && (
                       <Button
                         size="sm"

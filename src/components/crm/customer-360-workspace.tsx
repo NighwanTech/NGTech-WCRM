@@ -19,13 +19,35 @@ export interface Customer360WorkspaceProps {
  * Unified single contact workspace rendering Lead Score, Intent, Expected Revenue, Journey, Timeline & AI Suggestions.
  */
 export function Customer360Workspace({
-  contactName = "Rahul Sharma",
-  phone = "+91 98765 43210",
-  email = "rahul.sharma@example.com",
-  city = "Patna, Bihar",
-  campaignName = "Patna Property Investment Campaign 2026"
+  contactName,
+  phone = "",
+  email = "",
+  city = "",
+  campaignName = ""
 }: Customer360WorkspaceProps) {
   const [activeSubTab, setActiveSubTab] = useState<'TIMELINE' | 'CONVERSATION' | 'QUOTES' | 'AI_MEMORY'>('TIMELINE')
+
+  if (!contactName) {
+    return (
+      <Card className="border bg-card shadow-xs text-xs">
+        <CardHeader className="py-2.5 px-4 bg-muted/20 border-b">
+          <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground">
+            Customer 360 Workspace
+          </CardTitle>
+          <CardDescription className="text-[10px]">
+            Unified single contact workspace rendering Lead Score, Intent, Expected Revenue, Journey & AI Suggestions
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-12 text-center space-y-2">
+          <User className="w-8 h-8 text-muted-foreground mx-auto opacity-50" />
+          <p className="font-bold text-foreground text-xs">No Contact Selected</p>
+          <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
+            Select a lead or customer from the Lead Hub or Contacts directory to view their complete 360° profile, purchase intent, and communication timeline.
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <div className="space-y-4 text-xs">

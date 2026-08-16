@@ -89,7 +89,7 @@ export function MetaKnowledgeBaseView() {
       />
 
       {/* AI Assistant Banner */}
-      <Card className="border bg-gradient-to-r from-primary/10 via-purple-500/10 to-background p-6 shadow-sm">
+      <Card className="border bg-card p-6 shadow-xs">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />

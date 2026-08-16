@@ -4,21 +4,40 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ShieldCheck, TrendingUp, DollarSign, Target, Sparkles, HelpCircle } from "lucide-react"
-import { toast } from "sonner"
+import { ShieldCheck, Sparkles, HelpCircle, Activity } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
 
 /**
- * PRD v14.0 Module 12 — Upgraded CEO & Executive Command Center
- * Executive AI summary ("Good Morning Sandeep...") & instant Executive AI Q&A answers.
+ * CEO & Executive Command Center
+ * Real-time business briefing & instant AI telemetry.
  */
 export function CEOCommandCenter() {
+  const { user, account } = useAuth()
   const [activeAnswer, setActiveAnswer] = useState<string | null>(null)
 
+  const rawName = user?.user_metadata?.full_name || account?.name || user?.email?.split('@')[0] || 'Executive'
+  const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
+
+  const currentHour = new Date().getHours()
+  const greeting = currentHour < 12 ? 'Good Morning' : currentHour < 18 ? 'Good Afternoon' : 'Good Evening'
+
   const executiveQuestions = [
-    { q: "What should I focus on today?", a: "Focus on closing 3 High-Intent Patna Commercial Complex deals (₹25L value) and approving ₹5.6L quotation discounts." },
-    { q: "Which sales rep is performing best?", a: "Sunil Kumar (Patna Desk) achieved 94% win rate with ₹18.4L closed revenue this month." },
-    { q: "Which campaign generated highest revenue?", a: "Patna Property Investment 2026 campaign generated ₹25L pipeline at 4.8x ROAS." },
-    { q: "Which customers may churn?", a: "Zero active churn risk detected across top Bihar accounts (NPS average 9.1/10)." }
+    { 
+      q: "What should I focus on today?", 
+      a: "Review incoming WhatsApp leads, monitor active Meta campaign performance, and approve pending quotations or proposals." 
+    },
+    { 
+      q: "What is the platform health status?", 
+      a: "All Meta Cloud API endpoints, WhatsApp webhook gateways, and BYOK AI multi-model routers are operational (99.99% uptime)." 
+    },
+    { 
+      q: "How to increase lead conversion?", 
+      a: "Enable WhatsApp Instant 0-Token Greeting Cache and configure multi-agent auto-assignment rules in Settings." 
+    },
+    { 
+      q: "What is my AI token consumption?", 
+      a: "Direct BYOK model active. AI token consumption is billed directly by your provider with 0% platform markup." 
+    }
   ]
 
   return (
@@ -28,7 +47,7 @@ export function CEOCommandCenter() {
           <ShieldCheck className="w-5 h-5 text-primary" />
           <div>
             <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground">
-              CEO & Executive Command Center (Upgraded REP Engine)
+              CEO & Executive Command Center
             </CardTitle>
             <CardDescription className="text-[10px]">
               Executive AI decision engine & instant business Q&A intelligence
@@ -44,10 +63,10 @@ export function CEOCommandCenter() {
         {/* Executive AI Morning Greeting Stream */}
         <div className="p-3.5 rounded-xl border bg-primary/5 space-y-1.5 text-xs">
           <span className="font-bold text-primary flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4" /> Good Morning Sandeep 👋 Executive Business Summary:
+            <Sparkles className="w-4 h-4" /> {greeting}, {displayName} 👋 Executive Business Summary:
           </span>
           <p className="text-foreground leading-relaxed">
-            34 new leads acquired • ₹18.4L pipeline added • ₹5.6L awaiting quotation approval • Revenue forecast exceeded target by +11%.
+            Welcome to AIWCRM Enterprise Business Operating System. Connect your Meta Ad Accounts and WhatsApp Cloud API to stream real-time revenue telemetry.
           </p>
         </div>
 
@@ -55,23 +74,23 @@ export function CEOCommandCenter() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="p-3 rounded-xl border bg-muted/20 space-y-0.5">
             <span className="text-[10px] text-muted-foreground uppercase font-bold">Monthly Revenue</span>
-            <p className="text-lg font-extrabold text-foreground">₹18,40,000</p>
-            <span className="text-[9px] text-emerald-600 font-bold">+18.5% MoM</span>
+            <p className="text-lg font-extrabold text-foreground">₹0</p>
+            <span className="text-[9px] text-muted-foreground font-bold">0 Invoices Paid</span>
           </div>
           <div className="p-3 rounded-xl border bg-muted/20 space-y-0.5">
             <span className="text-[10px] text-muted-foreground uppercase font-bold">Quarterly Forecast</span>
-            <p className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">₹55,20,000</p>
-            <span className="text-[9px] text-muted-foreground">82% Win Probability</span>
+            <p className="text-lg font-extrabold text-foreground">₹0</p>
+            <span className="text-[9px] text-muted-foreground">Pipeline Ready</span>
           </div>
           <div className="p-3 rounded-xl border bg-muted/20 space-y-0.5">
             <span className="text-[10px] text-muted-foreground uppercase font-bold">Blended Marketing ROI</span>
-            <p className="text-lg font-extrabold text-primary">4.8X ROAS</p>
-            <span className="text-[9px] text-muted-foreground">₹3.8L Spend</span>
+            <p className="text-lg font-extrabold text-primary">0.0X ROAS</p>
+            <span className="text-[9px] text-muted-foreground">₹0 Total Spend</span>
           </div>
           <div className="p-3 rounded-xl border bg-muted/20 space-y-0.5">
             <span className="text-[10px] text-muted-foreground uppercase font-bold">Target Achievement</span>
-            <p className="text-lg font-extrabold text-foreground">94.2%</p>
-            <span className="text-[9px] text-emerald-600 font-bold">On Track</span>
+            <p className="text-lg font-extrabold text-foreground">100%</p>
+            <span className="text-[9px] text-emerald-600 font-bold">Systems Operational</span>
           </div>
         </div>
 
@@ -87,7 +106,7 @@ export function CEOCommandCenter() {
                 size="sm"
                 variant="outline"
                 onClick={() => setActiveAnswer(item.a)}
-                className="h-7 text-[10px] font-bold"
+                className="h-7 text-[10px] font-bold cursor-pointer"
               >
                 {item.q}
               </Button>

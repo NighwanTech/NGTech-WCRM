@@ -31,13 +31,13 @@ export function QuotationPreview({
   onConvertToProposal
 }: QuotationPreviewProps) {
   return (
-    <div className="border rounded-xl bg-card overflow-hidden shadow-sm">
-      {/* Top Banner Header */}
-      <div className="bg-gradient-to-r from-purple-900/40 via-indigo-900/40 to-background p-4 border-b flex justify-between items-center">
+    <div className="border rounded-2xl bg-card overflow-hidden shadow-xs">
+      {/* Top Banner Header - Clean High-Contrast */}
+      <div className="bg-muted/40 p-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-purple-400 uppercase tracking-widest">
-              AI QUOTATION ENGINE & DISCOUNT RULES
+            <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+              AI Quotation Engine & Discount Rules
             </span>
             <PaymentStatusBadge status={status} />
           </div>
@@ -45,7 +45,7 @@ export function QuotationPreview({
             Multi price books, tax calculation (18% GST) & AI discount recommendations
           </p>
         </div>
-        <span className="text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full">
+        <span className="text-xs font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full shrink-0">
           QUOTE #{quoteNumber}
         </span>
       </div>
@@ -59,26 +59,26 @@ export function QuotationPreview({
           </div>
           <div className="text-right">
             <p className="text-xs text-muted-foreground">18% GST Tax Included</p>
-            <p className="text-xs text-emerald-400 font-medium">+₹{gstAmount.toLocaleString('en-IN')}</p>
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">+₹{gstAmount.toLocaleString('en-IN')}</p>
           </div>
         </div>
 
-        <div className="bg-muted/30 rounded-lg p-4 flex justify-between items-center border border-border/50">
+        <div className="bg-muted/30 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border border-border/50">
           <div>
             <span className="text-xs text-muted-foreground uppercase font-semibold">Total Payable Amount</span>
-            <div className="text-2xl font-bold text-emerald-500 mt-0.5">
+            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
               ₹{grandTotal.toLocaleString('en-IN')}
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" className="text-xs gap-1" onClick={onConvertToProposal}>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" className="text-xs gap-1 cursor-pointer" onClick={onConvertToProposal}>
               <FileText className="w-3.5 h-3.5" /> Convert to Proposal
             </Button>
-            <Button size="sm" variant="outline" className="text-xs gap-1" onClick={onConvertToInvoice}>
+            <Button size="sm" variant="outline" className="text-xs gap-1 cursor-pointer" onClick={onConvertToInvoice}>
               <CheckCircle className="w-3.5 h-3.5" /> Convert to Invoice
             </Button>
-            <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white text-xs gap-1" onClick={onSendWhatsApp}>
+            <Button size="sm" className="bg-primary text-primary-foreground text-xs gap-1 cursor-pointer" onClick={onSendWhatsApp}>
               <Send className="w-3.5 h-3.5" /> Send Quote via WhatsApp
             </Button>
           </div>

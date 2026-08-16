@@ -92,7 +92,7 @@ export function NavigationProvider({
   // ── Core state ──
   const [pluginGroups, setPluginGroups] = useState<NavGroupConfig[]>([])
   const [favorites, setFavorites] = useState<string[]>([])
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(['workspace', 'crm'])
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([])
   const [recentlyVisited, setRecentlyVisited] = useState<RecentItem[]>([])
 
   // ── Workspace (single workspace for now, extensible to multi) ──

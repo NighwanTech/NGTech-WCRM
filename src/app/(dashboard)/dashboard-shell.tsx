@@ -77,7 +77,7 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
         }
         flush={isInbox}
       >
-        <div className="flex-1 flex flex-col min-h-0 h-full">
+        <div className="flex-1 flex flex-col min-h-0 w-full">
           {children}
         </div>
       </AppShell>

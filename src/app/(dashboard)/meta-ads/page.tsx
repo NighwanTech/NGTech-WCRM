@@ -164,49 +164,13 @@ export default function MetaAdsDashboardPage() {
 
   const displayAdSets = (selectedCampaign && selectedCampaign.adsets && selectedCampaign.adsets.length > 0)
     ? selectedCampaign.adsets
-    : [
-        {
-          id: `adset_1_${selectedCampaign?.id || 'default'}`,
-          name: `${selectedCampaign?.name || 'Campaign'} - Patna/Tier-2 Radius 25km`,
-          status: 'ACTIVE',
-          daily_budget: selectedCampaign?.daily_budget ? Math.round(selectedCampaign.daily_budget * 0.6) : 300,
-          targeting: 'Patna + 25km • Age 25-55 • Interests: Property, Loans',
-          metrics: { roas: 4.8, cpa: 142, ctr: 4.2, impressions: 14200, clicks: 596 }
-        },
-        {
-          id: `adset_2_${selectedCampaign?.id || 'default'}`,
-          name: `${selectedCampaign?.name || 'Campaign'} - Bihar High Intent Buyers`,
-          status: 'LEARNING',
-          daily_budget: selectedCampaign?.daily_budget ? Math.round(selectedCampaign.daily_budget * 0.4) : 200,
-          targeting: 'Bihar Region • Age 28-60 • Interests: Real Estate Investments',
-          metrics: { roas: 3.9, cpa: 168, ctr: 3.5, impressions: 9800, clicks: 343 }
-        }
-      ]
+    : []
 
   const selectedAdSet = displayAdSets.find((a: any) => a.id === selectedAdSetId) || displayAdSets[0]
 
   const displayAds = (selectedAdSet && selectedAdSet.ads && selectedAdSet.ads.length > 0)
     ? selectedAdSet.ads
-    : [
-        {
-          id: `ad_1_${selectedAdSet?.id || 'default'}`,
-          name: 'Ad 01 - Poster Creative Hook (Hinglish)',
-          status: 'ACTIVE',
-          format: 'IMAGE_POSTER',
-          headline: 'Need Verified Property Consultation in Bihar? Chat on WhatsApp',
-          primary_text: '⚡ Instant pricing and local expert site visits in Patna. Chat live now.',
-          metrics: { roas: 5.2, cpa: 118, ctr: 4.6, impressions: 8400, clicks: 386 }
-        },
-        {
-          id: `ad_2_${selectedAdSet?.id || 'default'}`,
-          name: 'Ad 02 - Video Tour Hook (Hindi)',
-          status: 'ACTIVE',
-          format: 'VIDEO_REELS',
-          headline: 'पटना में पाएँ सत्यापित प्रॉपर्टी कंसल्टेशन - डायरेक्ट व्हाट्सएप',
-          primary_text: '🚀 आज ही अपनी पसंदीदा प्रॉपर्टी की लिस्टिंग ऑनलाइन प्राप्त करें।',
-          metrics: { roas: 4.1, cpa: 154, ctr: 3.8, impressions: 5800, clicks: 220 }
-        }
-      ]
+    : []
 
   const selectedAd = displayAds.find((ad: any) => ad.id === selectedAdId) || displayAds[0]
 
@@ -225,6 +189,75 @@ export default function MetaAdsDashboardPage() {
       {/* WORKSPACE TAB 2: MARKETING (META ADS MANAGER PRO 3-PANE) */}
       {workspaceTab === 'MARKETING' && (
         <div className="space-y-6">
+          {/* ━━━ 1. TOP AD ACCOUNT SWITCHER & SYNC BAR ━━━━━━━━━━━━━ */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl border bg-card/80 backdrop-blur-md shadow-xs">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                <Megaphone className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Active Meta Ad Account</span>
+                  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[10px] font-bold">
+                    Connected ({adAccounts.length} Accounts)
+                  </Badge>
+                </div>
+                {adAccounts.length > 0 ? (
+                  <div className="mt-1">
+                    <select
+                      value={selectedAccountId}
+                      onChange={(e) => {
+                        const newId = e.target.value
+                        setSelectedAccountId(newId)
+                        fetchDashboardData(newId)
+                      }}
+                      className="w-full sm:w-[320px] h-8 bg-background text-xs font-bold rounded-xl px-3 border border-border text-foreground shadow-2xs cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
+                    >
+                      {adAccounts.map((acc) => (
+                        <option key={acc.ad_account_id} value={acc.ad_account_id}>
+                          {acc.account_name || 'Ad Account'} ({acc.ad_account_id})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <p className="text-xs font-bold text-muted-foreground mt-1">No Meta accounts connected</p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleSyncNow}
+                disabled={syncing}
+                className="h-8 text-xs font-semibold gap-1.5 rounded-xl cursor-pointer"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin text-primary' : ''}`} />
+                {syncing ? 'Syncing...' : 'Sync from Meta'}
+              </Button>
+              <Link href={`/meta-ads/create?adAccountId=${encodeURIComponent(selectedAccountId)}`}>
+                <Button
+                  size="sm"
+                  className="h-8 text-xs font-bold gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs cursor-pointer"
+                >
+                  <Rocket className="w-3.5 h-3.5" /> + Create Campaign
+                </Button>
+              </Link>
+              <Link href="/meta-ads/settings">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs font-semibold gap-1 rounded-xl text-muted-foreground hover:text-foreground"
+                  title="Manage Connected Ad Accounts"
+                >
+                  <Settings className="w-3.5 h-3.5" /> Connect More
+                </Button>
+              </Link>
+            </div>
+          </div>
+
           <AIScorecardCard
             onRemediate={() => {
               toast.success("AI Remediation initiated for Landing Page (77/100). Generated mobile-optimized CAPI WhatsApp lead funnel!")
@@ -238,7 +271,7 @@ export default function MetaAdsDashboardPage() {
                   <div className="flex items-center gap-2">
                     <Layers className="w-4 h-4 text-primary" />
                     <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground">
-                      1. Campaigns ({campaigns.length})
+                      Live Campaigns ({campaigns.length})
                     </CardTitle>
                   </div>
                   <Badge variant="outline" className="text-[10px] font-mono">
@@ -259,53 +292,67 @@ export default function MetaAdsDashboardPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {campaigns.map(c => {
-                          const isSelected = c.id === selectedCampaignId
-                          return (
-                            <tr
-                              key={c.id}
-                              onClick={() => {
-                                setSelectedCampaignId(c.id)
-                                setSelectedAdSetId(null)
-                                setSelectedAdId(null)
-                              }}
-                              className={`border-b transition-all cursor-pointer ${
-                                isSelected ? 'bg-primary/10 font-semibold' : 'hover:bg-muted/40'
-                              }`}
-                            >
-                              <td className="py-2.5 px-3">
-                                <Badge className="bg-emerald-600 text-white font-mono text-[9px]">
-                                  🟢 ACTIVE
-                                </Badge>
-                              </td>
-                              <td className="py-2.5 px-3 font-bold text-foreground">
-                                {c.name}
-                              </td>
-                              <td className="py-2.5 px-3 font-mono">
-                                ₹{(c.daily_budget || 500).toLocaleString()}
-                              </td>
-                              <td className="py-2.5 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                                4.8x
-                              </td>
-                              <td className="py-2.5 px-3 font-mono">
-                                ₹142.00
-                              </td>
-                              <td className="py-2.5 px-3 text-right">
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    toast.success(`✨ Campaign AI analyzing "${c.name}"...`)
-                                  }}
-                                  className="h-6 text-[10px] font-bold gap-1 text-primary hover:bg-primary/10"
-                                >
-                                  <Sparkles className="w-3 h-3" /> ✨ AI
-                                </Button>
-                              </td>
-                            </tr>
-                          )
-                        })}
+                        {campaigns.length > 0 ? (
+                          campaigns.map(c => {
+                            const isSelected = c.id === selectedCampaignId
+                            return (
+                              <tr
+                                key={c.id}
+                                onClick={() => {
+                                  setSelectedCampaignId(c.id)
+                                  setSelectedAdSetId(null)
+                                  setSelectedAdId(null)
+                                }}
+                                className={`border-b transition-all cursor-pointer ${
+                                  isSelected ? 'bg-primary/10 font-semibold' : 'hover:bg-muted/40'
+                                }`}
+                              >
+                                <td className="py-2.5 px-3">
+                                  <Badge className="bg-emerald-600 text-white font-mono text-[9px]">
+                                    🟢 {c.status || 'ACTIVE'}
+                                  </Badge>
+                                </td>
+                                <td className="py-2.5 px-3 font-bold text-foreground">
+                                  {c.name}
+                                </td>
+                                <td className="py-2.5 px-3 font-mono">
+                                  ₹{(c.daily_budget || 0).toLocaleString()}
+                                </td>
+                                <td className="py-2.5 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                  {c.roas || '0.0'}x
+                                </td>
+                                <td className="py-2.5 px-3 font-mono">
+                                  ₹{(c.cpa || 0).toLocaleString()}
+                                </td>
+                                <td className="py-2.5 px-3 text-right">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      toast.success(`✨ AI Copilot analyzing "${c.name}"...`)
+                                    }}
+                                    className="h-6 text-[10px] font-bold gap-1 text-primary hover:bg-primary/10"
+                                  >
+                                    <Sparkles className="w-3 h-3" /> AI
+                                  </Button>
+                                </td>
+                              </tr>
+                            )
+                          })
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="py-12 px-4 text-center">
+                              <div className="space-y-2">
+                                <Megaphone className="w-8 h-8 text-muted-foreground mx-auto opacity-50" />
+                                <p className="font-bold text-foreground text-xs">No Active Meta Campaigns Found for this Account</p>
+                                <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
+                                  Click &ldquo;+ Create Campaign&rdquo; or select another Ad Account above.
+                                </p>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -317,7 +364,7 @@ export default function MetaAdsDashboardPage() {
               <Card className="border bg-card shadow-xs">
                 <CardHeader className="py-2.5 px-4 bg-muted/20 border-b flex flex-row items-center justify-between">
                   <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground">
-                    Inspector Panel
+                    Inspector & Single Ad Control
                   </CardTitle>
                   <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg border text-[10px] font-bold">
                     <button
@@ -343,10 +390,28 @@ export default function MetaAdsDashboardPage() {
                 <CardContent className="p-4 space-y-3">
                   {inspectorTab === 'preview' && (
                     <div className="space-y-3 text-xs">
-                      <div className="p-3 rounded-xl border bg-muted/20 space-y-1">
-                        <span className="text-muted-foreground text-[10px] uppercase font-bold">Selected Entity Details</span>
-                        <p className="font-bold text-foreground">{selectedAd?.name || selectedCampaign?.name}</p>
-                        <p className="text-[11px] text-muted-foreground">{selectedAd?.headline || selectedCampaign?.objective}</p>
+                      <div className="p-3 rounded-xl border bg-muted/20 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground text-[10px] uppercase font-bold">Selected Campaign</span>
+                          <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[9px] font-bold">
+                            {selectedCampaign?.status || 'ACTIVE'}
+                          </Badge>
+                        </div>
+                        <p className="font-bold text-foreground text-sm">{selectedCampaign?.name || 'Select a campaign'}</p>
+                        <p className="text-[11px] text-muted-foreground">Objective: {selectedCampaign?.objective || 'OUTCOME_LEADS'}</p>
+                        <div className="pt-2 flex items-center gap-2 border-t text-[11px]">
+                          <span className="font-semibold text-muted-foreground">Daily Budget:</span>
+                          <span className="font-mono font-bold text-foreground">₹{(selectedCampaign?.daily_budget || 0).toLocaleString()}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Link href={`/meta-ads/create?adAccountId=${encodeURIComponent(selectedAccountId)}&campaignId=${encodeURIComponent(selectedCampaign?.id || '')}`}>
+                          <Button size="sm" variant="outline" className="w-full text-xs font-semibold h-8 rounded-xl justify-between">
+                            <span>Edit in Campaign Wizard</span>
+                            <Rocket className="w-3.5 h-3.5" />
+                          </Button>
+                        </Link>
                       </div>
                     </div>
                   )}

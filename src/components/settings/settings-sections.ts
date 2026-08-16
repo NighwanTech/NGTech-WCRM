@@ -12,6 +12,7 @@ import {
   UsersRound,
   Clock,
   Mic,
+  Megaphone,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -29,6 +30,7 @@ export const SETTINGS_SECTIONS = [
   'security',
   'governance',
   'appearance',
+  'meta_ads',
   'whatsapp',
   'templates',
   'fields',
@@ -61,6 +63,7 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
   security: { id: 'security', label: 'Login & security', icon: Shield, group: 'account' },
   governance: { id: 'governance', label: 'Security & Governance', icon: ShieldCheck, group: 'workspace', adminOnly: true },
   appearance: { id: 'appearance', label: 'Appearance', icon: Palette, group: 'account' },
+  meta_ads: { id: 'meta_ads', label: 'Meta Ads & CAPI', icon: Megaphone, group: 'workspace', adminOnly: true },
   whatsapp: { id: 'whatsapp', label: 'WhatsApp', icon: PlugZap, group: 'workspace', adminOnly: true },
   templates: { id: 'templates', label: 'Templates', icon: FileText, group: 'workspace', adminOnly: true },
   fields: { id: 'fields', label: 'Fields & tags', icon: Tags, group: 'workspace', adminOnly: true },
@@ -92,6 +95,7 @@ function isSection(value: string | null): value is SettingsSection {
  */
 export function resolveSection(raw: string | null): SettingsSection {
   if (raw === 'tags' || raw === 'custom-fields') return 'fields';
+  if (raw === 'meta' || raw === 'meta-ads' || raw === 'meta_ads') return 'meta_ads';
   if (isSection(raw)) return raw;
   return DEFAULT_SECTION;
 }

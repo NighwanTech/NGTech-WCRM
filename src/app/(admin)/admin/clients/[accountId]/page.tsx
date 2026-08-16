@@ -310,7 +310,7 @@ export default function ClientDetailPage() {
       )}
 
       {/* Invoices */}
-      <AdminInvoicesPanel accountId={accountId} />
+      <AdminInvoicesPanel accountId={accountId} clientName={account.name} />
 
       {/* Joined */}
       <p className="text-xs text-muted-foreground">

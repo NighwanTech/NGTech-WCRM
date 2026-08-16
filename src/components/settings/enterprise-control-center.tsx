@@ -64,17 +64,17 @@ export function EnterpriseControlCenter() {
   return (
     <div className="space-y-6">
       {/* Top Banner: Enterprise Control Center */}
-      <Card className="border-purple-500/30 bg-gradient-to-r from-purple-950/20 via-background to-purple-950/10 dark:from-purple-950/30">
+      <Card className="border bg-card shadow-xs">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              <div className="p-3 rounded-xl bg-primary/10 text-primary border border-primary/20">
                 <Building2 className="w-10 h-10" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold tracking-tight">Enterprise Administration & Business Continuity</h2>
-                  <Badge variant="outline" className="bg-purple-500/10 text-purple-400 border-purple-500/30 px-3 py-1 text-xs">
+                  <h2 className="text-2xl font-bold tracking-tight text-foreground">Enterprise Administration & Business Continuity</h2>
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 px-3 py-1 text-xs">
                     {data.environment}
                   </Badge>
                 </div>
@@ -86,7 +86,7 @@ export function EnterpriseControlCenter() {
 
             <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
               <div className="text-right">
-                <div className="text-3xl font-extrabold text-purple-400">{data.platformMaturityScore} / 100</div>
+                <div className="text-3xl font-extrabold text-primary">{data.platformMaturityScore} / 100</div>
                 <div className="text-xs text-muted-foreground">Maturity Score</div>
               </div>
               <Button onClick={fetchGovernance} size="sm" variant="outline" className="gap-2" disabled={loading}>

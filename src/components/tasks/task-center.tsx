@@ -8,13 +8,7 @@ import { CheckSquare, Clock, AlertTriangle, Phone, MessageSquare, Calendar } fro
  * PRD v14.0 Module 6 — Task Center
  * AI Task Generation for Calls, Meetings, Follow-ups, Reminders, Approvals & Escalations.
  */
-export function TaskCenter() {
-  const tasks = [
-    { title: "Call Rahul Sharma regarding 10% Discount Quotation", priority: "HIGH", type: "CALL", dueDate: "Today at 02:00 PM" },
-    { title: "Deliver SOW Agreement for Patna Complex Deal", priority: "HIGH", type: "DOCUMENT", dueDate: "Today at 05:00 PM" },
-    { title: "WhatsApp follow-up with Priya Singh for appointment", priority: "MEDIUM", type: "WHATSAPP", dueDate: "Tomorrow" }
-  ]
-
+export function TaskCenter({ tasks = [] }: { tasks?: any[] }) {
   return (
     <Card className="border bg-card shadow-xs text-xs">
       <CardHeader className="py-2.5 px-4 bg-muted/20 border-b flex flex-row items-center justify-between">
@@ -30,22 +24,32 @@ export function TaskCenter() {
           </div>
         </div>
         <Badge className="bg-primary text-primary-foreground font-mono font-bold text-[10px]">
-          {tasks.length} Tasks Due
+          {tasks.length} TASKS DUE
         </Badge>
       </CardHeader>
 
       <CardContent className="p-4 space-y-2.5 font-mono">
-        {tasks.map(t => (
-          <div key={t.title} className="p-3 rounded-xl border bg-card hover:bg-muted/30 transition-all flex items-center justify-between gap-3">
-            <div className="space-y-1 min-w-0 flex-1">
-              <span className="font-bold text-foreground text-xs">{t.title}</span>
-              <p className="text-[10px] text-muted-foreground">Due: {t.dueDate} • Type: {t.type}</p>
+        {tasks.length > 0 ? (
+          tasks.map(t => (
+            <div key={t.title} className="p-3 rounded-xl border bg-card hover:bg-muted/30 transition-all flex items-center justify-between gap-3">
+              <div className="space-y-1 min-w-0 flex-1">
+                <span className="font-bold text-foreground text-xs">{t.title}</span>
+                <p className="text-[10px] text-muted-foreground">Due: {t.dueDate} • Type: {t.type}</p>
+              </div>
+              <Badge className="bg-red-600 text-white font-mono text-[9px] shrink-0">
+                {t.priority}
+              </Badge>
             </div>
-            <Badge className="bg-red-600 text-white font-mono text-[9px] shrink-0">
-              {t.priority}
-            </Badge>
+          ))
+        ) : (
+          <div className="py-6 px-4 text-center border rounded-xl bg-muted/10 space-y-1.5">
+            <CheckSquare className="w-5 h-5 text-muted-foreground mx-auto opacity-60" />
+            <p className="font-bold text-foreground text-xs">All Tasks Completed</p>
+            <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
+              Follow-up calls, SLA reminders, and quotation review tasks will generate automatically based on pipeline activity.
+            </p>
           </div>
-        ))}
+        )}
       </CardContent>
     </Card>
   )

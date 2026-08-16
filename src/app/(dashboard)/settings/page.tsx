@@ -21,6 +21,7 @@ import { BusinessHoursPanel } from '@/components/settings/business-hours-panel';
 import { PlanPanel } from '@/components/settings/plan-panel';
 import { InvoicesPanel } from '@/components/settings/invoices-panel';
 import { AiVoicePanel } from '@/components/settings/ai-voice-panel';
+import { MetaAdsConfig } from '@/components/settings/meta-ads-config';
 import {
   resolveSection,
   SECTION_META,
@@ -72,6 +73,7 @@ function SettingsContent() {
     security: <SecurityPanel />,
     governance: <SecurityDashboardPage />,
     appearance: <AppearancePanel />,
+    meta_ads: <MetaAdsConfig />,
     whatsapp: <WhatsAppConfig />,
     templates: <TemplateManager />,
     fields: <FieldsAndTagsPanel />,

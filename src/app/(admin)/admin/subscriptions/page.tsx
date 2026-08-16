@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Search, Eye, Ban, RefreshCcw } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
-// Mock data
 interface Subscription {
   id: string
   clientName: string
@@ -19,17 +19,39 @@ export default function AdminSubscriptionsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setTimeout(() => {
-      setSubscriptions([
-        { id: '1', clientName: 'Acme Corp', planName: 'Pro', status: 'active', billingCycle: 'monthly', amount: 99, nextBillingDate: '2026-08-01' },
-        { id: '2', clientName: 'Global Tech', planName: 'Enterprise', status: 'active', billingCycle: 'annual', amount: 4990, nextBillingDate: '2027-01-15' },
-        { id: '3', clientName: 'Local Shop', planName: 'Starter', status: 'past_due', billingCycle: 'monthly', amount: 29, nextBillingDate: '2026-07-01' },
-      ])
-      setLoading(false)
-    }, 500)
+    const fetchSubscriptions = async () => {
+      try {
+        const db = createClient()
+        const { data } = await db
+          .from('accounts')
+          .select('id, name, plan, status, created_at')
+          .order('created_at', { ascending: false })
+
+        if (data && data.length > 0) {
+          const list: Subscription[] = data.map((acc: any) => ({
+            id: acc.id,
+            clientName: acc.name || 'Enterprise Account',
+            planName: acc.plan ? acc.plan.toUpperCase() : 'ENTERPRISE',
+            status: acc.status || 'active',
+            billingCycle: 'monthly',
+            amount: acc.plan === 'starter' ? 2999 : acc.plan === 'growth' ? 6999 : 14999,
+            nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+          }))
+          setSubscriptions(list)
+        } else {
+          setSubscriptions([])
+        }
+      } catch {
+        setSubscriptions([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchSubscriptions()
   }, [])
 
-  if (loading) return <div className="p-8">Loading subscriptions...</div>
+  if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading subscriptions...</div>
 
   return (
     <div className="space-y-6">
@@ -63,36 +85,42 @@ export default function AdminSubscriptionsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {subscriptions.map((sub) => (
-                <tr key={sub.id} className="hover:bg-muted/20">
-                  <td className="px-6 py-4 font-medium text-foreground">{sub.clientName}</td>
-                  <td className="px-6 py-4 text-muted-foreground">
-                    {sub.planName} <span className="text-xs uppercase">({sub.billingCycle})</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                      sub.status === 'active' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-orange-500/15 text-orange-400'
-                    }`}>
-                      {sub.status === 'active' ? 'Active' : 'Past Due'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 tabular-nums">${sub.amount}</td>
-                  <td className="px-6 py-4 text-muted-foreground">{new Date(sub.nextBillingDate).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground" title="View Details">
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      <button className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground" title="Sync Payment">
-                        <RefreshCcw className="h-4 w-4" />
-                      </button>
-                      <button className="rounded-md p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" title="Cancel/Suspend">
-                        <Ban className="h-4 w-4" />
-                      </button>
-                    </div>
+              {subscriptions.length > 0 ? (
+                subscriptions.map((sub) => (
+                  <tr key={sub.id} className="hover:bg-muted/20">
+                    <td className="px-6 py-4 font-medium text-foreground">{sub.clientName}</td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                        {sub.planName}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        sub.status === 'active' 
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
+                          : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                      }`}>
+                        {sub.status.toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 font-mono">₹{sub.amount.toLocaleString('en-IN')}/{sub.billingCycle === 'monthly' ? 'mo' : 'yr'}</td>
+                    <td className="px-6 py-4 text-muted-foreground">{sub.nextBillingDate}</td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
+                          <Eye className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
+                    No active subscriptions found.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

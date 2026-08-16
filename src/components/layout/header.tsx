@@ -33,16 +33,56 @@ export function Header({ onOpenSidebar }: HeaderProps) {
   const { profile, isOwner, signOut } = useAuth();
   const { groups } = useNavigation();
 
-  // Find current breadcrumb
+  // Find current breadcrumb: prioritize exact match first, then parent group matching
   let currentGroup: { label: string; icon?: React.ElementType; color?: string } | null = null
   let currentItem: { label: string; icon?: React.ElementType } | null = null
-  
+
+  // 1. Check exact full match (e.g. /settings/security)
   for (const group of groups) {
-    const item = group.items.find(i => pathname === i.href || (i.href !== '/dashboard' && pathname.startsWith(i.href)))
+    const item = group.items.find(i => pathname === i.href)
     if (item) {
       currentGroup = { label: group.label, icon: group.groupIcon, color: group.colorClass }
       currentItem = { label: item.label, icon: item.icon }
       break
+    }
+  }
+
+  // 2. If pathname is /settings, explicitly prioritize Settings group
+  if (!currentItem && pathname.startsWith('/settings')) {
+    const settingsGroup = groups.find(g => g.id === 'settings')
+    if (settingsGroup) {
+      currentGroup = { label: settingsGroup.label, icon: settingsGroup.groupIcon, color: settingsGroup.colorClass }
+      currentItem = { label: 'Settings' }
+    }
+  }
+
+  // 3. If no match yet, check base href without query params
+  if (!currentItem) {
+    for (const group of groups) {
+      const item = group.items.find(i => !i.href.includes('?') && pathname === i.href)
+      if (item) {
+        currentGroup = { label: group.label, icon: group.groupIcon, color: group.colorClass }
+        currentItem = { label: item.label, icon: item.icon }
+        break
+      }
+    }
+  }
+
+  // 4. If no exact match, find longest matching prefix
+  if (!currentItem) {
+    const candidates: { group: typeof groups[0]; item: typeof groups[0]['items'][0]; hrefLen: number }[] = []
+    for (const group of groups) {
+      for (const item of group.items) {
+        const baseHref = item.href.split('?')[0]
+        if (baseHref !== '/dashboard' && pathname.startsWith(baseHref + '/')) {
+          candidates.push({ group, item, hrefLen: baseHref.length })
+        }
+      }
+    }
+    candidates.sort((a, b) => b.hrefLen - a.hrefLen)
+    if (candidates.length > 0) {
+      currentGroup = { label: candidates[0].group.label, icon: candidates[0].group.groupIcon, color: candidates[0].group.colorClass }
+      currentItem = { label: candidates[0].item.label, icon: candidates[0].item.icon }
     }
   }
 

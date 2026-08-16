@@ -30,12 +30,26 @@ type DB = SupabaseClient
 
 // --- 1. Metric cards ---------------------------------------------------
 
-export async function loadMetrics(db: DB, agentId?: string): Promise<MetricsBundle> {
+export async function loadMetrics(db: DB, agentId?: string | string[]): Promise<MetricsBundle> {
   const todayStart = startOfLocalDay().toISOString()
   const yesterdayStart = daysAgoStart(1).toISOString()
 
-  // Helper to apply agentId filter to a query
-  const applyAgent = (q: any, col = 'user_id') => agentId ? q.eq(col, agentId) : q;
+  // Helper to apply agentId filter to a query (single ID or array of department member IDs)
+  const applyAgent = (q: any, col = 'user_id') => {
+    if (!agentId) return q;
+    if (Array.isArray(agentId)) {
+      return agentId.length > 0 ? q.in(col, agentId) : q;
+    }
+    return q.eq(col, agentId);
+  };
+
+  const applyMessageAgent = (q: any) => {
+    if (!agentId) return q;
+    if (Array.isArray(agentId)) {
+      return agentId.length > 0 ? q.in('conversations.user_id', agentId) : q;
+    }
+    return q.eq('conversations.user_id', agentId);
+  };
 
   const [
     openConvCur,
@@ -67,33 +81,37 @@ export async function loadMetrics(db: DB, agentId?: string): Promise<MetricsBund
       .select('id', { count: 'exact', head: true })
       .gte('created_at', yesterdayStart)
       .lt('created_at', todayStart)),
-    applyAgent(db.from('deals').select('value, status').eq('status', 'open'), 'contact_id'), // Deals doesn't have user_id, but it's linked to contact. Oh wait, Deals might have user_id? No, in my RLS deals was `EXISTS (SELECT 1 FROM contacts c WHERE c.id = deals.contact_id AND c.user_id = auth.uid())`. So let's skip agent filter for Deals here to avoid complex join if not strictly needed, OR filter using contact_id. Let's just leave Deals unfiltered for now or use the RLS which natively filters! Wait, RLS already isolates for Agents. This filter is for ADMINS to view specific agent data.
-    db // messages
-      .from('messages')
-      .select('id, conversations!inner(user_id)', { count: 'exact', head: true })
-      .eq('sender_type', 'agent')
-      .gte('created_at', todayStart)
-      .match(agentId ? { 'conversations.user_id': agentId } : {}),
-    db
-      .from('messages')
-      .select('id, conversations!inner(user_id)', { count: 'exact', head: true })
-      .eq('sender_type', 'agent')
-      .gte('created_at', yesterdayStart)
-      .lt('created_at', todayStart)
-      .match(agentId ? { 'conversations.user_id': agentId } : {}),
-    db
-      .from('messages')
-      .select('id, conversations!inner(user_id)', { count: 'exact', head: true })
-      .eq('sender_type', 'bot')
-      .gte('created_at', todayStart)
-      .match(agentId ? { 'conversations.user_id': agentId } : {}),
-    db
-      .from('messages')
-      .select('id, conversations!inner(user_id)', { count: 'exact', head: true })
-      .eq('sender_type', 'bot')
-      .gte('created_at', yesterdayStart)
-      .lt('created_at', todayStart)
-      .match(agentId ? { 'conversations.user_id': agentId } : {}),
+    applyAgent(db.from('deals').select('value, status').eq('status', 'open'), 'user_id'),
+    applyMessageAgent(
+      db
+        .from('messages')
+        .select('id, conversations!inner(user_id)', { count: 'exact', head: true })
+        .eq('sender_type', 'agent')
+        .gte('created_at', todayStart)
+    ),
+    applyMessageAgent(
+      db
+        .from('messages')
+        .select('id, conversations!inner(user_id)', { count: 'exact', head: true })
+        .eq('sender_type', 'agent')
+        .gte('created_at', yesterdayStart)
+        .lt('created_at', todayStart)
+    ),
+    applyMessageAgent(
+      db
+        .from('messages')
+        .select('id, conversations!inner(user_id)', { count: 'exact', head: true })
+        .eq('sender_type', 'bot')
+        .gte('created_at', todayStart)
+    ),
+    applyMessageAgent(
+      db
+        .from('messages')
+        .select('id, conversations!inner(user_id)', { count: 'exact', head: true })
+        .eq('sender_type', 'bot')
+        .gte('created_at', yesterdayStart)
+        .lt('created_at', todayStart)
+    ),
   ])
 
 
@@ -103,9 +121,6 @@ export async function loadMetrics(db: DB, agentId?: string): Promise<MetricsBund
   return {
     activeConversations: {
       current: openConvCur.count ?? 0,
-      // "vs yesterday" on a current-state count has no clean answer
-      // without snapshots — we show the delta in NEW open conversations
-      // today vs yesterday. That's the business-meaningful daily signal.
       previous: (newConvToday.count ?? 0) - (newConvYesterday.count ?? 0),
     },
     newContactsToday: {
@@ -134,7 +149,7 @@ export async function loadMetrics(db: DB, agentId?: string): Promise<MetricsBund
 export async function loadConversationsSeries(
   db: DB,
   rangeDays: number,
-  agentId?: string,
+  agentId?: string | string[],
 ): Promise<ConversationsSeriesPoint[]> {
   const start = daysAgoStart(rangeDays - 1).toISOString()
   
@@ -145,7 +160,11 @@ export async function loadConversationsSeries(
     .order('created_at', { ascending: true })
     
   if (agentId) {
-    query = query.eq('conversations.user_id', agentId)
+    if (Array.isArray(agentId)) {
+      if (agentId.length > 0) query = query.in('conversations.user_id', agentId)
+    } else {
+      query = query.eq('conversations.user_id', agentId)
+    }
   }
 
   const { data, error } = await query

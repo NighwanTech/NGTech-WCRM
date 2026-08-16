@@ -104,9 +104,12 @@ export function CommandPalette() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent 
         className={cn(
-          "p-0 overflow-hidden shadow-2xl rounded-2xl max-w-2xl gap-0 border-0",
-          "bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl", // Premium Frosted Glass Effect
-          "ring-1 ring-black/5 dark:ring-white/10"
+          "p-0 overflow-hidden shadow-2xl rounded-2xl border border-border/80 gap-0",
+          "!fixed !top-[62px] !left-3 sm:!left-4 md:!left-[18px] !translate-x-0 !translate-y-0",
+          "w-[calc(100vw-24px)] sm:w-[500px] md:w-[540px] max-w-[560px]",
+          "bg-popover/95 dark:bg-zinc-950/95 backdrop-blur-2xl",
+          "ring-1 ring-black/5 dark:ring-white/10",
+          "duration-200"
         )}
       >
         <DialogTitle className="sr-only">Command Palette</DialogTitle>

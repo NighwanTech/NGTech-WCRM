@@ -116,6 +116,11 @@ export function AdminShell({ children }: AdminShellProps) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
             </svg>
           }>Platform Leads</NavItem>
+          <NavItem href="/admin/sales" pathname={pathname} icon={
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006A2.18 2.18 0 0118.75 15h-13.5A2.18 2.18 0 013 14.15m16.5 0c.302-.18.57-.42.75-.706M3 14.15v-5.444c0-1.081.768-2.015 1.837-2.175a48.114 48.114 0 013.413-.387m0 0c.52-.06 1.045-.107 1.575-.142m0 0V4.5a2.25 2.25 0 012.25-2.25h3a2.25 2.25 0 012.25 2.25v1.65m-7.5 0h7.5" />
+            </svg>
+          }>Enterprise Sales & SOW</NavItem>
           <NavItem href="/admin/orders" pathname={pathname} icon={
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />

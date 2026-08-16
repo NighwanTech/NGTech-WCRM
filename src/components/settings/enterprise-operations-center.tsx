@@ -81,17 +81,17 @@ export function EnterpriseOperationsCenter() {
   return (
     <div className="space-y-6">
       {/* Top Banner: Ops Center Header */}
-      <Card className="border-indigo-500/30 bg-gradient-to-r from-indigo-950/20 via-background to-indigo-950/10 dark:from-indigo-950/30">
+      <Card className="border bg-card shadow-xs">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <div className="p-3 rounded-xl bg-primary/10 text-primary border border-primary/20">
                 <Activity className="w-10 h-10" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold tracking-tight">Enterprise Operations & Reliability Center</h2>
-                  <Badge variant="outline" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/30 px-3 py-1 text-xs">
+                  <h2 className="text-2xl font-bold tracking-tight text-foreground">Enterprise Operations & Reliability Center</h2>
+                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 px-3 py-1 text-xs font-bold">
                     SLA: {data.slaMetrics.currentUptimePercent}% Uptime
                   </Badge>
                 </div>
@@ -103,7 +103,7 @@ export function EnterpriseOperationsCenter() {
 
             <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
               <div className="text-right">
-                <div className="text-3xl font-extrabold text-indigo-400">{data.reliabilityScore} / 100</div>
+                <div className="text-3xl font-extrabold text-primary">{data.reliabilityScore} / 100</div>
                 <div className="text-xs text-muted-foreground">Reliability Score</div>
               </div>
               <Button onClick={fetchOpsReport} size="sm" variant="outline" className="gap-2" disabled={loading}>

@@ -123,7 +123,7 @@ export function AssetLibrary() {
           </Button>
           
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow h-9 px-4 py-2">
+            <DialogTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 shadow h-9 px-4 py-2 cursor-pointer">
               <Sparkles className="w-4 h-4 mr-2" /> Generate with AI
             </DialogTrigger>
             <DialogContent>
@@ -141,7 +141,7 @@ export function AssetLibrary() {
                   <p className="text-xs text-muted-foreground">Our AI will automatically enhance this prompt for the visual model.</p>
                 </div>
                 <Button 
-                  className="w-full bg-gradient-to-r from-indigo-500 to-purple-600" 
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90" 
                   onClick={handleGenerate}
                   disabled={generating || !aiPrompt}
                 >

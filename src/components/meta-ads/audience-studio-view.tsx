@@ -976,7 +976,7 @@ export function AudienceStudioView() {
           </div>
 
           {/* Strategy Relationship Visualization Flow (Interactive Node Graph) */}
-          <div className="p-3 border rounded-xl bg-gradient-to-r from-primary/5 via-emerald-500/5 to-purple-500/5 border-primary/20 text-xs font-semibold text-foreground space-y-2">
+          <div className="p-3 border rounded-xl bg-muted/30 text-xs font-semibold text-foreground space-y-2">
             <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">End-to-End Enterprise Campaign Traceability Graph:</span>
             <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
               <button type="button" onClick={() => toast.info('Node 1: AI Audience Strategy Blueprint')} className="px-2.5 py-1 rounded-md bg-background border border-primary/30 text-primary font-bold shadow-2xs hover:scale-105 transition-transform flex items-center gap-1 shrink-0">
