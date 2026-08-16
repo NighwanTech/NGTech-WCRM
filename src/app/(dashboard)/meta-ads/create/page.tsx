@@ -930,13 +930,13 @@ function CreateAIAdContent() {
                         </Button>
                       </label>
 
-                      <div className="pt-2 border-t flex items-center gap-2">
+                      <div className="pt-2 border-t flex flex-col sm:flex-row sm:items-center gap-2 min-w-0">
                         <span className="text-[10px] uppercase font-bold text-muted-foreground shrink-0">Or URL:</span>
                         <Input
                           value={imageUrl}
                           onChange={(e) => setImageUrl(e.target.value)}
                           placeholder="https://..."
-                          className="h-8 text-xs font-mono bg-background"
+                          className="h-8 text-xs font-mono bg-background min-w-0 flex-1 truncate"
                         />
                       </div>
                     </div>

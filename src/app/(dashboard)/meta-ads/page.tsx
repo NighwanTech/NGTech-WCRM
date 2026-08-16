@@ -156,7 +156,7 @@ export default function MetaAdsDashboardPage() {
       />
 
       {/* AI OS Modules Navigation Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-9 gap-3">
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-9 gap-2 sm:gap-3">
         <Link href="/meta-ads/copilot">
           <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-primary/10 border-primary/30 text-primary">
             <Sparkles className="w-4 h-4 text-primary animate-pulse" />

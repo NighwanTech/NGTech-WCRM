@@ -1,15 +1,63 @@
 "use client"
 
-import { useState } from "react"
-import { Sparkles, X, Send, Loader2, Bot, ShieldCheck, Activity, Cpu } from "lucide-react"
+import { useState, useRef } from "react"
+import { Sparkles, X, Send, Loader2, Bot, ShieldCheck, Cpu } from "lucide-react"
+
+function cn(...classes: (string | undefined | null | false)[]) {
+  return classes.filter(Boolean).join(" ")
+}
 
 export function GlobalCopilotDrawer() {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string; reasoningSteps?: string[] }>>([
-    { role: 'assistant', content: 'Hello! I am your Enterprise Marketing Intelligence Copilot. How can I assist your campaign strategy today?' }
+    { role: 'assistant', content: 'Hello! I am your AI Copilot. How can I help optimize your Meta campaigns today?' }
   ])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
+
+  // Draggable button position state
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const dragStartRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number; hasMoved: boolean }>({
+    startX: 0, startY: 0, initialX: 0, initialY: 0, hasMoved: false
+  })
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    // Only primary pointer
+    if (e.button !== 0) return
+    const target = e.currentTarget
+    const rect = target.getBoundingClientRect()
+    dragStartRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: position ? position.x : rect.left,
+      initialY: position ? position.y : rect.top,
+      hasMoved: false
+    }
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const deltaX = moveEvent.clientX - dragStartRef.current.startX
+      const deltaY = moveEvent.clientY - dragStartRef.current.startY
+      if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+        dragStartRef.current.hasMoved = true
+        setIsDragging(true)
+      }
+      if (dragStartRef.current.hasMoved) {
+        const newX = Math.max(12, Math.min(window.innerWidth - target.offsetWidth - 12, dragStartRef.current.initialX + deltaX))
+        const newY = Math.max(12, Math.min(window.innerHeight - target.offsetHeight - 12, dragStartRef.current.initialY + deltaY))
+        setPosition({ x: newX, y: newY })
+      }
+    }
+
+    const handlePointerUp = () => {
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+      setTimeout(() => setIsDragging(false), 50)
+    }
+
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
+  }
 
   const handleSendMessage = async () => {
     if (!input.trim() || loading) return
@@ -46,14 +94,32 @@ export function GlobalCopilotDrawer() {
 
   return (
     <>
-      {/* Floating Copilot Launcher Button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 p-3.5 rounded-full bg-primary text-primary-foreground shadow-2xl hover:scale-105 transition-all flex items-center gap-2 cursor-pointer border-2 border-primary/20"
+      {/* Draggable Flexible Copilot Launcher Button */}
+      <div
+        style={
+          position
+            ? { position: 'fixed', left: `${position.x}px`, top: `${position.y}px`, zIndex: 50 }
+            : { position: 'fixed', bottom: '24px', right: '16px', zIndex: 50 }
+        }
+        className="touch-none select-none"
       >
-        <Sparkles className="w-5 h-5 animate-pulse" />
-        <span className="text-xs font-bold pr-1">AI Copilot</span>
-      </button>
+        <button
+          onPointerDown={handlePointerDown}
+          onClick={() => {
+            if (!dragStartRef.current.hasMoved && !isDragging) {
+              setIsOpen(true)
+            }
+          }}
+          className={cn(
+            "p-3 sm:px-4 sm:py-3 rounded-full bg-primary text-primary-foreground shadow-2xl transition-all flex items-center gap-2 border-2 border-primary/20 group active:scale-95",
+            isDragging ? "cursor-grabbing scale-105 shadow-primary/50" : "cursor-grab hover:scale-105"
+          )}
+          title="Drag anywhere or tap to open Copilot"
+        >
+          <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse shrink-0" />
+          <span className="text-xs font-bold hidden xs:inline pr-1">AI Copilot</span>
+        </button>
+      </div>
 
       {/* Global Collapsible Copilot Drawer */}
       {isOpen && (
