@@ -12,6 +12,8 @@ import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { MetaCampaign } from "@/lib/meta/graph-api"
 import { MetaAdsHeader } from "@/components/meta-ads/meta-ads-header"
+import { getActiveWorkspaceModule } from "@/lib/meta/workspace-navigation"
+import { cn } from "@/lib/utils"
 
 export default function MetaAdsDashboardPage() {
   const { account } = useAuth()
@@ -158,39 +160,87 @@ export default function MetaAdsDashboardPage() {
       {/* Enterprise Workspace Navigation Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
         <Link href={campaigns && campaigns.length > 0 ? `/meta-ads/campaign/${campaigns[0].id}?tab=audience` : `/meta-ads/audience-studio`}>
-          <Button variant="outline" className="w-full h-auto py-2.5 flex items-center justify-center gap-2 hover:bg-accent/60 border-border/80">
-            <Target className="w-4 h-4 text-blue-600 shrink-0" />
-            <span className="font-bold text-xs">Audience</span>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full h-auto py-2.5 flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer",
+              getActiveWorkspaceModule('/meta-ads/audience-studio') === 'audience'
+                ? "bg-purple-600 text-white shadow-md font-semibold border-purple-600 hover:bg-purple-700"
+                : "bg-background text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-gray-200 dark:bg-card dark:text-gray-300 dark:border-border/60"
+            )}
+          >
+            <Target className={cn("w-4 h-4 shrink-0", getActiveWorkspaceModule('/meta-ads/audience-studio') === 'audience' ? "text-white" : "text-blue-600")} />
+            <span className="font-semibold text-xs">Audience</span>
           </Button>
         </Link>
         <Link href={campaigns && campaigns.length > 0 ? `/meta-ads/campaign/${campaigns[0].id}?tab=creative` : `/meta-ads/creative-studio`}>
-          <Button variant="outline" className="w-full h-auto py-2.5 flex items-center justify-center gap-2 hover:bg-accent/60 border-border/80">
-            <Palette className="w-4 h-4 text-purple-600 shrink-0" />
-            <span className="font-bold text-xs">Creative</span>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full h-auto py-2.5 flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer",
+              getActiveWorkspaceModule('/meta-ads/creative-studio') === 'creative'
+                ? "bg-purple-600 text-white shadow-md font-semibold border-purple-600 hover:bg-purple-700"
+                : "bg-background text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-gray-200 dark:bg-card dark:text-gray-300 dark:border-border/60"
+            )}
+          >
+            <Palette className={cn("w-4 h-4 shrink-0", getActiveWorkspaceModule('/meta-ads/creative-studio') === 'creative' ? "text-white" : "text-purple-600")} />
+            <span className="font-semibold text-xs">Creative</span>
           </Button>
         </Link>
         <Link href="/meta-ads/analytics">
-          <Button variant="outline" className="w-full h-auto py-2.5 flex items-center justify-center gap-2 hover:bg-accent/60 border-border/80">
-            <LineChart className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span className="font-bold text-xs">Analytics</span>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full h-auto py-2.5 flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer",
+              getActiveWorkspaceModule('/meta-ads/analytics') === 'analytics'
+                ? "bg-purple-600 text-white shadow-md font-semibold border-purple-600 hover:bg-purple-700"
+                : "bg-background text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-gray-200 dark:bg-card dark:text-gray-300 dark:border-border/60"
+            )}
+          >
+            <LineChart className={cn("w-4 h-4 shrink-0", getActiveWorkspaceModule('/meta-ads/analytics') === 'analytics' ? "text-white" : "text-emerald-600")} />
+            <span className="font-semibold text-xs">Analytics</span>
           </Button>
         </Link>
         <Link href="/meta-ads/decision-ledger">
-          <Button variant="outline" className="w-full h-auto py-2.5 flex items-center justify-center gap-2 hover:bg-accent/60 border-border/80">
-            <Activity className="w-4 h-4 text-amber-500 shrink-0" />
-            <span className="font-bold text-xs">Automation</span>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full h-auto py-2.5 flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer",
+              getActiveWorkspaceModule('/meta-ads/decision-ledger') === 'automation'
+                ? "bg-purple-600 text-white shadow-md font-semibold border-purple-600 hover:bg-purple-700"
+                : "bg-background text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-gray-200 dark:bg-card dark:text-gray-300 dark:border-border/60"
+            )}
+          >
+            <Activity className={cn("w-4 h-4 shrink-0", getActiveWorkspaceModule('/meta-ads/decision-ledger') === 'automation' ? "text-white" : "text-amber-500")} />
+            <span className="font-semibold text-xs">Automation</span>
           </Button>
         </Link>
         <Link href="/meta-ads/copilot">
-          <Button variant="outline" className="w-full h-auto py-2.5 flex items-center justify-center gap-2 hover:bg-primary/10 border-primary/40 text-primary">
-            <Sparkles className="w-4 h-4 text-primary animate-pulse shrink-0" />
-            <span className="font-bold text-xs">AI Copilot</span>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full h-auto py-2.5 flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer",
+              getActiveWorkspaceModule('/meta-ads/copilot') === 'copilot'
+                ? "bg-purple-600 text-white shadow-md font-semibold border-purple-600 hover:bg-purple-700"
+                : "bg-background text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-gray-200 dark:bg-card dark:text-gray-300 dark:border-border/60"
+            )}
+          >
+            <Sparkles className={cn("w-4 h-4 shrink-0", getActiveWorkspaceModule('/meta-ads/copilot') === 'copilot' ? "text-white" : "text-primary animate-pulse")} />
+            <span className="font-semibold text-xs">AI Copilot</span>
           </Button>
         </Link>
         <Link href="/meta-ads/settings">
-          <Button variant="outline" className="w-full h-auto py-2.5 flex items-center justify-center gap-2 hover:bg-accent/60 border-border/80">
-            <Settings className="w-4 h-4 text-muted-foreground shrink-0" />
-            <span className="font-bold text-xs">Settings</span>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full h-auto py-2.5 flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer",
+              getActiveWorkspaceModule('/meta-ads/settings') === 'settings'
+                ? "bg-purple-600 text-white shadow-md font-semibold border-purple-600 hover:bg-purple-700"
+                : "bg-background text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-gray-200 dark:bg-card dark:text-gray-300 dark:border-border/60"
+            )}
+          >
+            <Settings className={cn("w-4 h-4 shrink-0", getActiveWorkspaceModule('/meta-ads/settings') === 'settings' ? "text-white" : "text-muted-foreground")} />
+            <span className="font-semibold text-xs">Settings</span>
           </Button>
         </Link>
       </div>

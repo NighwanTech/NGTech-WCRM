@@ -7,20 +7,22 @@ import { ArrowLeft, ChevronRight, Home, ChevronLeft, Rocket, Palette, Target, Sp
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
+import { getActiveWorkspaceModule, EnterpriseWorkspaceModuleId } from '@/lib/meta/workspace-navigation'
+
 export interface BreadcrumbItem {
   label: string
   href?: string
 }
 
 export interface MetaAdsModuleNav {
-  id: string
+  id: EnterpriseWorkspaceModuleId
   href: string
   label: string
   icon: React.ComponentType<{ className?: string }>
 }
 
 export const META_ADS_MODULE_SEQUENCE: MetaAdsModuleNav[] = [
-  { id: 'dashboard', href: '/meta-ads', label: 'Overview', icon: Layers },
+  { id: 'overview', href: '/meta-ads', label: 'Overview', icon: Layers },
   { id: 'audience', href: '/meta-ads/audience-studio', label: 'Audience', icon: Target },
   { id: 'creative', href: '/meta-ads/creative-studio', label: 'Creative', icon: Palette },
   { id: 'analytics', href: '/meta-ads/analytics', label: 'Analytics', icon: TrendingUp },
@@ -52,6 +54,7 @@ export function MetaAdsHeader({
 }: MetaAdsHeaderProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const activeModule = getActiveWorkspaceModule(pathname)
 
   const handleBack = () => {
     if (typeof window !== 'undefined' && window.history.length > 2) {
@@ -62,7 +65,7 @@ export function MetaAdsHeader({
   }
 
   // Calculate Previous and Next module in OS sequence
-  const currentIdx = META_ADS_MODULE_SEQUENCE.findIndex((m) => pathname === m.href || pathname.startsWith(m.href + '/'))
+  const currentIdx = META_ADS_MODULE_SEQUENCE.findIndex((m) => m.id === activeModule)
   const prevModule = currentIdx > 0 ? META_ADS_MODULE_SEQUENCE[currentIdx - 1] : null
   const nextModule = currentIdx >= 0 && currentIdx < META_ADS_MODULE_SEQUENCE.length - 1 ? META_ADS_MODULE_SEQUENCE[currentIdx + 1] : null
 
@@ -176,20 +179,20 @@ export function MetaAdsHeader({
             className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           >
             {META_ADS_MODULE_SEQUENCE.map((m) => {
-              const isActive = pathname === m.href || (m.href !== '/meta-ads' && pathname.startsWith(m.href))
+              const isActive = m.id === activeModule
               const ModIcon = m.icon
               return (
                 <Link key={m.id} href={m.href}>
                   <button
                     type="button"
                     className={cn(
-                      'px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap border shrink-0',
+                      'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer',
                       isActive
-                        ? 'bg-primary text-primary-foreground border-primary shadow-2xs'
-                        : 'bg-card text-muted-foreground hover:text-foreground hover:bg-muted border-border/60'
+                        ? 'bg-purple-600 text-white shadow-md font-semibold border-purple-600'
+                        : 'bg-background text-gray-600 hover:text-purple-700 hover:bg-purple-50 dark:bg-card dark:text-gray-300 dark:hover:bg-purple-950/40 border border-gray-200 dark:border-border/60'
                     )}
                   >
-                    <ModIcon className="w-3.5 h-3.5" />
+                    <ModIcon className={cn("w-3.5 h-3.5", isActive ? "text-white" : "text-gray-500 hover:text-purple-600")} />
                     <span>{m.label}</span>
                   </button>
                 </Link>
