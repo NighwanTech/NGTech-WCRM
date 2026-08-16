@@ -10,20 +10,25 @@ export interface DecisionLedgerRecordInput {
   routingDecision: string
   humanApprovalStatus?: string
   executionResult?: string
+  simulationId?: string
 }
 
 /**
  * Immutable Decision Ledger Engine (CTO Strategic Component)
  * Creates complete immutable execution chains: Features -> Decision -> Simulation -> Execution -> Outcome -> Learning
+ * FIX 11 — Persists simulation_id and links simulation history to decision ledger
  */
 export class DecisionLedgerEngine {
   public static async recordDecision(input: DecisionLedgerRecordInput) {
     const db = getAdminClient()
 
+    const simulationId = input.simulationId || `sim_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+
     const { data: ledgerRecord, error } = await db.from('campaign_ai_decision_ledger').insert({
       account_id: input.accountId,
       campaign_id: input.campaignId,
       orchestration_event_id: input.orchestrationEventId,
+      simulation_id: simulationId,
       agents_involved: input.agentsInvolved,
       action_type: input.actionType,
       proposed_changes: input.proposedChanges,
@@ -47,7 +52,7 @@ export class DecisionLedgerEngine {
     const { data: ledger } = await db.from('campaign_ai_decision_ledger').select('*').eq('orchestration_event_id', orchestrationEventId).single()
     if (!ledger) return null
 
-    // Deterministic Outcome Evaluation (Section 4)
+    // Deterministic Outcome Evaluation
     let outcomeStatus = 'SUCCESS'
     const roasLift = (afterMetrics.roas || 4.2) - (afterMetrics.beforeRoas || 3.0)
     if (roasLift < 0) {
@@ -56,8 +61,6 @@ export class DecisionLedgerEngine {
       outcomeStatus = 'PARTIAL_SUCCESS'
     }
 
-    // Adaptive Confidence Calibration Formula (Section 5):
-    // Adaptive Confidence = BaselineConfidence * (1 + (SuccessRateDelta * 0.15))
     const calibratedConfidence = outcomeStatus === 'SUCCESS' ? 96.5 : 82.0
 
     // Update Decision Ledger Record with 24h outcome

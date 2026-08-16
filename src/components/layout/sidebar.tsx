@@ -58,7 +58,7 @@ const ROLE_CHIP: Record<AccountRole, { icon: typeof Crown; label: string; classN
 }
 
 /** Groups that remain expanded by default */
-const PERMANENT_GROUPS = ['workspace', 'crm']
+const PERMANENT_GROUPS = ['home', 'marketing', 'crm', 'sales', 'lead-hub']
 
 /** Badge styling mapping */
 const BADGE_COLORS: Record<string, string> = {
@@ -66,6 +66,14 @@ const BADGE_COLORS: Record<string, string> = {
   'Beta':   'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30',
   'Alert':  'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30',
   'Update': 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
+}
+
+const DEFAULT_GROUP_COLOR = {
+  iconText: 'text-primary',
+  iconBg: 'bg-primary/10',
+  iconBorder: 'border-primary/25',
+  activeBorder: 'border-primary',
+  activeBg: 'bg-primary/10',
 }
 
 /** Group color token definitions for custom tinted styles */
@@ -76,19 +84,12 @@ const GROUP_COLOR_MAP: Record<string, {
   activeBorder: string
   activeBg: string
 }> = {
-  workspace: {
+  home: {
     iconText: 'text-indigo-500 dark:text-indigo-400',
     iconBg: 'bg-indigo-500/10 dark:bg-indigo-500/15',
     iconBorder: 'border-indigo-500/25',
     activeBorder: 'border-indigo-500',
     activeBg: 'bg-indigo-500/8 dark:bg-indigo-500/12',
-  },
-  crm: {
-    iconText: 'text-blue-500 dark:text-blue-400',
-    iconBg: 'bg-blue-500/10 dark:bg-blue-500/15',
-    iconBorder: 'border-blue-500/25',
-    activeBorder: 'border-blue-500',
-    activeBg: 'bg-blue-500/8 dark:bg-blue-500/12',
   },
   marketing: {
     iconText: 'text-amber-500 dark:text-amber-400',
@@ -97,26 +98,68 @@ const GROUP_COLOR_MAP: Record<string, {
     activeBorder: 'border-amber-500',
     activeBg: 'bg-amber-500/8 dark:bg-amber-500/12',
   },
-  'ai-studio': {
+  'lead-hub': {
     iconText: 'text-emerald-500 dark:text-emerald-400',
     iconBg: 'bg-emerald-500/10 dark:bg-emerald-500/15',
     iconBorder: 'border-emerald-500/25',
     activeBorder: 'border-emerald-500',
     activeBg: 'bg-emerald-500/8 dark:bg-emerald-500/12',
   },
-  analytics: {
+  crm: {
+    iconText: 'text-blue-500 dark:text-blue-400',
+    iconBg: 'bg-blue-500/10 dark:bg-blue-500/15',
+    iconBorder: 'border-blue-500/25',
+    activeBorder: 'border-blue-500',
+    activeBg: 'bg-blue-500/8 dark:bg-blue-500/12',
+  },
+  sales: {
+    iconText: 'text-amber-500 dark:text-amber-400',
+    iconBg: 'bg-amber-500/10 dark:bg-amber-500/15',
+    iconBorder: 'border-amber-500/25',
+    activeBorder: 'border-amber-500',
+    activeBg: 'bg-amber-500/8 dark:bg-amber-500/12',
+  },
+  finance: {
+    iconText: 'text-emerald-500 dark:text-emerald-400',
+    iconBg: 'bg-emerald-500/10 dark:bg-emerald-500/15',
+    iconBorder: 'border-emerald-500/25',
+    activeBorder: 'border-emerald-500',
+    activeBg: 'bg-emerald-500/8 dark:bg-emerald-500/12',
+  },
+  success: {
+    iconText: 'text-rose-500 dark:text-rose-400',
+    iconBg: 'bg-rose-500/10 dark:bg-rose-500/15',
+    iconBorder: 'border-rose-500/25',
+    activeBorder: 'border-rose-500',
+    activeBg: 'bg-rose-500/8 dark:bg-rose-500/12',
+  },
+  ai: {
     iconText: 'text-cyan-500 dark:text-cyan-400',
     iconBg: 'bg-cyan-500/10 dark:bg-cyan-500/15',
     iconBorder: 'border-cyan-500/25',
     activeBorder: 'border-cyan-500',
     activeBg: 'bg-cyan-500/8 dark:bg-cyan-500/12',
   },
-  governance: {
-    iconText: 'text-purple-500 dark:text-purple-400',
-    iconBg: 'bg-purple-500/10 dark:bg-purple-500/15',
-    iconBorder: 'border-purple-500/25',
-    activeBorder: 'border-purple-500',
-    activeBg: 'bg-purple-500/8 dark:bg-purple-500/12',
+  automation: {
+    iconText: 'text-pink-500 dark:text-pink-400',
+    iconBg: 'bg-pink-500/10 dark:bg-pink-500/15',
+    iconBorder: 'border-pink-500/25',
+    activeBorder: 'border-pink-500',
+    activeBg: 'bg-pink-500/8 dark:bg-pink-500/12',
+  },
+  analytics: {
+    iconText: 'text-teal-500 dark:text-teal-400',
+    iconBg: 'bg-teal-500/10 dark:bg-teal-500/15',
+    iconBorder: 'border-teal-500/25',
+    activeBorder: 'border-teal-500',
+    activeBg: 'bg-teal-500/8 dark:bg-teal-500/12',
+  },
+  integrations: {
+    iconText: 'text-indigo-500 dark:text-indigo-400',
+    iconBg: 'bg-indigo-500/10 dark:bg-indigo-500/15',
+    iconBorder: 'border-indigo-500/25',
+    activeBorder: 'border-indigo-500',
+    activeBg: 'bg-indigo-500/8 dark:bg-indigo-500/12',
   },
   settings: {
     iconText: 'text-slate-500 dark:text-slate-400',
@@ -510,7 +553,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
               const GroupIcon = group.groupIcon
               const isSingleItem = group.items.length === 1
               const hasActiveItem = group.items.some(i => isItemActive(i.href))
-              const colors = GROUP_COLOR_MAP[group.id] || GROUP_COLOR_MAP.workspace
+              const colors = GROUP_COLOR_MAP[group.id] || DEFAULT_GROUP_COLOR
 
               return (
                 <div key={group.id} className="flex flex-col">

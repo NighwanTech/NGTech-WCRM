@@ -100,11 +100,14 @@ export function IndustryShowcaseSection() {
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
             <Building2 className="h-4 w-4" /> Tailored Industry Verticals
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-            Built for Every High-Growth Sector
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
+            Engineered for Every{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+              High-Growth Industry.
+            </span>
           </h2>
-          <p className="text-base text-muted-foreground leading-relaxed">
-            Select your industry to see how WCRM solves your specific sales and support challenges.
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+            Select your industry to see how AIWCRM solves your specific revenue, sales, and support operations.
           </p>
         </div>
 

@@ -49,6 +49,7 @@ export interface FeatureRecord {
   supported_industries: string[]; // e.g. ['Manufacturing', 'Healthcare', 'Education', 'Retail', 'Real Estate', 'BFSI']
   meta_title: string;
   meta_description: string;
+  meta_keywords?: string[];
   focus_keyword?: string;
   secondary_keywords?: string[];
   canonical_url?: string;
@@ -611,40 +612,110 @@ export const FALLBACK_FEATURES_CATALOG: FeatureRecord[] = [
     ],
     related_slugs: ['workflow-automation', 'byok', 'security']
   },
-  // 9. ENTERPRISE SECURITY (Security)
+  // 10. FINANCE & 18% GST INVOICING
   {
-    id: 'feat_enterprise_security',
-    name: 'Enterprise Security & Meta Compliance',
-    slug: 'security',
-    category: 'Security',
+    id: 'feat_finance_gst',
+    name: '18% GST Invoicing & Collections Matrix',
+    slug: 'finance-invoicing',
+    category: 'Sales CRM',
     status: 'live',
     publish_status: 'published',
-    short_description: 'Role-based access control (RBAC), session audit logging, end-to-end encryption, and 100% official Meta API compliance.',
+    short_description: 'Statutory GST tax invoices with HSN codes, automated 18% CGST/SGST/IGST calculation, Razorpay UPI payment links, and WhatsApp reminder cadences.',
     featured_toggle: true,
-    available_in_plans: ['Enterprise'],
-    supported_industries: ['Manufacturing', 'Healthcare', 'Education', 'Retail', 'Real Estate', 'BFSI'],
-    meta_title: 'Enterprise WhatsApp Security & Meta Compliance | WCRM',
-    meta_description: 'Role-based access control (RBAC), audit logging, SOC2 data security, and 100% Meta Official API compliance.',
+    available_in_plans: ['Starter', 'Pro', 'Enterprise'],
+    supported_industries: ['Manufacturing', 'Healthcare', 'Education', 'Retail', 'Real Estate', 'BFSI', 'Services'],
+    meta_title: '18% GST Tax Invoicing & Collections Ledger | AIWCRM Enterprise',
+    meta_description: 'Issue GST compliant tax invoices with HSN codes, Razorpay links, aging matrix tracking, and WhatsApp payment reminders.',
     sections_config: [
       {
-        id: 'sec_hero_security',
+        id: 'sec_hero_finance',
         type: 'hero',
         enabled: true,
         order: 1,
         theme: 'glass',
         animation: 'zoom',
         content: {
-          title: 'Enterprise Security, RBAC & Meta Compliance',
-          subheadline: 'Protect your business with granular role permissions, session audit logs, and zero phone ban risk.',
-          cta_primary: 'Start 7-Day Free Trial',
-          cta_primary_url: '/free-trial?feature=security',
-          cta_secondary: 'Book Demo',
+          title: 'Statutory 18% GST Tax Invoicing & Collections',
+          subheadline: 'Eliminate accounting friction. Generate formal GST invoices directly from deal cards and collect payments via Razorpay UPI inside WhatsApp.',
+          cta_primary: 'Start 14-Day Free Trial',
+          cta_primary_url: '/free-trial?feature=finance-invoicing',
+          cta_secondary: 'Book Enterprise Demo',
           cta_secondary_url: '/book-demo',
-          image_asset: 'dashboard-mockup'
+          image_asset: 'crm-mockup'
         }
       }
     ],
-    related_slugs: ['api', 'shared-inbox', 'analytics']
+    related_slugs: ['crm-pipeline', 'shared-inbox', 'analytics']
+  },
+  // 11. AI PROPOSALS & STATEMENTS OF WORK
+  {
+    id: 'feat_proposals_sow',
+    name: 'AI Proposal & Quotation Builder',
+    slug: 'proposals-sow',
+    category: 'Sales CRM',
+    status: 'live',
+    publish_status: 'published',
+    short_description: 'Build commercial proposals, Statement of Work (SOW) documents, and multi-tier price quotes delivered directly via branded WhatsApp PDF links.',
+    featured_toggle: true,
+    available_in_plans: ['Pro', 'Enterprise'],
+    supported_industries: ['Manufacturing', 'Real Estate', 'Education', 'Services', 'Agencies'],
+    meta_title: 'AI Proposal Builder & SOW Generator | AIWCRM',
+    meta_description: 'Generate commercial proposals, Statements of Work, and discount approval workflows in minutes.',
+    sections_config: [
+      {
+        id: 'sec_hero_proposals',
+        type: 'hero',
+        enabled: true,
+        order: 1,
+        theme: 'glass',
+        animation: 'zoom',
+        content: {
+          title: 'AI Commercial Proposal & SOW Builder',
+          subheadline: 'Draft high-conversion proposals and GST quotations with automated scope schedules and client approval workflows.',
+          cta_primary: 'Start 14-Day Free Trial',
+          cta_primary_url: '/free-trial?feature=proposals-sow',
+          cta_secondary: 'Book Enterprise Demo',
+          cta_secondary_url: '/book-demo',
+          image_asset: 'pipeline-mockup'
+        }
+      }
+    ],
+    related_slugs: ['crm-pipeline', 'finance-invoicing', 'shared-inbox']
+  },
+  // 12. UNIVERSAL LEAD HUB
+  {
+    id: 'feat_lead_hub',
+    name: 'Universal Inbound Lead Hub (<2s)',
+    slug: 'lead-hub',
+    category: 'Marketing',
+    status: 'live',
+    publish_status: 'published',
+    short_description: 'Omnichannel lead ingestion from Meta Instant Forms, Webhooks, Google Sheets, and WhatsApp with 0-latency deduplication and automated round-robin routing.',
+    featured_toggle: true,
+    available_in_plans: ['Starter', 'Pro', 'Enterprise'],
+    supported_industries: ['Manufacturing', 'Healthcare', 'Education', 'Retail', 'Real Estate', 'BFSI'],
+    meta_title: 'Universal Lead Hub & Omnichannel Ingestion | AIWCRM',
+    meta_description: 'Capture inbound leads across Meta, Webhooks, and Sheets in sub-2 seconds with automated qualification.',
+    sections_config: [
+      {
+        id: 'sec_hero_lead_hub',
+        type: 'hero',
+        enabled: true,
+        order: 1,
+        theme: 'glass',
+        animation: 'zoom',
+        content: {
+          title: 'Universal Omnichannel Lead Hub',
+          subheadline: 'Capture, qualify, deduplicate, and route inbound leads to sales reps via WhatsApp in under 2 seconds.',
+          cta_primary: 'Start 14-Day Free Trial',
+          cta_primary_url: '/free-trial?feature=lead-hub',
+          cta_secondary: 'Book Enterprise Demo',
+          cta_secondary_url: '/book-demo',
+          image_asset: 'crm-mockup'
+        }
+      }
+    ],
+    related_slugs: ['broadcast-campaigns', 'crm-pipeline', 'workflow-automation']
   }
 ];
 

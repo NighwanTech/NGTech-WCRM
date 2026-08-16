@@ -1,27 +1,21 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 
 export default function AudienceStudioWrapper() {
   const router = useRouter()
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function redirectOrCreate() {
       try {
-        const supabase = createClient()
-        const { data: campaigns } = await supabase
-          .from('marketing_campaigns')
-          .select('id')
-          .is('deleted_at', null)
-          .order('created_at', { ascending: false })
-          .limit(1)
+        // SDK-compliant: Use API route instead of direct Supabase access
+        const res = await fetch('/api/meta/campaigns/workspace')
+        const data = await res.json()
 
-        if (campaigns && campaigns.length > 0) {
-          const targetId = campaigns[0].id
+        if (data.success && data.campaigns && data.campaigns.length > 0) {
+          const targetId = data.campaigns[0].id
           router.replace(`/meta-ads/campaign/${targetId}?tab=audience`)
         } else {
           // Create draft campaign if none exists
@@ -57,3 +51,4 @@ export default function AudienceStudioWrapper() {
     </div>
   )
 }
+

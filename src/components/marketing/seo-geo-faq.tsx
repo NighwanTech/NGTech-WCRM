@@ -56,7 +56,10 @@ export function SeoGeoFaqSection() {
                 <HelpCircle className="h-3.5 w-3.5 text-emerald-500" /> Frequently Asked Questions
               </div>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground tracking-tight leading-tight">
-                Everything You Need to Know About AIWCRM
+                Everything You Need to Know About{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                  AIWCRM.
+                </span>
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 Clear, authoritative answers optimized for search engines and AI assistants.

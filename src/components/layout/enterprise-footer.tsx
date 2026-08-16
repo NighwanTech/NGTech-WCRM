@@ -138,71 +138,56 @@ export function EnterpriseFooter() {
 
         </div>
 
-        {/* MAIN NAVIGATION COLUMNS (5 WELL-ORGANIZED COLUMNS) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 text-xs text-left">
+        {/* MAIN NAVIGATION COLUMNS (6 WELL-ORGANIZED COLUMNS) */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 text-xs text-left">
           
-          {/* COL 1: AI PLATFORM */}
+          {/* COL 1: PLATFORM CAPABILITIES */}
           <div className="space-y-4">
             <h4 className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-              <Bot className="w-4 h-4 text-emerald-500" /> AI Platform & Voice
+              <Zap className="w-4 h-4 text-emerald-500" /> Platform
             </h4>
-            <ul className="space-y-2.5 text-muted-foreground dark:text-slate-300">
-              <li>
-                <Link href="/ai-platform#voice-ai" className="hover:text-foreground dark:hover:text-white transition-colors flex items-center justify-between group">
-                  <span className="group-hover:translate-x-0.5 transition-transform">Voice AI (Retell + ElevenLabs)</span>
-                  <span className="text-[9px] font-extrabold bg-purple-500/10 text-purple-600 dark:text-purple-300 px-1.5 py-0.2 rounded border border-purple-500/30">HINDI</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/ai-platform#byok" className="hover:text-foreground dark:hover:text-white transition-colors flex items-center justify-between group">
-                  <span className="group-hover:translate-x-0.5 transition-transform">BYOK Multi-Model Vault</span>
-                  <span className="text-[9px] font-extrabold bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 px-1.5 py-0.2 rounded border border-emerald-500/30">0% MARKUP</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/ai-platform#meta-ads" className="hover:text-foreground dark:hover:text-white transition-colors flex items-center justify-between group">
-                  <span className="group-hover:translate-x-0.5 transition-transform">Autonomous Meta Ads OS</span>
-                  <span className="text-[9px] font-extrabold bg-pink-500/10 text-pink-600 dark:text-pink-300 px-1.5 py-0.2 rounded border border-pink-500/30">INSTANT</span>
-                </Link>
-              </li>
-              <li><Link href="/ai-platform#copilot" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">AI Assistant & Copilot</Link></li>
-              <li><Link href="/ai-platform#customer-intelligence" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Customer Intelligence</Link></li>
-              <li><Link href="/ai-platform#decision-center" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Decision Center & Engine</Link></li>
+            <ul className="space-y-2 text-muted-foreground dark:text-slate-300 font-medium">
+              <li><Link href="/platform" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform font-bold text-foreground">Platform Overview</Link></li>
+              <li><Link href="/features#marketing" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Marketing & Meta Ads</Link></li>
+              <li><Link href="/features#lead-hub" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Universal Lead Hub</Link></li>
+              <li><Link href="/features#crm" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">CRM & Customer 360</Link></li>
+              <li><Link href="/features#sales" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Enterprise Sales & Deals</Link></li>
+              <li><Link href="/features#finance" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Finance & GST Invoicing</Link></li>
+              <li><Link href="/features#success" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Customer Success & NPS</Link></li>
+              <li><Link href="/ai-platform" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">AI Studio & Copilot</Link></li>
+              <li><Link href="/features#automation" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Visual Automation EAP</Link></li>
+              <li><Link href="/features#analytics" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Revenue Analytics</Link></li>
             </ul>
           </div>
 
-          {/* COL 2: CORE CRM & MODULES */}
+          {/* COL 2: USE CASES */}
           <div className="space-y-4">
             <h4 className="text-xs font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-              <Zap className="w-4 h-4 text-blue-500" /> CRM & Modules
+              <Bot className="w-4 h-4 text-blue-500" /> Use Cases
             </h4>
-            <ul className="space-y-2.5 text-muted-foreground dark:text-slate-300">
-              <li><Link href="/features/shared-inbox" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">WhatsApp Shared Inbox</Link></li>
-              <li>
-                <Link href="/features/crm-pipeline" className="hover:text-foreground dark:hover:text-white transition-colors flex items-center justify-between group">
-                  <span className="group-hover:translate-x-0.5 transition-transform">Visual Deals & Kanban</span>
-                  <span className="text-[9px] font-extrabold bg-blue-500/10 text-blue-600 dark:text-blue-300 px-1.5 py-0.2 rounded border border-blue-500/30">SALES</span>
-                </Link>
-              </li>
-              <li><Link href="/features/broadcast-campaigns" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Official Meta Broadcasts</Link></li>
-              <li><Link href="/features/workflow-automation" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">WhatsApp Catalog Engine</Link></li>
-              <li><Link href="/features/workflow-automation" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">No-Code Flow Builder</Link></li>
-              <li><Link href="/features/analytics" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Executive Analytics Dashboard</Link></li>
+            <ul className="space-y-2 text-muted-foreground dark:text-slate-300 font-medium">
+              <li><Link href="/use-cases#generate-leads" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Generate Inbound Leads</Link></li>
+              <li><Link href="/use-cases#automate-sales" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Automate Sales & Deals</Link></li>
+              <li><Link href="/use-cases#collect-payments" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Collect Payments & Invoices</Link></li>
+              <li><Link href="/use-cases#customer-retention" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Customer Retention</Link></li>
+              <li><Link href="/use-cases#whatsapp-automation" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">WhatsApp Automation</Link></li>
+              <li><Link href="/use-cases#ai-sales-assistant" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">AI Sales Assistant</Link></li>
+              <li><Link href="/use-cases#executive-dashboards" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Executive Dashboards</Link></li>
             </ul>
           </div>
 
           {/* COL 3: SOLUTIONS BY INDUSTRY */}
           <div className="space-y-4">
             <h4 className="text-xs font-extrabold uppercase tracking-widest text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-              <Building2 className="w-4 h-4 text-amber-500" /> Industry Solutions
+              <Building2 className="w-4 h-4 text-amber-500" /> Solutions
             </h4>
-            <ul className="space-y-2.5 text-muted-foreground dark:text-slate-300">
-              <li><Link href="/solutions/education" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Education & EdTech CRM</Link></li>
-              <li><Link href="/solutions/realestate" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Real Estate & Site Visits</Link></li>
-              <li><Link href="/solutions/retail" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">D2C & E-Commerce Cart</Link></li>
-              <li><Link href="/solutions/healthcare" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Healthcare & Doctor Slot</Link></li>
-              <li><Link href="/solutions/bfsi" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">BFSI, Loans & FinTech</Link></li>
-              <li><Link href="/solutions/hospitality" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Hospitality & Direct Booking</Link></li>
+            <ul className="space-y-2 text-muted-foreground dark:text-slate-300 font-medium">
+              <li><Link href="/solutions/education" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Education & EdTech</Link></li>
+              <li><Link href="/solutions/realestate" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Real Estate & Builders</Link></li>
+              <li><Link href="/solutions/retail" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Retail & D2C Brands</Link></li>
+              <li><Link href="/solutions/healthcare" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Healthcare & Clinics</Link></li>
+              <li><Link href="/solutions/bfsi" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">BFSI & FinTech</Link></li>
+              <li><Link href="/solutions/hospitality" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Hospitality & Direct</Link></li>
             </ul>
           </div>
 
@@ -211,33 +196,48 @@ export function EnterpriseFooter() {
             <h4 className="text-xs font-extrabold uppercase tracking-widest text-teal-600 dark:text-teal-400 flex items-center gap-1.5">
               <FileText className="w-4 h-4 text-teal-500" /> Developers & Docs
             </h4>
-            <ul className="space-y-2.5 text-muted-foreground dark:text-slate-300">
+            <ul className="space-y-2 text-muted-foreground dark:text-slate-300 font-medium">
               <li><Link href="/docs" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Documentation Manual</Link></li>
               <li>
                 <Link href="/api-docs" className="hover:text-foreground dark:hover:text-white transition-colors flex items-center justify-between group">
                   <span className="group-hover:translate-x-0.5 transition-transform">REST API Reference</span>
-                  <span className="text-[9px] font-extrabold bg-teal-500/10 text-teal-600 dark:text-teal-300 px-1.5 py-0.2 rounded border border-teal-500/30">API v2</span>
+                  <span className="text-[9px] font-extrabold bg-teal-500/10 text-teal-600 dark:text-teal-300 px-1.5 py-0.2 rounded border border-teal-500/30">v2.0</span>
                 </Link>
               </li>
-              <li><Link href="/docs/ai-copilot/multi-provider-voice-ai-guide" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Voice AI Guide (Retell/Eleven)</Link></li>
-              <li><Link href="/docs/campaign-management/ai-meta-ads-guide" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">AI Meta Ads OS Manual</Link></li>
+              <li><Link href="/docs/campaign-management/ai-meta-ads-guide" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Meta Ads OS Manual</Link></li>
               <li><Link href="/docs/developer-platform/api-authentication" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Developer Platform Guide</Link></li>
-              <li><Link href="/blog" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Engineering Blog & Updates</Link></li>
+              <li><Link href="/why-aiwcrm" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform font-bold text-foreground">Why AIWCRM</Link></li>
+              <li><Link href="/blog" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Engineering Blog</Link></li>
             </ul>
           </div>
 
-          {/* COL 5: ENTERPRISE GOVERNANCE & COMPANY */}
+          {/* COL 5: COMPARISONS */}
+          <div className="space-y-4">
+            <h4 className="text-xs font-extrabold uppercase tracking-widest text-pink-600 dark:text-pink-400 flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-pink-500" /> Compare
+            </h4>
+            <ul className="space-y-2 text-muted-foreground dark:text-slate-300 font-medium">
+              <li><Link href="/vs/hubspot" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">AIWCRM vs HubSpot</Link></li>
+              <li><Link href="/vs/salesforce" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">AIWCRM vs Salesforce</Link></li>
+              <li><Link href="/vs/zoho" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">AIWCRM vs Zoho CRM</Link></li>
+              <li><Link href="/vs/monday" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">AIWCRM vs Monday.com</Link></li>
+              <li><Link href="/vs/freshworks" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">AIWCRM vs Freshworks</Link></li>
+              <li><Link href="/pricing" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Enterprise Pricing</Link></li>
+            </ul>
+          </div>
+
+          {/* COL 6: SECURITY & COMPANY */}
           <div className="space-y-4">
             <h4 className="text-xs font-extrabold uppercase tracking-widest text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-purple-500" /> Enterprise & Company
+              <ShieldCheck className="w-4 h-4 text-purple-500" /> Security & Trust
             </h4>
-            <ul className="space-y-2.5 text-muted-foreground dark:text-slate-300">
-              <li><Link href="/docs/security-compliance/security-vault-compliance-guide" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">AES-256 Security Vault</Link></li>
-              <li><Link href="/docs/security-compliance/security-vault-compliance-guide" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">DPDP Act & GDPR Trust</Link></li>
-              <li><Link href="/pricing" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Plans & BYOK Pricing</Link></li>
-              <li><a href="https://nighwantech.com/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform flex items-center gap-1">Nighwan Technology <ExternalLink className="w-3 h-3 text-muted-foreground" /></a></li>
-              <li><Link href="/about" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">About Our Team</Link></li>
-              <li><Link href="/contact" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Contact Enterprise Support</Link></li>
+            <ul className="space-y-2 text-muted-foreground dark:text-slate-300 font-medium">
+              <li><Link href="/security" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform font-bold text-foreground">Security Center</Link></li>
+              <li><Link href="/security#rbac" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">PBAC Permissions Matrix</Link></li>
+              <li><Link href="/security#audit" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">SHA-256 Audit Trails</Link></li>
+              <li><Link href="/legal/privacy-policy" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">DPDP & Privacy Policy</Link></li>
+              <li><Link href="/legal/terms" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">Terms of Service</Link></li>
+              <li><Link href="/about" className="hover:text-foreground dark:hover:text-white transition-colors block hover:translate-x-0.5 transition-transform">About Nighwan Tech</Link></li>
             </ul>
           </div>
 

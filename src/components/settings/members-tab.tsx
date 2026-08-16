@@ -383,7 +383,7 @@ export function MembersTab() {
           })() : <div />}
 
         {departments.length > 0 && (
-          <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+          <Select value={selectedDepartment} onValueChange={(val) => val && setSelectedDepartment(val)}>
             <SelectTrigger className="w-full sm:w-[200px] h-8 text-xs bg-background">
               <SelectValue placeholder="All Departments">
                 {selectedDepartment === 'all' 

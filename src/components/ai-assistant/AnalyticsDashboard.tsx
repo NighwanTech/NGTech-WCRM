@@ -134,7 +134,7 @@ export function AnalyticsDashboard() {
               <Button size="sm" variant="secondary" onClick={handleCustomApply}>Apply</Button>
             </div>
           )}
-          <Select value={timeFilter} onValueChange={setTimeFilter}>
+          <Select value={timeFilter} onValueChange={(val) => val && setTimeFilter(val)}>
             <SelectTrigger className="w-[160px] h-9">
               <SelectValue />
             </SelectTrigger>
@@ -240,7 +240,7 @@ export function AnalyticsDashboard() {
                         <YAxis stroke="#666" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
                         <RechartsTooltip 
                           contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
-                          formatter={(value: number) => [`$${value.toFixed(4)}`, 'Estimated Cost']}
+                          formatter={(value: any) => [`$${Number(value || 0).toFixed(4)}`, 'Estimated Cost']}
                         />
                         <Bar dataKey="cost" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
                       </BarChart>

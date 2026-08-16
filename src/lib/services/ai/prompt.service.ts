@@ -1,6 +1,8 @@
 import type { AIAssistantSettings } from '@/types';
 import { AIEmbeddingService } from './embedding.service';
 import { supabaseAdmin } from '@/lib/flows/admin-client';
+import { generateText } from 'ai';
+import { AIProviderService } from './provider.service';
 
 export class AIPromptService {
   /**
@@ -197,6 +199,19 @@ export class AIPromptService {
     }
 
     return finalPrompt;
+  }
+
+  /**
+   * Generates structured JSON from a system prompt and user prompt.
+   */
+  static async generateJson(systemPrompt: string, userPrompt: string): Promise<string> {
+    const model = AIProviderService.getModel('gemini', 'gemini-2.5-flash');
+    const { text } = await generateText({
+      model,
+      system: systemPrompt,
+      prompt: userPrompt,
+    });
+    return text;
   }
 }
  

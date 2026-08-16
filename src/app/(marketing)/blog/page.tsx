@@ -47,12 +47,18 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header Section */}
-      <section className="pt-24 pb-16 bg-card border-b border-border">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground mb-6">
-            The <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500">NGTech WCRM Blog</span>
+      <section className="pt-20 pb-16 bg-card/40 border-b border-border text-center">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold uppercase tracking-wider">
+            WhatsApp Marketing & AI Insights
+          </div>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-foreground leading-tight">
+            Strategies, Insights &{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+              Growth Playbooks.
+            </span>
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Actionable strategies, expert insights, and product updates to help you win on WhatsApp.
           </p>
         </div>

@@ -37,8 +37,11 @@ export default function AboutPage() {
               <Building2 className="h-4 w-4 text-emerald-500" /> A Division of Nighwan Technology Pvt. Ltd.
             </Badge>
 
-            <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-foreground leading-[1.15]">
-              Architects of the <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">Digital Future</span>
+            <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-foreground leading-[1.15]">
+              Architects of the{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                Digital Future.
+              </span>
             </h1>
 
             <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed font-normal">
@@ -48,7 +51,7 @@ export default function AboutPage() {
             <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
               <Link href="/free-trial">
                 <Button size="lg" className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 shadow-xl gap-2">
-                  Start 14-Day Free Trial <ArrowRight className="h-4 w-4" />
+                  Start 7-Day Free Trial <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/contact">
@@ -66,7 +69,12 @@ export default function AboutPage() {
         <div className="container mx-auto px-4 max-w-7xl space-y-10">
           <div className="text-center space-y-2 max-w-2xl mx-auto">
             <h2 className="text-xs font-mono uppercase tracking-widest text-emerald-500 font-bold">Proven Track Record</h2>
-            <h3 className="text-3xl font-extrabold text-foreground">Numbers That Define Excellence</h3>
+            <h3 className="text-3xl font-black text-foreground">
+              Proven Numbers That{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                Define Excellence.
+              </span>
+            </h3>
             <p className="text-sm text-muted-foreground">Built on precision, innovation, and consistent delivery since 2020.</p>
           </div>
 
@@ -180,9 +188,14 @@ export default function AboutPage() {
       <section className="py-20 bg-muted/20 border-t border-border/40">
         <div className="container mx-auto px-4 max-w-6xl space-y-12">
           <div className="text-center space-y-3">
-            <h2 className="text-3xl font-extrabold text-foreground">Technological Excellence</h2>
+            <h2 className="text-3xl font-black text-foreground">
+              Future-Proof Engineering for{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                Revenue Growth.
+              </span>
+            </h2>
             <p className="text-muted-foreground text-sm max-w-xl mx-auto">
-              Future-proof engineering designed by Nighwan Technology to scale your revenue.
+              Engineering designed by Nighwan Technology to automate and scale your business operations.
             </p>
           </div>
 
@@ -191,7 +204,7 @@ export default function AboutPage() {
               <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 w-fit">
                 <MessageSquare className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-bold text-foreground">AIWCRM</h3>
+              <h3 className="text-lg font-bold text-foreground">AIWCRM Platform</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Multi-agent shared inbox, automated broadcasts, and AI lead scoring for WhatsApp.
               </p>
@@ -226,8 +239,11 @@ export default function AboutPage() {
           <Badge className="bg-white/20 text-white border-white/30 text-xs px-3.5 py-1">
             Build Your Future With Us
           </Badge>
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
-            Ready to Supercharge Your Sales?
+          <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+            Ready to Supercharge Your Sales with{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-200">
+              AIWCRM?
+            </span>
           </h2>
           <p className="text-emerald-100 text-base max-w-xl mx-auto font-medium">
             Join 1,000+ businesses scaling on WhatsApp with Nighwan Technology.

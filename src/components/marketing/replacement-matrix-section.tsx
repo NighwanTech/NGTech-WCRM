@@ -42,6 +42,18 @@ export function ReplacementMatrixSection() {
       benefit: '100% pipeline visibility'
     },
     {
+      capability: '18% GST Invoicing & Collections',
+      legacy: 'Manual billing in external software (Tally / Zoho Books), delayed WhatsApp reminders, and untracked aging debt.',
+      aiwcrm: 'Automated 18% GST tax invoices generated directly from deal cards with Razorpay UPI links & automated reminders.',
+      benefit: '40% faster debtor cash collection'
+    },
+    {
+      capability: 'Commercial Proposals & SOW',
+      legacy: 'Static Word/PDF documents drafted manually with error-prone calculations and disjointed approval trails.',
+      aiwcrm: 'AI-generated Statements of Work, multi-tier pricing schedules, and branded WhatsApp client delivery.',
+      benefit: '5x faster proposal turnaround'
+    },
+    {
       capability: 'System Uptime & Failover',
       legacy: 'Single point of failure. If OpenAI or WhatsApp hits rate limit, entire app breaks.',
       aiwcrm: 'Self-healing Auto-Failover Engine switching models in <1 second with 99.99% SLA.',
@@ -50,7 +62,7 @@ export function ReplacementMatrixSection() {
     {
       capability: 'Enterprise Security & Governance',
       legacy: 'Shared credentials, unencrypted database storage, no role-based permission controls.',
-      aiwcrm: 'AES-256 vault, DPDP Act & GDPR compliance, enterprise RBAC, and SOC2 audit trails.',
+      aiwcrm: 'AES-256 vault, DPDP Act & GDPR compliance, 4-tier PBAC permissions, and SHA-256 cryptographic audit logs.',
       benefit: 'Bank-grade compliance'
     }
   ];

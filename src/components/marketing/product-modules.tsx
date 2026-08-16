@@ -28,7 +28,8 @@ import {
   Activity,
   Cpu,
   Terminal,
-  Check
+  Check,
+  DollarSign,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -131,6 +132,30 @@ export function ProductModulesSection() {
         summary: 'deal: BTech_CSE_Ananya · stage: Campus Visit Scheduled · value: ₹1,30,000'
       },
       demoText: 'Deal Moved to Campus Visit Scheduled (Deal Value: ₹1,30,000)'
+    },
+    { 
+      id: 'finance', 
+      title: '18% GST Invoicing & Collections Matrix', 
+      tag: 'Finance & GST',
+      desc: 'Issue statutory GST tax invoices with HSN/SAC codes, integrated Razorpay UPI links, aging matrix tracking (0-30, 31-60 days), and multi-channel WhatsApp payment reminder cadences.',
+      icon: DollarSign,
+      highlights: [
+        'Automated 18% CGST/SGST/IGST calculation & PDF generator',
+        'Aging debtor collections matrix with overdue tracking',
+        'Multi-channel WhatsApp automated payment reminders',
+        '1-Click Razorpay UPI & Netbanking payment collection'
+      ],
+      specs: [
+        { label: 'GST Compliance', value: '18% Statutory' },
+        { label: 'Collections Sync', value: 'Live Aging' },
+        { label: 'Payment Gateway', value: 'Razorpay UPI' },
+        { label: 'Invoice PDF', value: 'Auto-Branded' }
+      ],
+      telemetry: {
+        event: 'GST_INVOICE_GENERATED',
+        summary: 'inv_no: INV-2026-0842 · subtotal: ₹1,50,000 · gst_18: ₹27,000 · total: ₹1,77,000'
+      },
+      demoText: 'GST Invoice #INV-2026-0842 Generated & WhatsApp Payment Link Dispatched (₹1,77,000)'
     },
     { 
       id: 'ai-studio', 
@@ -343,8 +368,11 @@ export function ProductModulesSection() {
             <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> Enterprise Product Suite
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-black text-foreground tracking-tight leading-tight">
-            12 Enterprise Product Modules
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
+            12 Unified Modules for{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+              Total Revenue Operations.
+            </span>
           </h2>
 
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">

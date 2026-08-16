@@ -28,11 +28,14 @@ export function BeforeAfterTransformationSection() {
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
             <Sparkles className="h-4 w-4" /> Business Transformation
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-            Before vs. After WCRM
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
+            Before vs. After{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+              AIWCRM Transformation.
+            </span>
           </h2>
-          <p className="text-base text-muted-foreground leading-relaxed">
-            See how switching to WCRM transforms chaotic messaging into an automated, high-revenue customer engagement engine.
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+            See how switching to AIWCRM transforms chaotic messaging into an automated, high-revenue customer engagement engine.
           </p>
         </div>
 

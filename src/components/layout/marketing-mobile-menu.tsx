@@ -19,11 +19,16 @@ export function MarketingMobileMenu() {
 
       {isOpen && (
         <div className="absolute top-[80px] sm:top-[96px] left-0 w-full bg-background border-b border-border/50 shadow-2xl flex flex-col p-6 gap-6 z-50 animate-in slide-in-from-top-2">
-          <nav className="flex flex-col gap-4">
-            <Link href="/features" onClick={() => setIsOpen(false)} className="text-lg font-medium text-foreground hover:text-primary transition-colors">Features</Link>
-            <Link href="/solutions" onClick={() => setIsOpen(false)} className="text-lg font-medium text-foreground hover:text-primary transition-colors">Solutions</Link>
-            <Link href="/pricing" onClick={() => setIsOpen(false)} className="text-lg font-medium text-foreground hover:text-primary transition-colors">Pricing</Link>
-            <Link href="/blog" onClick={() => setIsOpen(false)} className="text-lg font-medium text-foreground hover:text-primary transition-colors">Blog</Link>
+          <nav className="flex flex-col gap-3">
+            <Link href="/platform" onClick={() => setIsOpen(false)} className="text-base font-bold text-foreground hover:text-primary transition-colors">Platform Overview</Link>
+            <Link href="/features" onClick={() => setIsOpen(false)} className="text-base font-medium text-foreground hover:text-primary transition-colors">Features</Link>
+            <Link href="/use-cases" onClick={() => setIsOpen(false)} className="text-base font-medium text-foreground hover:text-primary transition-colors">Use Cases</Link>
+            <Link href="/why-aiwcrm" onClick={() => setIsOpen(false)} className="text-base font-medium text-foreground hover:text-primary transition-colors">Why AIWCRM</Link>
+            <Link href="/solutions" onClick={() => setIsOpen(false)} className="text-base font-medium text-foreground hover:text-primary transition-colors">Solutions</Link>
+            <Link href="/vs" onClick={() => setIsOpen(false)} className="text-base font-medium text-foreground hover:text-primary transition-colors">Competitor Comparisons</Link>
+            <Link href="/pricing" onClick={() => setIsOpen(false)} className="text-base font-medium text-foreground hover:text-primary transition-colors">Pricing</Link>
+            <Link href="/docs" onClick={() => setIsOpen(false)} className="text-base font-medium text-foreground hover:text-primary transition-colors">Documentation</Link>
+            <Link href="/security" onClick={() => setIsOpen(false)} className="text-base font-medium text-foreground hover:text-primary transition-colors">Security Center</Link>
           </nav>
           
           <div className="flex flex-col gap-4 pt-4 border-t border-border/50">

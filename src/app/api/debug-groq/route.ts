@@ -31,7 +31,7 @@ export async function GET(request: Request) {
       tools: {
         requestHumanHandoff: tool({
           description: 'Call this tool when the customer is frustrated, explicitly asks for a human, or asks a question that you cannot answer.',
-          parameters: z.object({
+          inputSchema: z.object({
             reason: z.string().describe('The reason for handing off to a human.'),
           }),
         }),

@@ -271,7 +271,6 @@ function RichTextEditor({ value, onChange }: RichTextEditorProps) {
         contentEditable
         onInput={handleInput}
         className="prose min-h-[500px] max-h-[700px] overflow-y-auto bg-background/50 p-6 outline-none focus:outline-none dark:prose-invert"
-        placeholder="Write your article here..."
       />
     </div>
   )

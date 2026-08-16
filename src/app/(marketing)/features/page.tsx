@@ -2,29 +2,29 @@ import { Metadata } from 'next';
 import { EnterpriseFeaturesClient } from '@/components/marketing/enterprise-features-client';
 
 export const metadata: Metadata = {
-  title: "All Platform Features — Enterprise WhatsApp CRM & AI Meta Ads | AIWCRM",
-  description: "Explore 40+ enterprise features on AIWCRM: AI Meta Ads Creation, BYOK Multi-LLM AI Router with 0% token markup, Enterprise RBAC, Multi-Agent Shared Inbox, Retell Voice AI, Kanban Sales Pipeline, Meta broadcast campaigns, and no-code workflow automation.",
+  title: "All Platform Capabilities — AI Enterprise Business Operating System | AIWCRM",
+  description: "Explore the 12 core platform capabilities on AIWCRM: Meta Ads Manager Pro, Universal Lead Hub, Customer 360, Sales Deals & AI Proposals, 18% GST Invoicing, Customer Success, BYOK Multi-LLM AI Vault (0% markup), Retell Voice AI, and Visual Automation.",
   keywords: [
     "AIWCRM Features",
-    "AI Meta Ads Creation Platform",
-    "AI-Powered WhatsApp Ads",
-    "Enterprise RBAC WhatsApp CRM",
+    "Enterprise Operating System",
+    "AI Meta Ads Manager",
+    "Universal Lead Hub",
+    "Customer 360 CRM",
+    "AI Proposal Builder",
+    "18% GST Invoicing Software",
+    "Customer Success Hub",
     "BYOK WhatsApp AI",
-    "WhatsApp Shared Team Inbox",
     "Retell Voice AI WhatsApp",
-    "WhatsApp Kanban Sales Pipeline",
+    "WhatsApp Shared Team Inbox",
     "WhatsApp Broadcast Software India",
-    "WhatsApp AI Auto Failover",
     "Multi-Model AI Router",
-    "WhatsApp Automation Workflow",
-    "LLM AI Search Optimization AIO",
-    "Geo-Targeted WhatsApp Marketing"
+    "Visual Flow Automation"
   ],
   openGraph: {
-    title: "All Platform Features — Enterprise WhatsApp CRM & AI Meta Ads | AIWCRM",
-    description: "40+ enterprise features: AI Meta Ads, BYOK Multi-LLM AI, Enterprise RBAC, shared team inbox, Voice AI, Kanban pipelines & broadcast campaigns.",
+    title: "All Platform Capabilities — AI Enterprise Business Operating System | AIWCRM",
+    description: "12 unified business capabilities: Meta Ads, Universal Lead Hub, CRM 360, Sales Deals, GST Invoicing, CS & BYOK Multi-LLM AI.",
     url: "https://aiwcrm.com/features",
-    siteName: "AI WCRM",
+    siteName: "AIWCRM",
     locale: "en_IN",
     type: "website",
     images: [
@@ -32,14 +32,14 @@ export const metadata: Metadata = {
         url: "https://aiwcrm.com/dashboard-mockup.png",
         width: 1920,
         height: 1080,
-        alt: "AI WCRM Enterprise AI WhatsApp CRM Dashboard"
+        alt: "AIWCRM Enterprise Operating System Dashboard"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "All Platform Features — Enterprise WhatsApp AI CRM | AI WCRM",
-    description: "40+ enterprise features on AI WCRM: BYOK AI with 0% markup, shared inbox, Voice AI, Kanban pipelines & broadcast campaigns.",
+    title: "All Platform Capabilities — AI Enterprise Operating System | AIWCRM",
+    description: "12 enterprise capabilities on AIWCRM: Meta Ads, Lead Hub, Deals, GST Invoices, BYOK AI & Retell Voice.",
     images: ["https://aiwcrm.com/dashboard-mockup.png"]
   },
   alternates: {

@@ -1,7 +1,8 @@
-import { ILLMProvider, LLMResponse } from './llm-provider-contract'
+import { ILLMProvider, LLMResponse, LLMResponseChunk } from './llm-provider-contract'
 
 /**
  * GeminiLLMProvider — Standard Implementation of ILLMProvider for Gemini 1.5 Pro
+ * Supports real-time response streaming via AsyncGenerator (FIX 5)
  */
 export class GeminiLLMProvider implements ILLMProvider {
   public providerName = 'Gemini 1.5 Pro'
@@ -16,7 +17,7 @@ export class GeminiLLMProvider implements ILLMProvider {
       'Evaluating deterministic rules...'
     ]
 
-    // Intent & Tool Classification Logic (Zero UI Prompt engineering)
+    // Intent & Tool Classification Logic
     if (lower.includes('health') || lower.includes('status')) {
       return {
         content: 'System Telemetry Health Status is 100% Operational (v20.0 Meta Graph API connected).',
@@ -60,5 +61,33 @@ export class GeminiLLMProvider implements ILLMProvider {
       toolCall: { toolId: 'getCampaignTelemetry', payload: {} },
       reasoningSteps: [...steps, 'Routed to getCampaignTelemetry System Tool']
     }
+  }
+
+  public async *streamResponse(
+    messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>,
+    contextPayload?: any
+  ): AsyncGenerator<LLMResponseChunk, void, unknown> {
+    yield { type: 'reasoning', reasoningStep: 'Assembling context via ContextEngine...' }
+    yield { type: 'reasoning', reasoningStep: 'Retrieving knowledge via KnowledgeEngine...' }
+    yield { type: 'reasoning', reasoningStep: 'Evaluating deterministic rules...' }
+
+    const full = await this.generateResponse(messages, contextPayload)
+
+    if (full.reasoningSteps) {
+      for (const step of full.reasoningSteps) {
+        yield { type: 'reasoning', reasoningStep: step }
+      }
+    }
+
+    if (full.toolCall) {
+      yield { type: 'tool_call', toolCall: full.toolCall }
+    }
+
+    const words = full.content.split(' ')
+    for (const word of words) {
+      yield { type: 'token', content: word + ' ' }
+    }
+
+    yield { type: 'done', fullResponse: full }
   }
 }

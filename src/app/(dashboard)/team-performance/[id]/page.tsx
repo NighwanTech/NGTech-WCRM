@@ -236,7 +236,7 @@ export default function AgentDetailPage() {
                   <h2 className="text-xl font-bold text-foreground flex items-center justify-center gap-2">
                     {profile.full_name}
                     {(profile.account_role === 'owner' || profile.account_role === 'admin') && (
-                      <Shield className="h-4 w-4 text-primary fill-primary/20" title={profile.account_role} />
+                      <Shield className="h-4 w-4 text-primary fill-primary/20" />
                     )}
                   </h2>
                   <p className="text-sm text-muted-foreground">{profile.email}</p>

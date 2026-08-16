@@ -98,58 +98,58 @@ export function EnterpriseHeroSection() {
               </div>
             </div>
 
-            {/* Pill Tags: CRM • WhatsApp • AI Agents... */}
+            {/* Pill Tags: Marketing • Lead Hub • CRM • Sales • Finance • AI Studio */}
             <div className="space-y-1 text-xs sm:text-sm font-extrabold text-foreground tracking-tight text-center lg:text-left">
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1.5 text-slate-800 dark:text-slate-200">
-                <span className="text-emerald-600 dark:text-emerald-400 font-black">CRM</span> • 
-                <span className="text-teal-600 dark:text-teal-400 font-black">WhatsApp</span> • 
-                <span className="text-purple-600 dark:text-purple-400 font-black">AI Agents</span> • 
-                <span className="text-blue-600 dark:text-blue-400 font-black">Meta Ads</span> • 
-                <span className="text-indigo-600 dark:text-indigo-400 font-black">AI Calling</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-black">Marketing</span> • 
+                <span className="text-teal-600 dark:text-teal-400 font-black">Lead Hub</span> • 
+                <span className="text-purple-600 dark:text-purple-400 font-black">CRM 360</span> • 
+                <span className="text-blue-600 dark:text-blue-400 font-black">Sales & Deals</span> • 
+                <span className="text-indigo-600 dark:text-indigo-400 font-black">GST Invoicing</span>
               </div>
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1.5 text-slate-600 dark:text-slate-400 font-bold">
-                <span>Sales</span> • <span>Marketing</span> • <span>Support</span>
+                <span>AI Copilot</span> • <span>Visual Automation</span> • <span>Revenue Analytics</span>
               </div>
             </div>
 
             {/* Subtitle */}
             <p className="text-xs sm:text-sm text-muted-foreground font-medium text-center lg:text-left">
-              Run your complete business from one AI-powered platform.
+              Run marketing, sales pipelines, GST billing, and AI automation on one unified platform.
             </p>
 
             {/* 2-Column Green Checkmark Grid */}
             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs font-bold text-foreground text-left max-w-md">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span>WhatsApp CRM</span>
+                <span>Meta Ads Manager Pro</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span>AI Agents</span>
+                <span>Universal Lead Hub (&lt;2s)</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span>AI Voice Calling</span>
+                <span>Customer 360 &amp; Inbox</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span>Team Management</span>
+                <span>Deals &amp; AI Proposals</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span>Meta Lead Automation</span>
+                <span>18% GST Invoicing</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span>Marketing Automation</span>
+                <span>Customer Success &amp; NPS</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span>Sales Pipeline</span>
+                <span>BYOK Multi-LLM Vault</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span>Billing & Reports</span>
+                <span>4-Tier PBAC Security</span>
               </div>
             </div>
 

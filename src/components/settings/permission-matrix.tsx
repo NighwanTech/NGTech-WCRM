@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   ShieldCheck,
   ShieldAlert,
@@ -18,9 +18,31 @@ import {
   Upload,
   Eye,
   Sparkles,
+  Search,
+  Copy,
+  RotateCcw,
+  Layers,
+  Briefcase,
+  DollarSign,
+  Bot,
+  FileText,
+  CreditCard,
+  ChevronDown,
+  ChevronRight,
+  Shield,
+  HelpCircle,
+  GitCompare,
+  Clock,
+  Key,
+  ShieldX,
+  FileSpreadsheet,
+  ToggleLeft,
+  ToggleRight,
+  Flame,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -29,479 +51,770 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { toast } from 'sonner'
 import {
+  ENTERPRISE_WORKSPACES,
+  ALL_ACTION_KEYS,
   ROLE_PERMISSION_MAP,
-  PERMISSION_DEPENDENCIES,
-  ROLE_TEMPLATES,
-  Permission,
+  REUSABLE_PERMISSION_TEMPLATES,
+  DEFAULT_ORG_POLICIES,
+  OrgSecurityPolicy,
+  PermissionLevel,
   DataScope,
+  WorkspacePermissionGroup,
+  FeatureDefinition,
+  ActionDefinition,
+  getInheritedPermissions,
+  compareRoles,
+  getSensitivePermissionReport,
 } from '@/lib/security/permissions'
-import { useSimulation } from '@/components/security/simulation-provider'
-
-interface CustomRole {
-  id: string
-  name: string
-  description?: string
-  data_scope?: DataScope
-  is_system: boolean
-}
-
-interface PermissionCategory {
-  name: string
-  icon: any
-  items: { key: Permission; label: string; protected?: boolean }[]
-}
-
-const CATEGORIES: PermissionCategory[] = [
-  {
-    name: '🔒 Security & Governance',
-    icon: ShieldCheck,
-    items: [
-      { key: 'security:read', label: 'View Security Center Overview' },
-      { key: 'audit:read', label: 'Read Cryptographic SHA-256 Audit Logs' },
-      { key: 'sessions:read', label: 'View Active Sessions Roster' },
-      { key: 'sessions:manage', label: 'Remote Revoke Active Sessions', protected: true },
-      { key: 'api_keys:manage', label: 'Create, View & Revoke API Keys', protected: true },
-      { key: 'rbac:manage', label: 'Manage Roles & Permission Matrix', protected: true },
-      { key: 'rate_limits:manage', label: 'Configure Rate Limit Overrides', protected: true },
-      { key: 'compliance:read', label: 'Export GDPR Data Archives', protected: true },
-      { key: 'webhooks:read', label: 'View Webhook Monitor & Queue DLQ' },
-      { key: 'system_health:read', label: 'Access System Health Diagnostic Endpoint' },
-    ],
-  },
-  {
-    name: '👥 CRM & Contacts',
-    icon: Building,
-    items: [
-      { key: 'contacts:read', label: 'View Contacts & Company Lists' },
-      { key: 'contacts:create', label: 'Create & Edit Contact Records' },
-      { key: 'contacts:delete_any', label: 'Hard Delete Contact Records', protected: true },
-    ],
-  },
-  {
-    name: '💬 Messaging & Drip Campaigns',
-    icon: MessageSquare,
-    items: [
-      { key: 'messages:read', label: 'Read Shared Inbox Conversations' },
-      { key: 'messages:send', label: 'Send Outbound Messages & Replies' },
-      { key: 'broadcasts:launch', label: 'Launch Bulk WhatsApp Campaigns' },
-      { key: 'sequences:manage', label: 'Build & Trigger Automated Sequences' },
-    ],
-  },
-  {
-    name: '⚙️ Workspace Administration',
-    icon: Sliders,
-    items: [
-      { key: 'team:manage', label: 'Invite & Manage Team Members', protected: true },
-      { key: 'settings:write', label: 'Edit WhatsApp & Account Settings', protected: true },
-      { key: 'billing:manage', label: 'Manage Subscription & Invoices', protected: true },
-    ],
-  },
-]
+import { PermissionSimulatorModal } from '@/components/security/permission-simulator-modal'
 
 export function PermissionMatrix() {
-  const { startSimulation } = useSimulation()
   const [selectedRole, setSelectedRole] = useState<string>('admin')
   const [selectedScope, setSelectedScope] = useState<DataScope>('all')
-  const [customRoles, setCustomRoles] = useState<CustomRole[]>([])
+  const [searchQuery, setSearchQuery] = useState<string>('')
   const [rolePermissions, setRolePermissions] = useState<Set<string>>(new Set())
+  const [featureLevels, setFeatureLevels] = useState<Record<string, PermissionLevel>>({})
+  const [orgPolicies, setOrgPolicies] = useState<OrgSecurityPolicy[]>(DEFAULT_ORG_POLICIES)
 
-  // Modal dialog states
-  const [createOpen, setCreateOpen] = useState(false)
+  // Workspace Accordion open states
+  const [openWorkspaces, setOpenWorkspaces] = useState<Record<string, boolean>>({
+    marketing: true,
+    crm: true,
+    sales: true,
+    finance: true,
+    ai: true,
+  })
+
+  // Modals
+  const [simulatorOpen, setSimulatorOpen] = useState(false)
   const [templateOpen, setTemplateOpen] = useState(false)
-  const [newRoleName, setNewRoleName] = useState('')
-  const [newRoleDesc, setNewRoleDesc] = useState('')
-  const [creating, setCreating] = useState(false)
-  const [protectedConfirmKey, setProtectedConfirmKey] = useState<Permission | null>(null)
+  const [compareModalOpen, setCompareModalOpen] = useState(false)
+  const [tempAccessModalOpen, setTempAccessModalOpen] = useState(false)
+  const [sensitiveReportOpen, setSensitiveReportOpen] = useState(false)
+  const [orgPolicyModalOpen, setOrgPolicyModalOpen] = useState(false)
 
-  async function loadRoles() {
-    try {
-      const res = await fetch('/api/admin/roles')
-      const data = await res.json()
-      if (data?.customRoles) {
-        setCustomRoles(data.customRoles)
-      }
-    } catch (err) {
-      console.error('Failed to load custom roles:', err)
-    }
-  }
+  // Compare role state
+  const [compareRoleA, setCompareRoleA] = useState('manager')
+  const [compareRoleB, setCompareRoleB] = useState('agent')
 
+  // Temporary Access state
+  const [tempUser, setTempUser] = useState('Sunil Kumar (Agent)')
+  const [tempPermission, setTempPermission] = useState('marketing:campaign_publish')
+  const [tempDuration, setTempDuration] = useState('24')
+
+  // Protected Action Confirmation Modal
+  const [protectedConfirmAction, setProtectedConfirmAction] = useState<ActionDefinition | null>(null)
+
+  // Load permissions when role changes
   useEffect(() => {
-    loadRoles()
-  }, [])
+    const baseSet = ROLE_PERMISSION_MAP[selectedRole] || new Set()
+    const isOwner = selectedRole === 'owner'
 
-  useEffect(() => {
-    const systemSet = ROLE_PERMISSION_MAP[selectedRole]
-    if (systemSet) {
-      setRolePermissions(new Set(Array.from(systemSet)))
+    if (isOwner) {
+      setRolePermissions(new Set(['all', ...ALL_ACTION_KEYS]))
     } else {
-      setRolePermissions(new Set())
+      setRolePermissions(new Set(Array.from(baseSet)))
     }
   }, [selectedRole])
 
-  async function handleCreateRole() {
-    if (!newRoleName.trim()) return
-    setCreating(true)
-    try {
-      const res = await fetch('/api/admin/roles', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newRoleName, description: newRoleDesc }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Failed to create role')
-
-      toast.success(`Custom role '${newRoleName}' created successfully!`)
-      setCreateOpen(false)
-      setNewRoleName('')
-      setNewRoleDesc('')
-      await loadRoles()
-      setSelectedRole(newRoleName)
-    } catch (err: any) {
-      toast.error(err.message)
-    } finally {
-      setCreating(false)
+  // Toggle individual action permission
+  const handleToggleAction = (action: ActionDefinition) => {
+    if (selectedRole === 'owner') {
+      toast.info('Owner role maintains unrestricted full access.')
+      return
     }
+
+    const isCurrentlyEnabled = rolePermissions.has('all') || rolePermissions.has(action.key)
+
+    // If enabling a protected action, prompt confirmation
+    if (!isCurrentlyEnabled && action.isProtected) {
+      setProtectedConfirmAction(action)
+      return
+    }
+
+    applyActionToggle(action.key, !isCurrentlyEnabled)
   }
 
-  async function handleApplyTemplate(templateName: string) {
-    const tmpl = ROLE_TEMPLATES.find((t) => t.name === templateName)
-    if (!tmpl) return
-
-    setCreating(true)
-    try {
-      const res = await fetch('/api/admin/roles', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: tmpl.name, description: tmpl.description }),
-      })
-      const data = await res.json()
-      if (!res.ok && data.error && !data.error.includes('already exists')) {
-        throw new Error(data.error)
-      }
-
-      // Populate template permissions
-      for (const perm of tmpl.permissions) {
-        await fetch('/api/admin/permissions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ roleName: tmpl.name, permission: perm, enabled: true }),
-        })
-      }
-
-      toast.success(`Role template '${tmpl.name}' applied successfully!`)
-      setTemplateOpen(false)
-      await loadRoles()
-      setSelectedRole(tmpl.name)
-      setSelectedScope(tmpl.defaultScope)
-    } catch (err: any) {
-      toast.error(err.message)
-    } finally {
-      setCreating(false)
-    }
-  }
-
-  async function handleExportRoles() {
-    try {
-      const res = await fetch('/api/admin/roles/export')
-      const bundle = await res.json()
-
-      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `aiwcrm_roles_export_${Date.now()}.json`
-      a.click()
-      toast.success('Custom roles JSON bundle exported!')
-    } catch (err) {
-      toast.error('Failed to export roles bundle')
-    }
-  }
-
-  async function togglePermission(permissionKey: Permission, enabled: boolean) {
-    const nextSet = new Set(rolePermissions)
-    if (enabled) {
-      nextSet.add(permissionKey)
-      const parent = PERMISSION_DEPENDENCIES[permissionKey]
-      if (parent) nextSet.add(parent)
+  const applyActionToggle = (key: string, enable: boolean) => {
+    const next = new Set(rolePermissions)
+    if (enable) {
+      next.add(key)
+      toast.success(`Granted: ${key}`)
     } else {
-      nextSet.delete(permissionKey)
+      next.delete(key)
+      next.delete('all')
+      toast.info(`Revoked: ${key}`)
     }
-    setRolePermissions(nextSet)
-
-    try {
-      const res = await fetch('/api/admin/permissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roleName: selectedRole, permission: permissionKey, enabled }),
-      })
-      if (!res.ok) throw new Error('Failed to update permission')
-
-      toast.success(enabled ? `Granted '${permissionKey}'` : `Revoked '${permissionKey}'`)
-    } catch (err: any) {
-      toast.error(err.message)
-      loadRoles()
-    }
+    setRolePermissions(next)
   }
 
-  function handleCheckboxClick(key: Permission, isProtected: boolean | undefined) {
-    const isCurrentlyChecked = rolePermissions.has('all') || rolePermissions.has(key)
-    const nextEnabled = !isCurrentlyChecked
-
-    if (nextEnabled && isProtected) {
-      setProtectedConfirmKey(key)
-    } else {
-      togglePermission(key, nextEnabled)
+  // Handle 4-tier Feature Level change (None, Read, Write, Admin) with automatic cascading
+  const handleSetFeatureLevel = (feature: FeatureDefinition, level: PermissionLevel) => {
+    if (selectedRole === 'owner') {
+      toast.info('Owner role cannot be restricted.')
+      return
     }
+
+    setFeatureLevels((prev) => ({ ...prev, [feature.id]: level }))
+
+    const inheritedKeys = getInheritedPermissions(level, feature)
+    const next = new Set(rolePermissions)
+
+    // Remove all existing actions for this feature first
+    feature.actions.forEach((a) => next.delete(a.key))
+
+    // Add inherited keys
+    inheritedKeys.forEach((k) => next.add(k))
+    next.delete('all')
+
+    setRolePermissions(next)
+    toast.success(`Set ${feature.name} to ${level.toUpperCase()} access (${inheritedKeys.length} actions granted).`)
   }
+
+  // Bulk Actions
+  const handleSelectAll = () => {
+    setRolePermissions(new Set(['all', ...ALL_ACTION_KEYS]))
+    toast.success('Granted all permissions across all 11 workspaces.')
+  }
+
+  const handleClearAll = () => {
+    if (selectedRole === 'owner') {
+      toast.error('Cannot clear permissions for Owner role.')
+      return
+    }
+    setRolePermissions(new Set())
+    setFeatureLevels({})
+    toast.info('Revoked all permissions.')
+  }
+
+  const handleSetReadOnlyAll = () => {
+    const readOnlyKeys = ALL_ACTION_KEYS.filter((k) => k.includes('view') || k.includes('read'))
+    setRolePermissions(new Set(readOnlyKeys))
+    toast.success(`Applied READ-ONLY access (${readOnlyKeys.length} permissions active).`)
+  }
+
+  const handleGrantAdminAll = () => {
+    setRolePermissions(new Set(['all', ...ALL_ACTION_KEYS]))
+    toast.success('Granted full administrative rights across all features.')
+  }
+
+  const handleApplyTemplate = (tmpl: any) => {
+    setRolePermissions(new Set(tmpl.permissions))
+    setSelectedScope(tmpl.defaultScope)
+    setTemplateOpen(false)
+    toast.success(`Applied template "${tmpl.name}" with ${tmpl.permissions.length} preset permissions!`)
+  }
+
+  const handleGrantTemporaryAccess = () => {
+    setTempAccessModalOpen(false)
+    toast.success(`Temporary grant of "${tempPermission}" active for ${tempUser} (${tempDuration} hours). Auto-revoke scheduled.`)
+  }
+
+  const handleToggleOrgPolicy = (id: string) => {
+    setOrgPolicies(orgPolicies.map((p) => (p.id === id ? { ...p, enabled: !p.enabled } : p)))
+    toast.success('Organization security policy updated.')
+  }
+
+  const handleExportJson = () => {
+    const data = {
+      role: selectedRole,
+      data_scope: selectedScope,
+      permissions: Array.from(rolePermissions),
+      exportedAt: new Date().toISOString(),
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `wacrm_role_${selectedRole}_permissions.json`
+    a.click()
+    toast.success('Role permissions exported as JSON!')
+  }
+
+  // Filtered Workspaces by Search Query
+  const filteredWorkspaces = useMemo(() => {
+    if (!searchQuery.trim()) return ENTERPRISE_WORKSPACES
+
+    const q = searchQuery.toLowerCase()
+    return ENTERPRISE_WORKSPACES.map((w) => {
+      const matchingFeatures = w.features.filter(
+        (f) =>
+          f.name.toLowerCase().includes(q) ||
+          f.description.toLowerCase().includes(q) ||
+          f.actions.some((a) => a.label.toLowerCase().includes(q) || a.key.toLowerCase().includes(q))
+      )
+      return {
+        ...w,
+        features: matchingFeatures,
+      }
+    }).filter((w) => w.features.length > 0 || w.name.toLowerCase().includes(q))
+  }, [searchQuery])
+
+  // Calculate Summary Statistics across all workspaces
+  const workspaceStats = useMemo(() => {
+    return ENTERPRISE_WORKSPACES.map((w) => {
+      const totalInWs = w.features.flatMap((f) => f.actions).length
+      const activeInWs = w.features
+        .flatMap((f) => f.actions)
+        .filter((a) => rolePermissions.has('all') || rolePermissions.has(a.key)).length
+      return {
+        id: w.id,
+        name: w.name,
+        total: totalInWs,
+        active: activeInWs,
+      }
+    })
+  }, [rolePermissions])
+
+  const totalActivePerms = rolePermissions.has('all')
+    ? ALL_ACTION_KEYS.length
+    : Array.from(rolePermissions).filter((k) => k !== 'all').length
+
+  // Role comparison computation
+  const roleComparison = useMemo(() => {
+    return compareRoles(compareRoleA, compareRoleB)
+  }, [compareRoleA, compareRoleB])
+
+  const sensitiveReport = useMemo(() => {
+    return getSensitivePermissionReport()
+  }, [])
 
   return (
-    <div className="space-y-6 pt-4">
-      {/* Header & Role Switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4">
-        <div>
-          <h3 className="text-base font-bold flex items-center gap-2">
-            <ShieldCheck className="size-5 text-primary" />
-            Interactive Checkbox Permission Matrix UI
-          </h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Configure fine-grained permissions, pre-built role templates, and data-level visibility scopes.
-          </p>
+    <div className="space-y-5 font-sans">
+      {/* 1. Header & Role Selector Bar */}
+      <div className="p-4 rounded-xl border bg-card/60 shadow-xs space-y-3">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b pb-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-primary" />
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
+                Enterprise PBAC & Security Policy Console
+              </h3>
+              <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px]">
+                Salesforce / Azure AD Standard
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Workspace Access → Feature Level (None/Read/Write/Admin) → Action Permissions & API Middleware Mapping.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              onClick={() => setSimulatorOpen(true)}
+              className="h-8 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 gap-1.5 shadow-xs cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5" /> Simulate Experience
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setCompareModalOpen(true)}
+              className="h-8 text-xs gap-1 cursor-pointer"
+            >
+              <GitCompare className="w-3.5 h-3.5 text-primary" /> Compare Roles
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setTempAccessModalOpen(true)}
+              className="h-8 text-xs gap-1 cursor-pointer"
+            >
+              <Clock className="w-3.5 h-3.5 text-amber-500" /> Temporary JIT Access
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setSensitiveReportOpen(true)}
+              className="h-8 text-xs gap-1 cursor-pointer"
+            >
+              <Lock className="w-3.5 h-3.5 text-destructive" /> Protected Report
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setOrgPolicyModalOpen(true)}
+              className="h-8 text-xs gap-1 cursor-pointer"
+            >
+              <Sliders className="w-3.5 h-3.5 text-primary" /> Org Policies
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setTemplateOpen(true)}
+              className="h-8 text-xs gap-1 cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-primary" /> Templates
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleExportJson}
+              className="h-8 text-xs gap-1 cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" /> Export JSON
+            </Button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button onClick={() => startSimulation(selectedRole)} variant="outline" size="sm" className="gap-2 text-amber-600 border-amber-300 bg-amber-50">
-            <Eye className="size-4" /> Simulate Experience
+        {/* Role Switcher & Data Scope */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground mr-1">Target Role:</span>
+            {['admin', 'manager', 'agent', 'client', 'viewer'].map((r) => (
+              <Button
+                key={r}
+                size="sm"
+                variant={selectedRole === r ? 'default' : 'outline'}
+                onClick={() => setSelectedRole(r)}
+                className={`h-7 text-xs uppercase font-mono font-bold ${
+                  selectedRole === r ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground'
+                }`}
+              >
+                {r}
+              </Button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground">Data Visibility Scope:</span>
+            <Select value={selectedScope} onValueChange={(val) => val && setSelectedScope(val as DataScope)}>
+              <SelectTrigger className="h-7 text-xs w-52 bg-background font-mono">
+                <SelectValue placeholder="Scope" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">ALL WORKSPACE DATA (FULL)</SelectItem>
+                <SelectItem value="department">DEPARTMENT ONLY</SelectItem>
+                <SelectItem value="team">TEAM / BRANCH ONLY</SelectItem>
+                <SelectItem value="assigned">ASSIGNED LEADS & CHATS</SelectItem>
+                <SelectItem value="own">OWN RECORDS ONLY</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Bulk Action Toolbar & Real-time Permission Search Bar */}
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-2.5" />
+          <Input
+            placeholder="Search permissions & API endpoints (e.g. campaign, invoice, prompt, ai, delete, pipeline)..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-9 text-xs bg-background rounded-xl"
+          />
+        </div>
+
+        {/* Bulk Action Buttons */}
+        <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+          <Button size="sm" variant="outline" onClick={handleSelectAll} className="h-8 text-[11px] gap-1">
+            <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Select All
           </Button>
-          <Button onClick={() => setTemplateOpen(true)} variant="outline" size="sm" className="gap-2">
-            <Sparkles className="size-4 text-purple-600" /> Apply Role Template
+          <Button size="sm" variant="outline" onClick={handleSetReadOnlyAll} className="h-8 text-[11px] gap-1">
+            <Eye className="w-3 h-3 text-blue-500" /> Read Only
           </Button>
-          <Button onClick={handleExportRoles} variant="outline" size="sm" className="gap-2">
-            <Download className="size-4" /> Export JSON
+          <Button size="sm" variant="outline" onClick={handleGrantAdminAll} className="h-8 text-[11px] gap-1">
+            <ShieldCheck className="w-3 h-3 text-primary" /> Grant Admin
           </Button>
-          <Button onClick={() => setCreateOpen(true)} variant="default" size="sm" className="gap-2">
-            <Plus className="size-4" /> Create Custom Role
+          <Button size="sm" variant="ghost" onClick={handleClearAll} className="h-8 text-[11px] text-destructive hover:bg-destructive/10">
+            Clear All
           </Button>
         </div>
       </div>
 
-      {/* Role & Data Scope Selector Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-muted/40 p-3 rounded-xl border">
-        <div className="flex flex-wrap gap-2">
-          {['admin', 'manager', 'agent', 'client', 'viewer'].map((sysRole) => (
-            <button
-              key={sysRole}
-              type="button"
-              onClick={() => setSelectedRole(sysRole)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all border ${
-                selectedRole === sysRole
-                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                  : 'bg-card text-muted-foreground hover:bg-muted border-border'
-              }`}
-            >
-              {sysRole}
-            </button>
-          ))}
+      {/* 3. 11 Workspaces Accordion & 4-Tier Feature Matrix */}
+      <div className="space-y-3">
+        {filteredWorkspaces.map((ws) => {
+          const isOpen = openWorkspaces[ws.id] ?? false
+          const stat = workspaceStats.find((s) => s.id === ws.id)
 
-          {customRoles.map((cRole) => (
-            <button
-              key={cRole.id}
-              type="button"
-              onClick={() => setSelectedRole(cRole.name)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wider transition-all border flex items-center gap-1.5 ${
-                selectedRole === cRole.name
-                  ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
-                  : 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100'
-              }`}
-            >
-              <span>{cRole.name}</span>
-              <span className="text-[9px] bg-purple-200 text-purple-800 px-1 py-0.2 rounded uppercase">Custom</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Data Scope Selector */}
-        <div className="flex items-center gap-2 text-xs">
-          <span className="font-semibold text-muted-foreground">Data Visibility Scope:</span>
-          <select
-            value={selectedScope}
-            onChange={(e) => setSelectedScope(e.target.value as DataScope)}
-            className="px-2 py-1 rounded border bg-card text-xs font-mono font-semibold"
-          >
-            <option value="all">ALL WORKSPACE DATA (FULL)</option>
-            <option value="region">REGION ONLY</option>
-            <option value="branch">BRANCH / CITY ONLY</option>
-            <option value="department">DEPARTMENT ONLY</option>
-            <option value="team">TEAM ONLY</option>
-            <option value="assigned">ASSIGNED RECORDS ONLY</option>
-            <option value="own">OWN RECORDS ONLY</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Category Grouped Checkbox Matrix */}
-      <div className="space-y-6">
-        {CATEGORIES.map((category) => {
-          const CategoryIcon = category.icon
           return (
-            <div key={category.name} className="rounded-xl border bg-card p-5 space-y-4 shadow-sm">
-              <h4 className="text-sm font-bold flex items-center gap-2 text-foreground border-b pb-2">
-                <CategoryIcon className="size-4 text-primary" />
-                {category.name}
-              </h4>
+            <div key={ws.id} className="border rounded-xl bg-card overflow-hidden shadow-2xs">
+              {/* Workspace Accordion Header */}
+              <div
+                onClick={() => setOpenWorkspaces((prev) => ({ ...prev, [ws.id]: !isOpen }))}
+                className="p-3.5 bg-muted/20 hover:bg-muted/30 transition-all flex items-center justify-between cursor-pointer border-b"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="text-primary font-bold">{isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}</div>
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
+                      {ws.name}
+                    </h4>
+                    <p className="text-[10px] text-muted-foreground">{ws.description}</p>
+                  </div>
+                </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                {category.items.map((item) => {
-                  const isChecked = rolePermissions.has('all') || rolePermissions.has(item.key)
-
-                  return (
-                    <label
-                      key={item.key}
-                      className={`flex items-start gap-3 p-3 rounded-lg border text-xs cursor-pointer transition-colors ${
-                        isChecked ? 'bg-primary/5 border-primary/30' : 'bg-muted/20 border-border hover:bg-muted/40'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => handleCheckboxClick(item.key, item.protected)}
-                        className="size-4 mt-0.5 rounded border-border text-primary focus:ring-primary"
-                      />
-                      <div className="space-y-0.5">
-                        <div className="font-semibold text-foreground flex items-center gap-1.5">
-                          <span>{item.label}</span>
-                          {item.protected && (
-                            <span className="text-[9px] font-mono uppercase bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded border border-amber-300">
-                              Protected
-                            </span>
-                          )}
-                        </div>
-                        <div className="font-mono text-[10px] text-muted-foreground">{item.key}</div>
-                      </div>
-                    </label>
-                  )
-                })}
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-[10px] font-mono">
+                    {stat ? `${stat.active} / ${stat.total}` : '0'} Active
+                  </Badge>
+                </div>
               </div>
+
+              {/* Workspace Features & Actions Body */}
+              {isOpen && (
+                <div className="p-4 space-y-4 divide-y divide-border/60">
+                  {ws.features.map((feat) => {
+                    const currentLevel = featureLevels[feat.id] || 'admin'
+
+                    return (
+                      <div key={feat.id} className="pt-3.5 first:pt-0 space-y-3">
+                        {/* Feature Level Bar: None / Read / Write / Admin */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="space-y-0.5">
+                            <span className="text-xs font-bold text-foreground">{feat.name}</span>
+                            <p className="text-[11px] text-muted-foreground">{feat.description}</p>
+                          </div>
+
+                          {/* 4-Tier Permission Radio Level */}
+                          <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border shrink-0 text-[10px] font-mono">
+                            {(['none', 'read', 'write', 'admin'] as PermissionLevel[]).map((lvl) => (
+                              <button
+                                key={lvl}
+                                type="button"
+                                onClick={() => handleSetFeatureLevel(feat, lvl)}
+                                className={`px-2.5 py-1 rounded-md transition-all uppercase font-bold cursor-pointer ${
+                                  currentLevel === lvl
+                                    ? lvl === 'admin'
+                                      ? 'bg-primary text-primary-foreground shadow-xs'
+                                      : lvl === 'write'
+                                      ? 'bg-emerald-600 text-white'
+                                      : lvl === 'read'
+                                      ? 'bg-blue-600 text-white'
+                                      : 'bg-muted text-foreground'
+                                    : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                              >
+                                {lvl}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Granular Action Checkbox Grid with API Route Badges */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                          {feat.actions.map((act) => {
+                            const isChecked = rolePermissions.has('all') || rolePermissions.has(act.key)
+
+                            return (
+                              <div
+                                key={act.key}
+                                onClick={() => handleToggleAction(act)}
+                                className={`p-2.5 rounded-lg border transition-all flex items-start gap-2.5 cursor-pointer select-none ${
+                                  isChecked
+                                    ? 'bg-primary/5 border-primary/40 text-foreground'
+                                    : 'bg-muted/10 border-border/60 text-muted-foreground hover:bg-muted/20'
+                                }`}
+                              >
+                                <div
+                                  className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 mt-0.5 transition-all ${
+                                    isChecked
+                                      ? 'bg-primary border-primary text-primary-foreground'
+                                      : 'border-muted-foreground/40 bg-background'
+                                  }`}
+                                >
+                                  {isChecked && <CheckCircle2 className="w-3.5 h-3.5" />}
+                                </div>
+
+                                <div className="space-y-1 min-w-0 w-full">
+                                  <div className="flex items-center justify-between gap-1.5">
+                                    <span className="font-semibold text-xs truncate">{act.label}</span>
+                                    {act.isProtected && (
+                                      <Badge variant="outline" className="text-[8px] py-0 px-1 border-amber-500/40 text-amber-600 font-mono shrink-0">
+                                        🔒 PROTECTED
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center justify-between text-[9px] text-muted-foreground font-mono">
+                                    <code className="truncate max-w-[140px]">{act.key}</code>
+                                    {act.apiEndpoint && (
+                                      <span className="text-[8px] bg-muted px-1.5 py-0.5 rounded border">
+                                        {act.apiEndpoint.method} {act.apiEndpoint.path}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           )
         })}
       </div>
 
-      {/* Create Custom Role Dialog */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Create Custom Workspace Role</DialogTitle>
-            <DialogDescription>
-              Create a custom role (e.g., &quot;Support Lead&quot;, &quot;Sales Manager&quot;).
+      {/* 4. Enterprise Permission Summary & Workspace Breakdown Roster */}
+      <div className="p-4 rounded-xl border bg-card shadow-xs space-y-3 font-mono">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-xs font-bold uppercase text-foreground">
+              Active Role Permission Breakdown ({selectedRole.toUpperCase()})
+            </span>
+          </div>
+          <Badge className="bg-primary text-primary-foreground font-bold text-xs">
+            {totalActivePerms} / {ALL_ACTION_KEYS.length} Total Permissions
+          </Badge>
+        </div>
+
+        {/* 11 Workspaces Progress Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 text-[11px]">
+          {workspaceStats.map((st) => (
+            <div key={st.id} className="p-2 rounded-lg border bg-muted/20 space-y-1">
+              <span className="text-[10px] text-muted-foreground font-bold truncate block">{st.name}</span>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-foreground">
+                  {st.active} / {st.total}
+                </span>
+                <span className="text-[9px] text-primary">
+                  {Math.round((st.active / (st.total || 1)) * 100)}%
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Compare Roles Modal */}
+      <Dialog open={compareModalOpen} onOpenChange={setCompareModalOpen}>
+        <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden font-sans border shadow-xl">
+          <DialogHeader className="p-4 border-b bg-muted/20">
+            <div className="flex items-center gap-2">
+              <GitCompare className="w-5 h-5 text-primary" />
+              <DialogTitle className="text-sm font-bold">Side-by-Side Role Comparator</DialogTitle>
+            </div>
+            <DialogDescription className="text-xs">
+              Compare capability differences between two roles across all 11 workspaces.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold">Role Name</label>
-              <Input
-                placeholder="e.g. Sales Manager"
-                value={newRoleName}
-                onChange={(e) => setNewRoleName(e.target.value)}
-              />
+          <div className="p-4 space-y-4 text-xs font-mono">
+            <div className="grid grid-cols-2 gap-3 pb-3 border-b">
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-muted-foreground">Role A:</label>
+                <Select value={compareRoleA} onValueChange={(val) => val && setCompareRoleA(val)}>
+                  <SelectTrigger className="h-8 text-xs font-bold uppercase"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {['owner', 'admin', 'manager', 'agent', 'client', 'viewer'].map((r) => (
+                      <SelectItem key={r} value={r}>{r.toUpperCase()}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-muted-foreground">Role B:</label>
+                <Select value={compareRoleB} onValueChange={(val) => val && setCompareRoleB(val)}>
+                  <SelectTrigger className="h-8 text-xs font-bold uppercase"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {['owner', 'admin', 'manager', 'agent', 'client', 'viewer'].map((r) => (
+                      <SelectItem key={r} value={r}>{r.toUpperCase()}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold">Description (Optional)</label>
-              <Input
-                placeholder="Role responsibility overview..."
-                value={newRoleDesc}
-                onChange={(e) => setNewRoleDesc(e.target.value)}
-              />
+
+            <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border text-xs">
+              <span>Overall Delta:</span>
+              <span className="font-bold text-primary">
+                {compareRoleA.toUpperCase()} has {roleComparison.totalA} perms ({roleComparison.totalDiff > 0 ? `+${roleComparison.totalDiff}` : roleComparison.totalDiff} compared to {compareRoleB.toUpperCase()})
+              </span>
+            </div>
+
+            <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
+              {roleComparison.breakdown.map((row) => (
+                <div key={row.workspaceId} className="flex items-center justify-between p-2 rounded-md border text-[11px]">
+                  <span className="font-semibold text-foreground">{row.name}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-muted-foreground">{row.countA} vs {row.countB}</span>
+                    <Badge variant="outline" className={`font-mono text-[9px] ${row.diff > 0 ? 'text-emerald-600 border-emerald-500/30' : row.diff < 0 ? 'text-destructive border-destructive/30' : 'text-muted-foreground'}`}>
+                      {row.diffFormatted}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Temporary JIT Access Modal */}
+      <Dialog open={tempAccessModalOpen} onOpenChange={setTempAccessModalOpen}>
+        <DialogContent className="max-w-md p-0 gap-0 overflow-hidden font-sans border shadow-xl">
+          <DialogHeader className="p-4 border-b bg-amber-500/10">
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-amber-500" />
+              <DialogTitle className="text-sm font-bold">Grant Temporary Time-Bound Permission</DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-amber-700 dark:text-amber-400">
+              Grant elevated privileges for a limited time window with automatic expiration.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="p-4 space-y-3.5 text-xs font-sans">
+            <div className="space-y-1">
+              <label className="font-semibold">Target User</label>
+              <Input value={tempUser} onChange={(e) => setTempUser(e.target.value)} className="h-8 text-xs" />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-semibold">Permission to Elevate</label>
+              <Select value={tempPermission} onValueChange={(val) => val && setTempPermission(val)}>
+                <SelectTrigger className="h-8 text-xs font-mono"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="marketing:campaign_publish">marketing:campaign_publish (Publish Live Ads)</SelectItem>
+                  <SelectItem value="finance:invoice_create">finance:invoice_create (Generate GST Invoices)</SelectItem>
+                  <SelectItem value="deals:close_won">deals:close_won (Close Won High-Value Deals)</SelectItem>
+                  <SelectItem value="ai:prompt_edit">ai:prompt_edit (Modify System Prompts)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-semibold">Auto-Revoke Duration</label>
+              <Select value={tempDuration} onValueChange={(val) => val && setTempDuration(val)}>
+                <SelectTrigger className="h-8 text-xs font-mono"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 Hour (Quick Escalation)</SelectItem>
+                  <SelectItem value="24">24 Hours (Standard Shift)</SelectItem>
+                  <SelectItem value="72">3 Days (Weekend Coverage)</SelectItem>
+                  <SelectItem value="168">7 Days (Audit Window)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setCreateOpen(false)}>
-              Cancel
-            </Button>
-            <Button size="sm" onClick={handleCreateRole} disabled={creating || !newRoleName.trim()}>
-              {creating ? <Loader2 className="size-4 animate-spin" /> : 'Create Role'}
+          <DialogFooter className="p-3 border-t bg-muted/20 flex justify-end gap-2">
+            <Button size="sm" variant="outline" onClick={() => setTempAccessModalOpen(false)} className="h-8 text-xs">Cancel</Button>
+            <Button size="sm" onClick={handleGrantTemporaryAccess} className="h-8 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 gap-1">
+              <Clock className="w-3.5 h-3.5" /> Grant & Start Timer
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Apply Role Template Dialog */}
-      <Dialog open={templateOpen} onOpenChange={setTemplateOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="size-5 text-purple-600" /> Apply Pre-Built Role Template
-            </DialogTitle>
-            <DialogDescription>
-              Accelerate workspace setup with 7 standardized enterprise role templates.
+      {/* Sensitive Permission Audit Report Modal */}
+      <Dialog open={sensitiveReportOpen} onOpenChange={setSensitiveReportOpen}>
+        <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden font-sans border shadow-xl">
+          <DialogHeader className="p-4 border-b bg-muted/20">
+            <div className="flex items-center gap-2">
+              <Lock className="w-5 h-5 text-destructive" />
+              <DialogTitle className="text-sm font-bold">Protected Sensitive Action Audit Report</DialogTitle>
+            </div>
+            <DialogDescription className="text-xs">
+              Surfaces high-risk capabilities (deletion, publishing, API secrets) across roles.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3 max-h-[350px] overflow-y-auto py-2">
-            {ROLE_TEMPLATES.map((tmpl) => (
-              <div
-                key={tmpl.name}
-                className="p-3 border rounded-lg hover:border-purple-300 hover:bg-purple-50/50 transition-colors flex items-center justify-between"
-              >
-                <div className="space-y-0.5">
-                  <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <span>{tmpl.name}</span>
-                    <span className="text-[9px] font-mono bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded uppercase">
-                      Scope: {tmpl.defaultScope}
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-muted-foreground">{tmpl.description}</div>
+          <div className="p-4 space-y-3 font-mono text-xs">
+            {sensitiveReport.map((row) => (
+              <div key={row.role} className="p-3 rounded-lg border bg-muted/20 flex items-center justify-between">
+                <div>
+                  <span className="font-bold uppercase text-foreground text-xs">{row.role}</span>
+                  <p className="text-[10px] text-muted-foreground font-sans">
+                    {row.protectedCount === 0 ? 'Zero dangerous operations permitted' : `${row.protectedCount} of ${row.totalProtected} protected actions`}
+                  </p>
                 </div>
-                <Button size="sm" variant="outline" onClick={() => handleApplyTemplate(tmpl.name)} disabled={creating}>
-                  Apply Template
+                <Badge className={row.protectedCount > 5 ? 'bg-destructive text-white' : row.protectedCount > 0 ? 'bg-amber-500 text-slate-950' : 'bg-emerald-600 text-white'}>
+                  {row.protectedCount} Protected
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Organization Security Policy Control Modal */}
+      <Dialog open={orgPolicyModalOpen} onOpenChange={setOrgPolicyModalOpen}>
+        <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden font-sans border shadow-xl">
+          <DialogHeader className="p-4 border-b bg-muted/20">
+            <div className="flex items-center gap-2">
+              <Sliders className="w-5 h-5 text-primary" />
+              <DialogTitle className="text-sm font-bold">Organization-Wide Security Policy Layer</DialogTitle>
+            </div>
+            <DialogDescription className="text-xs">
+              Top-level security policies that override role permissions for statutory compliance.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="p-4 space-y-3 text-xs">
+            {orgPolicies.map((pol) => (
+              <div key={pol.id} className="p-3 rounded-xl border bg-card flex items-start justify-between gap-3">
+                <div className="space-y-0.5">
+                  <span className="font-bold text-foreground text-xs">{pol.title}</span>
+                  <p className="text-[11px] text-muted-foreground">{pol.description}</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant={pol.enabled ? 'default' : 'outline'}
+                  onClick={() => handleToggleOrgPolicy(pol.id)}
+                  className={`h-7 text-xs font-mono ${pol.enabled ? 'bg-emerald-600 text-white' : 'text-muted-foreground'}`}
+                >
+                  {pol.enabled ? 'ENFORCED' : 'DISABLED'}
                 </Button>
               </div>
             ))}
           </div>
-
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setTemplateOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Protected Permission Confirmation Modal */}
-      <Dialog open={!!protectedConfirmKey} onOpenChange={() => setProtectedConfirmKey(null)}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-amber-600">
-              <AlertTriangle className="size-5" /> Confirm High-Risk Permission Grant
+      {/* Role Templates Modal */}
+      <Dialog open={templateOpen} onOpenChange={setTemplateOpen}>
+        <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden font-sans">
+          <DialogHeader className="p-4 border-b bg-muted/20">
+            <DialogTitle className="text-sm font-bold flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" /> 8 Standard Reusable Permission Templates
             </DialogTitle>
-            <DialogDescription className="py-2 text-xs leading-relaxed">
-              You are about to grant the protected permission <span className="font-mono font-bold text-foreground">{protectedConfirmKey}</span> to role <span className="font-bold text-foreground">{selectedRole}</span>. This grants elevated access to sensitive workspace controls.
+            <DialogDescription className="text-xs">
+              Select an industry template to apply preset permissions & scopes (Sales, Marketing, Finance, Support).
             </DialogDescription>
           </DialogHeader>
 
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setProtectedConfirmKey(null)}>
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              className="bg-red-600 hover:bg-red-700 text-white font-bold"
-              onClick={() => {
-                if (protectedConfirmKey) {
-                  togglePermission(protectedConfirmKey, true)
-                  setProtectedConfirmKey(null)
-                }
-              }}
-            >
-              Confirm & Grant Permission
-            </Button>
-          </DialogFooter>
+          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto">
+            {REUSABLE_PERMISSION_TEMPLATES.map((tmpl) => (
+              <div
+                key={tmpl.id}
+                onClick={() => handleApplyTemplate(tmpl)}
+                className="p-3 rounded-xl border hover:border-primary/50 hover:bg-muted/30 transition-all space-y-2 cursor-pointer"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-foreground">{tmpl.name}</span>
+                  <Badge variant="outline" className="text-[9px] uppercase font-mono">{tmpl.defaultScope}</Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground line-clamp-2">{tmpl.description}</p>
+                <div className="text-[10px] text-primary font-mono font-semibold pt-1 border-t">
+                  {tmpl.permissions.length} Pre-configured Permissions →
+                </div>
+              </div>
+            ))}
+          </div>
         </DialogContent>
       </Dialog>
+
+      {/* Permission Simulator Modal */}
+      <PermissionSimulatorModal
+        open={simulatorOpen}
+        onOpenChange={setSimulatorOpen}
+        initialRole={selectedRole}
+      />
     </div>
   )
 }

@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Sparkles, Send, Loader2, Bot, ShieldCheck, Activity, Cpu, Play, CheckCircle2, RotateCcw, AlertTriangle } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MetaAdsHeader } from "@/components/meta-ads/meta-ads-header"
+import { Badge } from "@/components/ui/badge"
 
 export default function EnterpriseCopilotWorkspace() {
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string; reasoningSteps?: string[]; toolResult?: any }>>([
@@ -12,7 +13,27 @@ export default function EnterpriseCopilotWorkspace() {
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const [telemetrySummary, setTelemetrySummary] = useState<any>(null)
+  const [streamingReasoning, setStreamingReasoning] = useState<string[]>([])
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  // FIX 19: Load saved conversation history on mount
+  useEffect(() => {
+    fetch('/api/meta/v1/ai/copilot')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.messages) && data.messages.length > 0) {
+          setMessages(data.messages)
+        }
+      })
+      .catch(err => console.warn('Failed to load conversation history:', err))
+  }, [])
+
+  // Auto-scroll to bottom of conversation stream
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, streamingReasoning, loading])
+
+  // FIX 5: Real-time Streaming Handler
   const handleSendMessage = async (customPrompt?: string) => {
     const promptToSend = customPrompt || input.trim()
     if (!promptToSend || loading) return
@@ -21,32 +42,99 @@ export default function EnterpriseCopilotWorkspace() {
     const newMessages = [...messages, { role: 'user' as const, content: promptToSend }]
     setMessages(newMessages)
     setLoading(true)
+    setStreamingReasoning([])
 
     try {
       const res = await fetch("/api/meta/v1/ai/copilot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: newMessages })
+        body: JSON.stringify({ messages: newMessages, stream: true })
       })
-      const data = await res.json()
-      if (data.success && data.response) {
-        setMessages([
-          ...newMessages,
-          {
-            role: 'assistant',
-            content: data.response.content,
-            reasoningSteps: data.response.reasoningSteps,
-            toolResult: data.response.toolExecutionResult
+
+      if (res.ok && res.body) {
+        const reader = res.body.getReader()
+        const decoder = new TextDecoder()
+        let assistantContent = ""
+        let reasoningStepsCollected: string[] = []
+        let toolExecutionResultCollected: any = null
+
+        // Add initial placeholder for streaming assistant response
+        setMessages(prev => [...prev, { role: 'assistant', content: '', reasoningSteps: [] }])
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          const chunkText = decoder.decode(value)
+          const lines = chunkText.split('\n\n')
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const parsed = JSON.parse(line.slice(6))
+
+                if (parsed.type === 'reasoning' && parsed.reasoningStep) {
+                  reasoningStepsCollected = [...reasoningStepsCollected, parsed.reasoningStep]
+                  setStreamingReasoning([...reasoningStepsCollected])
+                }
+
+                if (parsed.type === 'token' && parsed.content) {
+                  assistantContent += parsed.content
+                }
+
+                if (parsed.toolResult) {
+                  toolExecutionResultCollected = parsed.toolResult
+                  setTelemetrySummary(parsed.toolResult)
+                }
+
+                if (parsed.type === 'done' && parsed.fullResponse) {
+                  if (!assistantContent) assistantContent = parsed.fullResponse.content
+                  if (parsed.fullResponse.reasoningSteps) reasoningStepsCollected = parsed.fullResponse.reasoningSteps
+                }
+
+                // Update the last assistant message in real-time
+                setMessages(prev => {
+                  const updated = [...prev]
+                  const lastIdx = updated.length - 1
+                  if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                    updated[lastIdx] = {
+                      role: 'assistant',
+                      content: assistantContent,
+                      reasoningSteps: reasoningStepsCollected,
+                      toolResult: toolExecutionResultCollected
+                    }
+                  }
+                  return updated
+                })
+              } catch (e) {
+                // Ignore chunk parse errors
+              }
+            }
           }
-        ])
-        if (data.response.toolExecutionResult) {
-          setTelemetrySummary(data.response.toolExecutionResult)
+        }
+      } else {
+        // Fallback if non-streaming
+        const data = await res.json()
+        if (data.success && data.response) {
+          setMessages([
+            ...newMessages,
+            {
+              role: 'assistant',
+              content: data.response.content,
+              reasoningSteps: data.response.reasoningSteps,
+              toolResult: data.response.toolExecutionResult
+            }
+          ])
+          if (data.response.toolExecutionResult) {
+            setTelemetrySummary(data.response.toolExecutionResult)
+          }
         }
       }
     } catch (err) {
-      console.error("Copilot workspace error", err)
+      console.error("Copilot workspace streaming error", err)
     } finally {
       setLoading(false)
+      setStreamingReasoning([])
     }
   }
 
@@ -57,20 +145,30 @@ export default function EnterpriseCopilotWorkspace() {
         description="Multi-Agent Reasoning, Digital Twin Simulation & Governance Control Surface"
         icon={Sparkles}
         breadcrumbs={[{ label: "AI Copilot" }]}
+        actions={
+          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 font-bold text-xs gap-1 py-1">
+            <Sparkles className="w-3.5 h-3.5" /> Streaming SSE Active
+          </Badge>
+        }
       />
 
       {/* Split Workspace Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Columns: Streaming Conversation & Rich Cards */}
         <div className="lg:col-span-2 space-y-4">
-          <Card className="border bg-card shadow-sm min-h-[500px] flex flex-col justify-between">
+          <Card className="border bg-card shadow-sm min-h-[520px] flex flex-col justify-between">
             <CardHeader className="border-b bg-muted/20 py-3">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Bot className="w-4 h-4 text-primary" /> Copilot Conversation Stream
+              <CardTitle className="text-sm font-bold flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Bot className="w-4 h-4 text-primary" /> Copilot Conversation Stream
+                </span>
+                <span className="text-[10px] font-mono text-muted-foreground">
+                  History Persisted • {messages.length} messages
+                </span>
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="p-4 flex-1 overflow-y-auto space-y-4 max-h-[450px]">
+            <CardContent className="p-4 flex-1 overflow-y-auto space-y-4 max-h-[480px]">
               {messages.map((m, idx) => (
                 <div key={idx} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
                   <div
@@ -80,7 +178,7 @@ export default function EnterpriseCopilotWorkspace() {
                         : 'bg-muted/30 border text-foreground'
                     }`}
                   >
-                    {m.content}
+                    {m.content || (loading && idx === messages.length - 1 ? "Thinking..." : "")}
                   </div>
 
                   {/* Rich Explanation & Simulation Cards */}
@@ -103,7 +201,7 @@ export default function EnterpriseCopilotWorkspace() {
                   )}
 
                   {/* Reasoning Steps */}
-                  {m.reasoningSteps && (
+                  {m.reasoningSteps && m.reasoningSteps.length > 0 && (
                     <div className="mt-1.5 p-2 rounded-lg bg-muted/10 border text-[10px] text-muted-foreground space-y-1 font-mono max-w-[85%]">
                       {m.reasoningSteps.map((step, sIdx) => (
                         <div key={sIdx} className="flex items-center gap-1">
@@ -117,11 +215,21 @@ export default function EnterpriseCopilotWorkspace() {
               ))}
 
               {loading && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground p-3 rounded-xl bg-muted/20 w-fit">
-                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                  <span>Assembling Context, Knowledge & Reasoning...</span>
+                <div className="flex flex-col gap-1 text-xs text-muted-foreground p-3 rounded-xl bg-muted/20 w-fit">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <span className="font-bold text-foreground">Streaming Copilot Reasoning...</span>
+                  </div>
+                  {streamingReasoning.length > 0 && (
+                    <div className="pl-6 space-y-0.5 font-mono text-[10px] text-muted-foreground">
+                      {streamingReasoning.map((r, rIdx) => (
+                        <div key={rIdx}>↳ {r}</div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </CardContent>
 
             {/* Input Bar & Suggested Intent Shortcuts */}
@@ -152,22 +260,10 @@ export default function EnterpriseCopilotWorkspace() {
                   <Activity className="w-3 h-3 text-blue-500" /> Show Revenue
                 </button>
                 <button
-                  onClick={() => handleSendMessage("Generate Report: Summarize last 30 days ROAS, CAC, and conversions")}
-                  className="px-2.5 py-1 text-[11px] font-medium rounded-full border bg-muted/30 hover:bg-muted text-foreground flex items-center gap-1 cursor-pointer"
-                >
-                  <ShieldCheck className="w-3 h-3 text-cyan-500" /> Generate Report
-                </button>
-                <button
                   onClick={() => handleSendMessage("Approve Queue: Inspect and approve pending optimization recommendations")}
                   className="px-2.5 py-1 text-[11px] font-medium rounded-full border bg-muted/30 hover:bg-muted text-foreground flex items-center gap-1 cursor-pointer"
                 >
                   <CheckCircle2 className="w-3 h-3 text-purple-500" /> Approve Queue
-                </button>
-                <button
-                  onClick={() => handleSendMessage("Knowledge Search: Query playbooks, brand guidelines, and Meta policy rules")}
-                  className="px-2.5 py-1 text-[11px] font-medium rounded-full border bg-muted/30 hover:bg-muted text-foreground flex items-center gap-1 cursor-pointer"
-                >
-                  <Cpu className="w-3 h-3 text-rose-500" /> Knowledge Search
                 </button>
                 <button
                   onClick={() => handleSendMessage("Rollback: Inspect recent automated budget edits and rollback if needed")}

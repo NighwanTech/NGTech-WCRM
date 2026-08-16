@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { DemoBookingForm } from '@/components/forms/demo-booking-form'
-import { CheckCircle2, ShieldCheck, Zap, MessageSquare } from 'lucide-react'
+import { CheckCircle2, ShieldCheck, Zap, MessageSquare, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
@@ -15,12 +15,17 @@ export default function BookDemoPage() {
         
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
           
-          {/* Left Column - Copy & Value Prop */}
           <div className="flex flex-col justify-center">
-            <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground mb-6">
-              See AIWCRM in Action
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold uppercase tracking-wider mb-4 w-fit">
+              <Sparkles className="w-4 h-4 text-emerald-500" /> Personalized Product Walkthrough
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-black tracking-tight text-foreground mb-6 leading-tight">
+              Experience AIWCRM{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                in Real-Time Action.
+              </span>
             </h1>
-            <p className="text-lg text-muted-foreground mb-10">
+            <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
               Discover how India's leading WhatsApp CRM can help you automate support, launch broadcast campaigns, and close more deals directly on WhatsApp.
             </p>
             

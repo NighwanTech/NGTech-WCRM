@@ -27,12 +27,12 @@ import { getDocCategoriesFromDB } from '@/lib/services/docs-cms.service';
 import { getSiteUrl } from '@/lib/site-config';
 
 export const metadata: Metadata = {
-  title: 'AIWCRM Documentation & Enterprise User Manual',
-  description: 'Complete user manual, API references, BYOK setup guides, workflow automations, and troubleshooting for AIWCRM.',
-  keywords: ['AIWCRM Docs', 'WhatsApp CRM User Manual', 'BYOK Setup Guide', 'Meta Cloud API Docs', 'AIWCRM API'],
+  title: 'AIWCRM Documentation & Enterprise Platform Manual',
+  description: 'Complete user manual, API references, BYOK setup guides, GST invoicing, PBAC security, workflow automations, and troubleshooting for AIWCRM Enterprise OS.',
+  keywords: ['AIWCRM Docs', 'Enterprise CRM Manual', 'GST Invoicing Guide', 'PBAC Permissions Guide', 'BYOK Setup Guide', 'Meta Cloud API Docs', 'AIWCRM API'],
   openGraph: {
     title: 'AIWCRM Enterprise Documentation & User Manual',
-    description: 'Comprehensive technical documentation and guides for AIWCRM.',
+    description: 'Comprehensive technical documentation and guides for AIWCRM Enterprise Business Operating System.',
     url: getSiteUrl('/docs'),
     siteName: 'AIWCRM',
     type: 'website'
@@ -71,15 +71,18 @@ export default async function DocsIndexPage() {
         <div className="absolute top-[-50px] left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
 
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold uppercase">
-          <BookOpen className="h-3.5 w-3.5" /> Enterprise Knowledge Base & Manual
+          <BookOpen className="h-3.5 w-3.5" /> Enterprise OS Knowledge Base & Manual
         </div>
 
-        <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight max-w-4xl mx-auto">
-          AI WCRM <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">Documentation Platform</span>
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight max-w-4xl mx-auto text-foreground">
+          AIWCRM{' '}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+            Platform Documentation.
+          </span>
         </h1>
 
         <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Everything you need to set up, build, scale, and automate your WhatsApp AI CRM operations. Search 15+ specialized categories or follow our 5-minute quickstart guide.
+          Comprehensive operational manuals, REST API guides, 18% GST invoicing workflows, PBAC security matrices, and visual automation blueprints.
         </p>
 
         {/* Quickstart Cards */}
@@ -92,8 +95,8 @@ export default async function DocsIndexPage() {
               <Bot className="h-5 w-5 text-emerald-400" />
               <ArrowRight className="h-4 w-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <h4 className="text-xs font-extrabold text-foreground">Voice AI (ElevenLabs & Retell)</h4>
-            <p className="text-[11px] text-muted-foreground pt-0.5">Hindi voices & 10-field CRM sync</p>
+            <h4 className="text-xs font-extrabold text-foreground">AI Studio & Voice</h4>
+            <p className="text-[11px] text-muted-foreground pt-0.5">Retell Voice AI & BYOK Multi-LLM</p>
           </Link>
 
           <Link
@@ -101,43 +104,51 @@ export default async function DocsIndexPage() {
             className="p-4 rounded-2xl bg-muted/40 hover:bg-emerald-500/10 border border-border/60 hover:border-emerald-500/40 transition-all group"
           >
             <div className="flex items-center justify-between mb-2">
-              <Send className="h-5 w-5 text-blue-400" />
-              <ArrowRight className="h-4 w-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Layers className="h-5 w-5 text-purple-400" />
+              <ArrowRight className="h-4 w-4 text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <h4 className="text-xs font-extrabold text-foreground">AI Meta Ads & Lead Sync</h4>
-            <p className="text-[11px] text-muted-foreground pt-0.5">0-latency Lead Form WhatsApp sync</p>
+            <h4 className="text-xs font-extrabold text-foreground">Meta Ads & Lead Hub</h4>
+            <p className="text-[11px] text-muted-foreground pt-0.5">Sub-2s lead intake & audience studio</p>
           </Link>
 
           <Link
-            href="/docs/administration/pbac-rbac-permission-guide"
+            href="/security"
             className="p-4 rounded-2xl bg-muted/40 hover:bg-emerald-500/10 border border-border/60 hover:border-emerald-500/40 transition-all group"
           >
             <div className="flex items-center justify-between mb-2">
-              <Shield className="h-5 w-5 text-purple-400" />
-              <ArrowRight className="h-4 w-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Shield className="h-5 w-5 text-blue-400" />
+              <ArrowRight className="h-4 w-4 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <h4 className="text-xs font-extrabold text-foreground">Enterprise PBAC & RBAC</h4>
-            <p className="text-[11px] text-muted-foreground pt-0.5">Role hierarchy & access policies</p>
+            <h4 className="text-xs font-extrabold text-foreground">Security & PBAC</h4>
+            <p className="text-[11px] text-muted-foreground pt-0.5">4-tier permission matrix & audit logs</p>
           </Link>
 
           <Link
-            href="/docs/security-compliance/security-vault-compliance-guide"
+            href="/api-docs"
             className="p-4 rounded-2xl bg-muted/40 hover:bg-emerald-500/10 border border-border/60 hover:border-emerald-500/40 transition-all group"
           >
             <div className="flex items-center justify-between mb-2">
-              <Lock className="h-5 w-5 text-amber-400" />
-              <ArrowRight className="h-4 w-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Code2 className="h-5 w-5 text-amber-400" />
+              <ArrowRight className="h-4 w-4 text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <h4 className="text-xs font-extrabold text-foreground">Security & DPDP Vault</h4>
-            <p className="text-[11px] text-muted-foreground pt-0.5">AES-256 vault & SOC-2 logs</p>
+            <h4 className="text-xs font-extrabold text-foreground">REST API v2.0</h4>
+            <p className="text-[11px] text-muted-foreground pt-0.5">Webhooks, CRM sync & endpoints</p>
           </Link>
         </div>
       </section>
 
       {/* 15 Documentation Categories Grid */}
       <section className="space-y-6 text-left">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-black text-foreground">Documentation Categories</h2>
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold uppercase tracking-wider">
+            <BookOpen className="w-3.5 h-3.5 text-emerald-500" /> Operational Blueprints
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight leading-tight">
+            Enterprise Platform{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+              Knowledge Hub.
+            </span>
+          </h2>
           <p className="text-xs text-muted-foreground">Select a topic below to read detailed specifications, guides, and API references.</p>
         </div>
 

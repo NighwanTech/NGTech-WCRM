@@ -77,15 +77,15 @@ export function IndustrySolutionsClient({ initialIndustry }: { initialIndustry?:
         <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-gradient-to-tr from-emerald-500/15 via-blue-500/10 to-purple-500/10 blur-[160px] rounded-full pointer-events-none -z-10" />
 
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-md px-4 py-1.5 text-xs font-bold text-emerald-400">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold uppercase tracking-wider">
             <Sparkles className="h-4 w-4 text-emerald-500" />
-            <span>Salesforce & ServiceNow Grade Industry Workflows</span>
+            <span>Enterprise Industry Vertical Architecture</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-foreground leading-[1.06] max-w-5xl mx-auto">
             Tailored Industry Workflows for{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-500">
-              High-Growth Enterprises
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+              High-Growth Enterprises.
             </span>
           </h1>
 
@@ -102,7 +102,7 @@ export function IndustrySolutionsClient({ initialIndustry }: { initialIndustry?:
                 <button
                   key={ind.id}
                   onClick={() => setSelectedId(ind.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 border ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 border cursor-pointer ${
                     isActive
                       ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-lg shadow-emerald-500/20 scale-[1.02]'
                       : 'bg-card/80 text-muted-foreground border-border/60 hover:border-emerald-500/40 hover:text-foreground'
@@ -122,13 +122,13 @@ export function IndustrySolutionsClient({ initialIndustry }: { initialIndustry?:
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-border/40">
-            <div className="space-y-2">
-              <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-500">
-                {current.badge}
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground flex items-center gap-3">
-                <IconComponent className="h-8 w-8 text-emerald-500" />
-                {current.heroHeadline}
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-500" /> {current.badge}
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-black text-foreground flex items-center gap-3 leading-tight">
+                <IconComponent className="h-8 w-8 text-emerald-500 shrink-0" />
+                <span>{current.heroHeadline}</span>
               </h2>
               <p className="text-base text-muted-foreground max-w-3xl">
                 {current.heroDesc}
@@ -136,7 +136,7 @@ export function IndustrySolutionsClient({ initialIndustry }: { initialIndustry?:
             </div>
             <Link
               href="/book-demo"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-sm hover:bg-emerald-400 transition-all shadow-md shrink-0"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs transition-all shadow-md shrink-0"
             >
               <span>Schedule {current.name} Demo</span>
               <ArrowRight className="h-4 w-4" />
@@ -147,7 +147,7 @@ export function IndustrySolutionsClient({ initialIndustry }: { initialIndustry?:
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {current.metrics.map((m, idx) => (
               <div key={idx} className="p-6 rounded-2xl border border-border/60 bg-card/60 space-y-1">
-                <div className="text-3xl font-black text-emerald-400">{m.value}</div>
+                <div className="text-3xl font-black text-emerald-500">{m.value}</div>
                 <div className="text-sm font-bold text-foreground">{m.label}</div>
               </div>
             ))}
@@ -156,11 +156,11 @@ export function IndustrySolutionsClient({ initialIndustry }: { initialIndustry?:
           {/* Solution Features */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
-              <h3 className="text-2xl font-extrabold text-foreground">Core Industry Workflows</h3>
+              <h3 className="text-2xl font-black text-foreground">Core Industry Workflows</h3>
               <div className="space-y-4">
                 {current.solutions.map((sol, idx) => (
                   <div key={idx} className="p-5 rounded-xl border border-border/60 bg-card/40 space-y-1">
-                    <div className="font-extrabold text-base text-emerald-400 flex items-center gap-2">
+                    <div className="font-extrabold text-base text-emerald-500 flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                       {sol.feature}
                     </div>
@@ -173,7 +173,7 @@ export function IndustrySolutionsClient({ initialIndustry }: { initialIndustry?:
             {/* Live Interactive Chat Simulation */}
             <div className="p-6 rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-card to-emerald-950/20 space-y-4">
               <div className="flex items-center justify-between border-b border-border/40 pb-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
+                <div className="flex items-center gap-2 text-xs font-bold text-emerald-500">
                   <Bot className="h-4 w-4" />
                   <span>{current.chatDemo.aiTitle}</span>
                 </div>
@@ -194,18 +194,23 @@ export function IndustrySolutionsClient({ initialIndustry }: { initialIndustry?:
       </section>
 
       {/* 3. CTA & FOOTER NAVIGATION */}
-      <section className="py-16 bg-background text-center space-y-6">
-        <h2 className="text-3xl font-extrabold">Ready to automate your {current.name} workflows?</h2>
-        <div className="flex justify-center gap-4">
+      <section className="py-16 sm:py-20 bg-background text-center space-y-6">
+        <h2 className="text-3xl sm:text-4xl font-black text-foreground tracking-tight leading-tight">
+          Ready to Automate Your {current.name} Workflows with{' '}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+            AIWCRM?
+          </span>
+        </h2>
+        <div className="flex flex-wrap justify-center gap-4">
           <Link
             href="/free-trial"
-            className="px-6 py-3 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-sm hover:bg-emerald-400 transition-all shadow-lg"
+            className="px-8 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs transition-all shadow-lg"
           >
             Start Free 7-Day Trial
           </Link>
           <Link
             href="/contact"
-            className="px-6 py-3 rounded-xl border border-border/60 bg-card font-bold text-sm hover:bg-muted transition-all"
+            className="px-8 py-3.5 rounded-full border border-border bg-card font-bold text-xs hover:bg-muted transition-all"
           >
             Talk to Solutions Architect
           </Link>

@@ -103,13 +103,13 @@ export function TestimonialCarousel({ testimonials }: Props) {
                   </div>
                   Trusted Client
                 </div>
-                <p className={`text-base md:text-lg font-medium italic ${isCenter ? 'text-primary-foreground' : 'text-foreground'}`}>
-                  "{t.testimonial_text}"
+                <p className={`text-base md:text-lg font-medium italic leading-relaxed ${isCenter ? 'text-primary-foreground' : 'text-foreground'}`}>
+                  &ldquo;{t.testimonial_text.replace(/^["'\u201C\u201D]+|["'\u201C\u201D]+$/g, '').trim()}&rdquo;
                 </p>
               </div>
               
               <div className={`mt-6 pt-6 border-t ${isCenter ? 'border-primary-foreground/20' : 'border-border'}`}>
-                <p className="text-sm font-semibold mb-1">— {t.author_name || 'Customer'}</p>
+                <p className="text-sm font-semibold mb-1">— {t.author_name || t.name}</p>
                 <p className={`text-xs ${isCenter ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
                   {t.author_role ? `${t.author_role}, ` : ''} 
                   <span className="font-bold">{t.name}</span>

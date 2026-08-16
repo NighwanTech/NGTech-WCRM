@@ -31,8 +31,11 @@ export default function ContactPage() {
           <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 px-4 py-1.5 text-xs font-bold uppercase tracking-widest gap-2">
             <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> We Are Here to Help You Scale
           </Badge>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-            Get in <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">Touch</span>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-foreground leading-tight">
+            Connect with Our{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+              Enterprise Team.
+            </span>
           </h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
             Have questions about AIWCRM or need help setting up your team? Connect with our dedicated sales and support team.

@@ -31,8 +31,11 @@ export function InteractivePipelinePreview() {
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
             <Kanban className="h-3.5 w-3.5 text-emerald-500" /> Interactive Product Demonstration
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-foreground tracking-tight leading-tight">
-            See the Platform in Action
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
+            Experience the Platform{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+              in Real-Time Action.
+            </span>
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
             Switch between core enterprise modules to explore the live user interface.

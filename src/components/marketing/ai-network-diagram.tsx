@@ -38,12 +38,15 @@ export function AiNetworkDiagramSection() {
               <KeyRound className="h-4 w-4" /> 0% Platform Token Markup
             </div>
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-foreground leading-[1.1]">
-              Bring Your Own AI Keys (BYOK) & Multi-Model Router
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-foreground leading-tight">
+              Bring Your Own Keys with{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                0% AI Token Markup.
+              </span>
             </h2>
 
             <p className="text-base text-muted-foreground leading-relaxed">
-              Why pay 3x markups on AI tokens? WCRM lets you plug in your own API keys for Google Gemini, OpenAI, Claude, Groq, or DeepSeek. Pay vendors directly with complete cost transparency.
+              Why pay 3x markups on AI tokens? AIWCRM lets you plug in your own API keys for Google Gemini, OpenAI, Claude, Groq, or DeepSeek. Pay vendors directly with complete cost transparency.
             </p>
 
             <div className="space-y-3 pt-2">
@@ -89,9 +92,9 @@ export function AiNetworkDiagramSection() {
             <div className="flex items-center justify-between border-b border-border/60 pb-4">
               <div className="flex items-center gap-2">
                 <Layers className="h-5 w-5 text-emerald-500" />
-                <h3 className="text-sm font-extrabold text-foreground">WCRM AI Smart Routing Network</h3>
+                <h3 className="text-sm font-extrabold text-foreground">AIWCRM AI Smart Routing Network</h3>
               </div>
-              <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[11px] font-mono font-bold">
+              <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[11px] font-mono font-bold">
                 BYOK Active
               </span>
             </div>
@@ -109,7 +112,7 @@ export function AiNetworkDiagramSection() {
                     <p className="text-xs text-muted-foreground">Incoming Customer Query Event</p>
                   </div>
                 </div>
-                <span className="text-xs font-mono text-emerald-400 font-bold">Step 1: Ingest</span>
+                <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">Step 1: Ingest</span>
               </div>
 
               {/* Connecting Connector Line */}
@@ -124,11 +127,11 @@ export function AiNetworkDiagramSection() {
                     ⚡
                   </div>
                   <div>
-                    <p className="font-extrabold text-foreground text-sm">WCRM Multi-LLM Intent Router</p>
+                    <p className="font-extrabold text-foreground text-sm">AIWCRM Multi-LLM Intent Router</p>
                     <p className="text-xs text-muted-foreground">Evaluates greeting cache, intent score & provider health</p>
                   </div>
                 </div>
-                <span className="text-xs font-mono text-blue-400 font-bold">Step 2: Route</span>
+                <span className="text-xs font-mono text-blue-600 dark:text-blue-400 font-bold">Step 2: Route</span>
               </div>
 
               {/* Connecting Connector Line */}

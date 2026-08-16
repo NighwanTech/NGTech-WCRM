@@ -38,8 +38,11 @@ export default function AiPlatformPage() {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
             <Cpu className="h-4 w-4" /> Next-Generation AI Architecture
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground">
-            Multi-LLM AI Platform with BYOK & Zero Downtime Auto-Failover
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-tight">
+            Multi-LLM AI Platform with{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+              BYOK & Sub-1s Failover.
+            </span>
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Eliminate AI vendor lock-in and high platform markups. Run Google Gemini 3.6, OpenAI GPT-4o, Claude, Groq, or DeepSeek with complete cost control and self-healing reliability.

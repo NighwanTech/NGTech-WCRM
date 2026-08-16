@@ -514,11 +514,10 @@ export function EnterpriseFeaturesClient() {
             </div>
 
             <h1 id="hero-heading" className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-foreground leading-[1.05]">
-              The All-in-One{' '}
-              <span className="aiwcrm-gradient-text font-black">
-                AI Platform
-              </span>{' '}
-              for WhatsApp Business
+              All Enterprise Capabilities in{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500 font-black">
+                One Unified Operating System.
+              </span>
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
@@ -578,24 +577,21 @@ export function EnterpriseFeaturesClient() {
 
             <div className="hidden lg:flex absolute bottom-12 -left-4 z-20 p-4 rounded-2xl bg-card/90 backdrop-blur-xl border border-border/80 shadow-2xl space-y-1.5 text-left w-56 feat-animate-float" style={{ animationDelay: '3s' }}>
               <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400">
-                  <TrendingUp className="h-4 w-4" aria-hidden="true" /> Live Revenue Tracking
+                <div className="flex items-center gap-2 text-xs font-bold text-purple-600 dark:text-purple-400">
+                  <PhoneCall className="h-4 w-4" aria-hidden="true" /> Retell Voice AI
                 </div>
-                <p className="text-[11px] text-muted-foreground font-mono mt-1">₹12.4L pipeline this month</p>
+                <p className="text-[11px] text-muted-foreground font-mono mt-1">Native Hindi & English</p>
               </div>
             </div>
 
-            {/* MacBook Frame */}
-            <div className="rounded-2xl sm:rounded-3xl border border-border/60 bg-card/80 backdrop-blur-2xl p-3 sm:p-5 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.4)] overflow-hidden group relative">
-              {/* Browser Chrome */}
-              <div className="flex items-center justify-between border-b border-border/50 pb-3 mb-3 px-2">
+            {/* Dashboard Mockup Display */}
+            <div className="relative rounded-2xl sm:rounded-3xl border border-border/80 bg-card p-2 sm:p-4 shadow-2xl overflow-hidden group">
+              <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/40 mb-3 bg-muted/20 rounded-xl">
                 <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-rose-500 inline-block" aria-hidden="true" />
-                  <span className="h-3 w-3 rounded-full bg-amber-500 inline-block" aria-hidden="true" />
-                  <span className="h-3 w-3 rounded-full bg-emerald-500 inline-block" aria-hidden="true" />
-                </div>
-                <div className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-lg bg-muted/50 border border-border/40 text-xs text-muted-foreground font-mono">
-                  <Lock className="h-3 w-3" aria-hidden="true" /> app.aiwcrm.com/dashboard
+                  <span className="h-3 w-3 rounded-full bg-rose-500/80" aria-hidden="true" />
+                  <span className="h-3 w-3 rounded-full bg-amber-500/80" aria-hidden="true" />
+                  <span className="h-3 w-3 rounded-full bg-emerald-500/80" aria-hidden="true" />
+                  <span className="ml-3 text-xs font-mono text-muted-foreground font-bold">AIWCRM Enterprise Command Center</span>
                 </div>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-extrabold border border-emerald-500/30">
                   ● Live
@@ -632,8 +628,11 @@ export function EnterpriseFeaturesClient() {
           
           <header className="text-center max-w-3xl mx-auto space-y-4">
             <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Interactive Product Explorer</span>
-            <h2 id="explorer-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-              Explore Every Platform Module
+            <h2 id="explorer-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
+              Explore Every Module for{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                Total Business Operations.
+              </span>
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
               Select any module below to see live UI previews, architecture highlights, and key capabilities.
@@ -742,8 +741,11 @@ export function EnterpriseFeaturesClient() {
           
           <header className="text-center max-w-3xl mx-auto space-y-4">
             <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">System Architecture</span>
-            <h2 id="dataflow-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-              End-to-End Enterprise Data Flow
+            <h2 id="dataflow-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
+              End-to-End Enterprise{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                Data Flow Architecture.
+              </span>
             </h2>
             <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
               See how AIWCRM routes incoming customer messages through zero-latency AI engines into your CRM pipeline — in real time.
@@ -823,8 +825,11 @@ export function EnterpriseFeaturesClient() {
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-16">
           <header className="text-center max-w-3xl mx-auto space-y-4">
             <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Automation Lifecycle</span>
-            <h2 id="journey-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-              8-Step Automated Customer Journey
+            <h2 id="journey-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
+              8-Step Automated{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                Customer Journey Engine.
+              </span>
             </h2>
             <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
               From first WhatsApp message to closed deal — every step automated with AI precision.
@@ -884,8 +889,11 @@ export function EnterpriseFeaturesClient() {
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           <header className="text-center max-w-3xl mx-auto space-y-4">
             <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Interactive Hotspot Tour</span>
-            <h2 id="tour-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-              Click to Explore the Command Center
+            <h2 id="tour-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
+              Click to Explore the{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                Command Center.
+              </span>
             </h2>
             <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
               Click any glowing hotspot on the dashboard to learn about that module.
@@ -966,8 +974,11 @@ export function EnterpriseFeaturesClient() {
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           <header className="text-center max-w-3xl mx-auto space-y-4">
             <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Product Architecture</span>
-            <h2 id="pillars-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-              8 Enterprise Product Pillars
+            <h2 id="pillars-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
+              8 Core Enterprise{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                Product Pillars.
+              </span>
             </h2>
             <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
               Asymmetric modular design for enterprise-scale WhatsApp AI operations.
@@ -1146,8 +1157,11 @@ export function EnterpriseFeaturesClient() {
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
           <header className="text-center max-w-3xl mx-auto space-y-4">
             <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-400">Proven Results</span>
-            <h2 id="outcomes-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
-              Enterprise Business Outcomes
+            <h2 id="outcomes-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+              Measurable Enterprise Impact{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-300">
+                at Scale.
+              </span>
             </h2>
             <p className="text-sm text-slate-400 max-w-2xl mx-auto">
               Measurable impact across response speed, cost savings, and revenue growth.
@@ -1190,8 +1204,11 @@ export function EnterpriseFeaturesClient() {
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           <header className="text-center max-w-3xl mx-auto space-y-4">
             <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Industry Solutions</span>
-            <h2 id="industry-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-              Purpose-Built Workflows per Vertical
+            <h2 id="industry-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
+              Purpose-Built Workflows for{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                Every Industry.
+              </span>
             </h2>
             <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
               Select your industry to preview tailored WhatsApp AI workflows and business impact metrics.
@@ -1303,8 +1320,11 @@ export function EnterpriseFeaturesClient() {
         <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 space-y-12">
           <header className="max-w-3xl mx-auto space-y-4">
             <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Integrations Ecosystem</span>
-            <h2 id="integrations-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-              Everything Connects to AIWCRM
+            <h2 id="integrations-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
+              Everything Connects Seamlessly to{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                AIWCRM.
+              </span>
             </h2>
             <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
               Seamlessly connect with your existing tools, AI models, and payment gateways.
@@ -1403,8 +1423,11 @@ export function EnterpriseFeaturesClient() {
         <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 space-y-12">
           <header className="text-center max-w-3xl mx-auto space-y-4">
             <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Customer Success Stories</span>
-            <h2 id="success-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-              Real Results from Enterprise Clients
+            <h2 id="success-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
+              Real Verified ROI from{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                Enterprise Clients.
+              </span>
             </h2>
             <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
               Read how leading enterprises scale WhatsApp revenue and customer engagement with AIWCRM.
@@ -1496,8 +1519,11 @@ export function EnterpriseFeaturesClient() {
         <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 space-y-12">
           <header className="text-center max-w-3xl mx-auto space-y-5">
             <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-emerald-600 dark:text-emerald-500">Feature Catalog</span>
-            <h2 id="catalog-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-              Explore All 40+ Enterprise Features
+            <h2 id="catalog-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
+              Explore All 40+ Enterprise{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                Platform Capabilities.
+              </span>
             </h2>
             
             {/* Search with clear button */}
@@ -1608,8 +1634,11 @@ export function EnterpriseFeaturesClient() {
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
               <Activity className="h-4 w-4" aria-hidden="true" /> Performance Comparison
             </span>
-            <h2 id="comparison-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
-              Traditional Legacy vs AIWCRM Enterprise
+            <h2 id="comparison-heading" className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-tight">
+              Traditional Legacy Stack vs.{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                AIWCRM Enterprise.
+              </span>
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground">
               See why modern businesses choose AIWCRM for sub-100ms response speed, 0% AI cost markups, and enterprise-grade reliability.
@@ -1724,7 +1753,10 @@ export function EnterpriseFeaturesClient() {
           </div>
 
           <h2 id="final-cta-heading" className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight tracking-tight">
-            Start Your 7-Day Free Trial
+            Start Your 7-Day Free Trial of{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-300">
+              AIWCRM.
+            </span>
           </h2>
 
           <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">

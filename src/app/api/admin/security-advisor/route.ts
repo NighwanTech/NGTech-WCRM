@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       if (action === 'download_report') {
         const report = await generateSecurityAdvisorReport(accountId)
         const htmlContent = generateDeveloperSecurityReportHtml(report)
-        return new Response(htmlContent, {
+        return new NextResponse(htmlContent, {
           headers: {
             'Content-Type': 'text/html',
             'Content-Disposition': `attachment; filename="aiwcrm_developer_security_report_${Date.now()}.html"`,

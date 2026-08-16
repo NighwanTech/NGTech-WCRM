@@ -23,8 +23,12 @@ import {
   UserCheck,
   Send,
   HelpCircle,
-  ChevronDown
+  ChevronDown,
+  DollarSign
 } from 'lucide-react';
+
+const getSiteUrl = (path: string) => `${process.env.NEXT_PUBLIC_APP_URL || 'https://aiwcrm.com'}${path}`;
+
 import { Button } from '@/components/ui/button';
 import { StripeStatsBanner } from '@/components/marketing/stats-banner';
 import { AiNetworkDiagramSection } from '@/components/marketing/ai-network-diagram';
@@ -389,19 +393,22 @@ export default async function CityLandingPage({ params }: { params: Promise<{ ci
                 {data.description}
               </p>
 
-              {/* AI Feature Badges */}
+              {/* AI & Enterprise OS Feature Badges */}
               <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 px-3 py-1 text-[11px] font-bold text-blue-400">
-                  <Sparkles className="h-3 w-3" /> AI Meta Ads Creation
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 px-3 py-1 text-[11px] font-bold text-blue-500">
+                  <Sparkles className="h-3 w-3" /> Meta Ads Manager Pro
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 px-3 py-1 text-[11px] font-bold text-purple-400">
-                  <Bot className="h-3 w-3" /> Gemini 3.6 AI Chatbot
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 px-3 py-1 text-[11px] font-bold text-purple-500">
+                  <Bot className="h-3 w-3" /> BYOK Multi-LLM (0% Markup)
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-[11px] font-bold text-emerald-400">
-                  <ShieldCheck className="h-3 w-3" /> Enterprise RBAC
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-[11px] font-bold text-emerald-600">
+                  <ShieldCheck className="h-3 w-3" /> 4-Tier PBAC Security
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/10 border border-orange-500/30 px-3 py-1 text-[11px] font-bold text-orange-400">
-                  <Zap className="h-3 w-3" /> Meta API Official Partner
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 px-3 py-1 text-[11px] font-bold text-amber-600">
+                  <DollarSign className="h-3 w-3" /> 18% GST Invoicing
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/10 border border-teal-500/30 px-3 py-1 text-[11px] font-bold text-teal-600">
+                  <PhoneCall className="h-3 w-3" /> Retell Hindi Voice AI
                 </span>
               </div>
 
@@ -419,27 +426,27 @@ export default async function CityLandingPage({ params }: { params: Promise<{ ci
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
                 <Link
                   href="/free-trial"
-                  className="flex h-14 items-center justify-center rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-9 text-base transition-all shadow-xl shadow-emerald-500/20 hover:scale-[1.02] gap-2.5"
+                  className="flex h-14 items-center justify-center rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-extrabold px-9 text-base transition-all shadow-xl shadow-primary/20 hover:scale-[1.02] gap-2.5"
                 >
-                  Start 7-Day Free Trial <ArrowRight className="h-5 w-5" />
+                  Start 14-Day Free Trial <ArrowRight className="h-5 w-5" />
                 </Link>
                 <Link
                   href="/book-demo"
-                  className="flex h-14 items-center justify-center rounded-full border-2 border-emerald-500/30 bg-card/60 backdrop-blur-md px-9 text-base font-bold text-foreground hover:bg-emerald-500/10"
+                  className="flex h-14 items-center justify-center rounded-full border border-border bg-card/60 backdrop-blur-md px-9 text-base font-bold text-foreground hover:bg-muted"
                 >
-                  Book Live Demo
+                  Book Enterprise Demo
                 </Link>
               </div>
 
               <div className="flex flex-wrap items-center gap-6 text-xs font-semibold text-muted-foreground pt-2">
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" /> 7-Day Free Trial
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" /> 14-Day Free Trial
                 </span>
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Bring Your Own Keys (BYOK)
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="h-4 w-4 text-emerald-500" /> 99.9% Uptime SLA
+                  <ShieldCheck className="h-4 w-4 text-emerald-500" /> 99.95% Uptime SLA
                 </span>
               </div>
             </div>
@@ -601,15 +608,15 @@ export default async function CityLandingPage({ params }: { params: Promise<{ ci
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Link
               href="/free-trial"
-              className="flex h-14 items-center justify-center rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-10 text-base transition-all shadow-xl shadow-emerald-500/25 hover:scale-[1.03] gap-2.5"
+              className="flex h-14 items-center justify-center rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-extrabold px-10 text-base transition-all shadow-xl shadow-primary/25 hover:scale-[1.03] gap-2.5"
             >
-              Start 7-Day Free Trial <ArrowRight className="h-5 w-5" />
+              Start 14-Day Free Trial <ArrowRight className="h-5 w-5" />
             </Link>
             <Link
               href="/book-demo"
               className="flex h-14 items-center justify-center rounded-full border-2 border-slate-700 bg-slate-900/80 px-10 text-base font-bold text-white transition-all hover:bg-slate-800"
             >
-              Book Live Demo
+              Book Enterprise Demo
             </Link>
           </div>
         </div>

@@ -118,7 +118,10 @@ function FreeTrialInner() {
             </div>
 
             <h1 className="text-4xl lg:text-5xl font-black tracking-tight text-foreground leading-[1.08]">
-              Start Your 7-Day Free Trial on WCRM
+              Start Your 7-Day Free Trial of{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 via-teal-400 to-blue-500">
+                AIWCRM.
+              </span>
             </h1>
 
             <p className="text-base text-muted-foreground leading-relaxed">
@@ -144,7 +147,7 @@ function FreeTrialInner() {
 
             <div className="p-6 rounded-3xl bg-card border border-border/80 space-y-3">
               <p className="text-xs text-muted-foreground italic leading-relaxed">
-                &ldquo;WCRM transformed our student admission counseling. Response times dropped by 80% with Gemini AI auto-responders.&rdquo;
+                &ldquo;AIWCRM transformed our student admission counseling. Response times dropped by 80% with Gemini AI auto-responders.&rdquo;
               </p>
               <div className="flex items-center gap-3 pt-1">
                 <div className="h-9 w-9 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">
