@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/flows/admin-client'
 import { withZeroTrustGuard } from '@/lib/security/zero-trust-guard'
 import { getTenantAIModel, getModelForAccount } from '@/lib/meta/ai-ad-engine'
 import { z } from 'zod'
-import { generateObject } from 'ai'
+import { generateText } from 'ai'
 
 export async function POST(request: Request) {
   return withZeroTrustGuard(request, { permission: 'meta_ads:manage' }, async (ctx) => {

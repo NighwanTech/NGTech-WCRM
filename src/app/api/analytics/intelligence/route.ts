@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { generateObject } from 'ai'
+import { generateText } from 'ai'
 import { groq } from '@ai-sdk/groq'
 import { z } from 'zod'
 
@@ -140,7 +140,7 @@ Messages:
           const newFaqs = parsed.faqs
           if (newFaqs && newFaqs.length > 0) {
             // Write newly discovered FAQs to ai_insights table so they're cached
-            const inserts = newFaqs.map(f => ({
+            const inserts = newFaqs.map((f: any) => ({
               account_id,
               insight_type: 'faq',
               title: f.question,

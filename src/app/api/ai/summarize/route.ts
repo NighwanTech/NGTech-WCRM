@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { generateObject } from 'ai'
+import { generateText } from 'ai'
 import { groq } from '@ai-sdk/groq'
 import { z } from 'zod'
 

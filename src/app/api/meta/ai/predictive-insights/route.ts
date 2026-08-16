@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/flows/admin-client'
 import { withZeroTrustGuard } from '@/lib/security/zero-trust-guard'
 import { getTenantAIModel, getModelForAccount } from '@/lib/meta/ai-ad-engine'
-import { generateObject } from 'ai'
+import { generateText } from 'ai'
 import { z } from 'zod'
 
 export async function POST(request: Request) {
