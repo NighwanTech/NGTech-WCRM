@@ -92,8 +92,8 @@ export default function MetaAdsDashboardPage() {
   return (
     <div className="w-full max-w-full min-w-0 space-y-6">
       <MetaAdsHeader
-        title="Enterprise Campaign Operating System"
-        description="Unified Campaign Workspace: Strategy → Audience → Creative → Review → Campaign Studio → WhatsApp Lead → CRM Deal → Net ROI"
+        title="Campaign Overview"
+        description="Unified Enterprise Workspace for Audience, Creative, Analytics, Automation & AI Copilot"
         icon={Megaphone}
         breadcrumbs={[]}
         actions={

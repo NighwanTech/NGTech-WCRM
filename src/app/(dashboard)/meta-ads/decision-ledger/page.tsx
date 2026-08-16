@@ -33,10 +33,10 @@ export default function DecisionLedgerUiPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <GitCommit className="w-6 h-6 text-purple-500" /> Immutable Decision Ledger & Audit Chain
+            <GitCommit className="w-6 h-6 text-purple-500" /> Automation & Decision Ledger
           </h1>
           <p className="text-xs text-muted-foreground">
-            Complete Immutable Chain: Features ➔ Decision ➔ Simulation ➔ Execution ➔ Outcome ➔ Learning
+            Decision Ledger, Approval Queue, Rollbacks, Risk Analysis & Immutable Audit Chain
           </p>
         </div>
         <span className="px-3 py-1 text-xs font-mono font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full border border-purple-500/20">

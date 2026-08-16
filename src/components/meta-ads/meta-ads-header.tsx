@@ -67,8 +67,7 @@ export function MetaAdsHeader({
   const nextModule = currentIdx >= 0 && currentIdx < META_ADS_MODULE_SEQUENCE.length - 1 ? META_ADS_MODULE_SEQUENCE[currentIdx + 1] : null
 
   const defaultBreadcrumbs: BreadcrumbItem[] = [
-    { label: 'Marketing', href: '/meta-ads' },
-    { label: 'Meta Ads OS', href: '/meta-ads' },
+    { label: 'Campaign', href: '/meta-ads' },
     ...breadcrumbs,
     { label: title },
   ]
