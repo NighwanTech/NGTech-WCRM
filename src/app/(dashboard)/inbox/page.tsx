@@ -9,13 +9,13 @@ import { ConversationList } from "@/components/inbox/conversation-list";
 import { MessageThread } from "@/components/inbox/message-thread";
 import { ContactSidebar } from "@/components/inbox/contact-sidebar";
 import { toast } from "sonner";
-import { WifiOff, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { WifiOff, PanelRightClose, PanelRightOpen, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ThreePanel } from "@/components/ui/responsive-layout";
 
 // Remembers the agent's show/hide choice for the desktop contact panel
 // across reloads and sessions (device-scoped, like the theme prefs).
 const CONTACT_PANEL_STORAGE_KEY = "wacrm-contact-panel-open";
+const CHAT_PANEL_STORAGE_KEY = "wacrm-chat-panel-open";
 
 export default function InboxPage() {
   const router = useRouter();
@@ -62,43 +62,39 @@ export default function InboxPage() {
     }
   }, []);
 
-  // Keyboard Shortcuts (Phase 4)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd/Ctrl + K (Focus search)
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        // Assuming there is an input with id 'inbox-search'
-        document.getElementById('inbox-search')?.focus();
+  const handleToggleContactPanel = useCallback(() => {
+    setContactPanelOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(CONTACT_PANEL_STORAGE_KEY, String(next));
+      } catch {
+        // Persistence is best-effort; ignore storage failures.
       }
-      
-      // Esc (Close active panel / deselect)
-      if (e.key === 'Escape') {
-        if (contactPanelOpen && window.innerWidth < 1024) {
-          setContactPanelOpen(false);
-        } else if (activeConversation) {
-          handleCloseConversation();
-        }
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [contactPanelOpen, activeConversation]);
+      return next;
+    });
+  }, []);
 
-  const handleContactPanelChange = useCallback((open: boolean) => {
-    setContactPanelOpen(open);
+  const [chatPanelOpen, setChatPanelOpen] = useState(true);
+  useEffect(() => {
     try {
-      localStorage.setItem(CONTACT_PANEL_STORAGE_KEY, String(open));
+      const stored = localStorage.getItem(CHAT_PANEL_STORAGE_KEY);
+      if (stored !== null) setChatPanelOpen(stored === "true");
     } catch {
-      // Persistence is best-effort; ignore storage failures.
+      // ignore
     }
   }, []);
 
-  const handleToggleContactPanel = useCallback(() => {
-    handleContactPanelChange(!contactPanelOpen);
-  }, [contactPanelOpen, handleContactPanelChange]);
-
+  const handleToggleChatPanel = useCallback(() => {
+    setChatPanelOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(CHAT_PANEL_STORAGE_KEY, String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
 
   // Fire the deep-link auto-select exactly once per URL — subsequent
   // list refreshes (realtime, manual refetch) must not snap the user
@@ -572,8 +568,9 @@ export default function InboxPage() {
   const hasActiveConv = !!activeConversation;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
-      {/* WhatsApp connection banner */}
+    <div className="-m-4 flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden sm:-m-6">
+      {/* WhatsApp connection banner — in the flex column, not absolute,
+          so it pushes the panels down instead of overlapping them. */}
       {whatsappConnected === false && (
         <div className="flex shrink-0 items-center justify-center gap-2 border-b border-amber-500/20 bg-amber-500/10 px-4 py-2">
           <WifiOff className="h-4 w-4 text-amber-400" />
@@ -583,9 +580,16 @@ export default function InboxPage() {
         </div>
       )}
 
-      {/* 3-Panel Grid: [Conversation List | Message Thread | Contact Sidebar] */}
-      <ThreePanel
-        leftPanel={
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left panel: Conversation list.
+            Hidden on mobile when a conversation is selected so the
+            thread can occupy the full width. Always visible on lg+. */}
+        <div
+          className={cn(
+            "flex h-full flex-1 lg:flex-none",
+            hasActiveConv ? "hidden lg:flex" : "flex",
+          )}
+        >
           <ConversationList
             activeConversationId={activeConversation?.id ?? null}
             onSelect={handleSelectConversation}
@@ -593,9 +597,27 @@ export default function InboxPage() {
             onConversationsLoaded={handleConversationsLoaded}
             resyncToken={resyncToken}
           />
-        }
-        hasActiveCenter={hasActiveConv}
-        centerPanel={
+        </div>
+
+        {/* Center panel: Message thread.
+            Hidden on mobile when no conversation is selected so the
+            list can occupy the full width. Always visible on lg+
+            (shows its own empty-state if no thread is picked yet).
+
+            `min-w-0` is load-bearing: without it, a single wide piece
+            of content inside the thread (long quote preview, very
+            long URL in a message body) forces the flex child past
+            its share and pushes the contact-sidebar panel off-screen
+            on the right. Issue #165. */}
+        <div
+          className={cn(
+            "h-full min-w-0 relative",
+            hasActiveConv ? "flex" : "hidden lg:flex",
+            contactPanelOpen && "hidden lg:flex", // Hide chat on mobile if client section is open
+            !chatPanelOpen && "lg:hidden", // Hide chat on desktop if user collapsed it
+            "flex-1"
+          )}
+        >
           <MessageThread
             conversation={activeConversation}
             contact={activeContact}
@@ -611,17 +633,56 @@ export default function InboxPage() {
             contactPanelOpen={contactPanelOpen}
             onToggleContactPanel={handleToggleContactPanel}
           />
-        }
-        rightPanel={
-          <ContactSidebar
-            contact={activeContact}
-            conversation={activeConversation}
-            onClose={() => handleContactPanelChange(false)}
-          />
-        }
-        rightPanelOpen={contactPanelOpen}
-        onRightPanelChange={handleContactPanelChange}
-      />
+        </div>
+
+        {/* Boundary toggle button - placed exactly between chat and sidebar */}
+        <div className="hidden lg:flex flex-col justify-center relative w-0 z-50">
+          <button
+            type="button"
+            onClick={handleToggleContactPanel}
+            className="absolute right-0 flex h-12 w-6 items-center justify-center rounded-l-md border border-r-0 border-border bg-card hover:bg-muted transition-colors shadow-sm"
+            aria-label={contactPanelOpen ? "Close contact panel" : "Open contact panel"}
+          >
+            {contactPanelOpen ? (
+              <PanelRightClose className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <PanelRightOpen className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+        </div>
+
+        {/* Right panel: Contact sidebar */}
+        {contactPanelOpen && (
+          <div className={cn(
+            "relative",
+            "block w-full flex-1", // mobile
+            chatPanelOpen ? "lg:w-[280px]" : "lg:flex-1" // desktop
+          )}>
+            
+            {/* Boundary toggle button for Chat Window */}
+            <div className="absolute left-0 top-1/2 z-50 flex flex-col justify-center w-0 mt-8">
+              <button
+                type="button"
+                onClick={handleToggleChatPanel}
+                className="absolute left-0 flex h-12 w-6 items-center justify-center rounded-r-md border border-l-0 border-border bg-card hover:bg-muted transition-colors shadow-sm"
+                aria-label={chatPanelOpen ? "Close chat panel" : "Open chat panel"}
+              >
+                {chatPanelOpen ? (
+                  <PanelLeftClose className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <PanelLeftOpen className="h-4 w-4 text-muted-foreground" />
+                )}
+              </button>
+            </div>
+
+            <ContactSidebar 
+              contact={activeContact} 
+              conversation={activeConversation}
+              onClose={handleToggleContactPanel}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

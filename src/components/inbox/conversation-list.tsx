@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { maskPhone } from "@/lib/masking";
 import type { Conversation, ConversationStatus } from "@/types";
 import { Search, ChevronDown, Flame, Smile, Frown, Meh } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -38,15 +36,12 @@ const STATUS_COLORS: Record<ConversationStatus, string> = {
   closed: "bg-muted-foreground",
 };
 
-type InboxFilter = "all" | "hot_leads" | "incoming" | "my_queue" | "department_queue" | "assigned" | "pending" | "closed";
+type InboxFilter = ConversationStatus | "all" | "unread";
 
 const FILTER_OPTIONS: { label: string; value: InboxFilter }[] = [
   { label: "All", value: "all" },
-  { label: "🔥 Hot Leads", value: "hot_leads" },
-  { label: "Incoming", value: "incoming" },
-  { label: "My Queue", value: "my_queue" },
-  { label: "Department Queue", value: "department_queue" },
-  { label: "Assigned", value: "assigned" },
+  { label: "Unread", value: "unread" },
+  { label: "Open", value: "open" },
   { label: "Pending", value: "pending" },
   { label: "Closed", value: "closed" },
 ];
@@ -58,7 +53,6 @@ export function ConversationList({
   onConversationsLoaded,
   resyncToken = 0,
 }: ConversationListProps) {
-  const { account, user, isAgent } = useAuth();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<InboxFilter>("all");
   const [loading, setLoading] = useState(true);
@@ -111,18 +105,10 @@ export function ConversationList({
     return () => {
       cancelled = true;
     };
+    // `resyncToken` is included so the parent can force a refetch when
+    // the realtime channel reconnects or the tab regains focus — catches
+    // up on any events sent while the WS was disconnected or throttled.
   }, [resyncToken]);
-
-  const [departments, setDepartments] = useState<{id: string, name: string}[]>([]);
-  const [selectedDept, setSelectedDept] = useState<string>("all");
-
-  useEffect(() => {
-    const supabase = createClient();
-    (async () => {
-      const { data } = await supabase.from('departments').select('id, name').order('name');
-      if (data) setDepartments(data);
-    })();
-  }, []);
 
   const [slaConfig, setSlaConfig] = useState<{
     sla_enabled: boolean;
@@ -155,27 +141,10 @@ export function ConversationList({
   const filtered = useMemo(() => {
     let result = conversations;
 
-    if (filter === "hot_leads") {
-      result = result.filter(
-        (c: any) =>
-          c.ai_lead_score === "hot" ||
-          c.ai_lead_score === "warm" ||
-          (c.last_message_text && c.last_message_text.includes("HOT_LEAD"))
-      );
-    } else if (filter === "incoming") {
-      result = result.filter((c: any) => c.routing_status === "unassigned" || c.routing_status === "needs_manual_review");
-    } else if (filter === "my_queue") {
-      result = result.filter((c) => c.assigned_agent_id === user?.id);
-    } else if (filter === "department_queue") {
-      result = result.filter((c: any) => c.routing_status === "department_queue");
-    } else if (filter === "assigned") {
-      result = result.filter((c) => c.assigned_agent_id !== null);
-    } else if (filter === "pending" || filter === "closed") {
+    if (filter === "unread") {
+      result = result.filter((c) => c.unread_count > 0);
+    } else if (filter !== "all") {
       result = result.filter((c) => c.status === filter);
-    }
-
-    if (selectedDept !== "all") {
-      result = result.filter((c: any) => c.department_id === selectedDept);
     }
 
     if (search.trim()) {
@@ -189,7 +158,7 @@ export function ConversationList({
     }
 
     return result;
-  }, [conversations, filter, search, selectedDept]);
+  }, [conversations, filter, search]);
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -209,8 +178,9 @@ export function ConversationList({
 
   return (
     // w-full on mobile so the list occupies the whole viewport when it's
-    // the single pane showing; on desktop, ThreePanel handles its exact width.
-    <div className="flex h-full w-full flex-col bg-card">
+    // the single pane showing; fixed 320px on desktop where it shares the
+    // row with the thread + contact sidebar.
+    <div className="flex h-full w-full flex-col border-r border-border bg-card lg:w-80">
       {/* Search + Filter */}
       <div className="space-y-2 border-b border-border p-3">
         <div className="relative">
@@ -219,7 +189,6 @@ export function ConversationList({
             value={search}
             onChange={handleSearchChange}
             placeholder="Search conversations..."
-            aria-label="Search conversations"
             className="border-border bg-muted pl-9 text-sm text-foreground placeholder-muted-foreground focus:border-primary/50"
           />
         </div>
@@ -249,40 +218,6 @@ export function ConversationList({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {departments.length > 0 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger className="inline-flex items-center justify-center h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground rounded-md hover:bg-muted ml-2">
-                {selectedDept === 'all' ? "All Teams" : departments.find(d => d.id === selectedDept)?.name ?? "Team"}
-                <ChevronDown className="h-3 w-3" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="start"
-              className="border-border bg-popover"
-            >
-              <DropdownMenuItem
-                onClick={() => setSelectedDept('all')}
-                className={cn("text-sm", selectedDept === 'all' ? "text-primary" : "text-popover-foreground")}
-              >
-                All Teams
-              </DropdownMenuItem>
-              {departments.map((opt) => (
-                <DropdownMenuItem
-                  key={opt.id}
-                  onClick={() => setSelectedDept(opt.id)}
-                  className={cn(
-                    "text-sm",
-                    selectedDept === opt.id
-                      ? "text-primary"
-                      : "text-popover-foreground"
-                  )}
-                >
-                  {opt.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
       </div>
 
       {/* Conversation Items.
@@ -309,8 +244,6 @@ export function ConversationList({
                 isActive={conv.id === activeConversationId}
                 onSelect={handleSelect}
                 slaConfig={slaConfig}
-                isAgent={isAgent}
-                maskingEnabled={account?.mask_agent_phones ?? false}
               />
             ))}
           </div>
@@ -329,8 +262,6 @@ interface ConversationItemProps {
     sla_first_reply_min: number;
     sla_subsequent_reply_min: number;
   } | null;
-  isAgent: boolean;
-  maskingEnabled: boolean;
 }
 
 function ConversationItem({
@@ -338,12 +269,9 @@ function ConversationItem({
   isActive,
   onSelect,
   slaConfig,
-  isAgent,
-  maskingEnabled,
 }: ConversationItemProps) {
   const contact = conversation.contact;
-  const maskedPhone = maskPhone(contact?.phone, isAgent, maskingEnabled);
-  const displayName = contact?.name || maskedPhone || "Unknown";
+  const displayName = contact?.name || contact?.phone || "Unknown";
   const initials = displayName.charAt(0).toUpperCase();
 
   const handleClick = useCallback(() => {
