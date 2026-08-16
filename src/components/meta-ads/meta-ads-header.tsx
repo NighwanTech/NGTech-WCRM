@@ -20,13 +20,13 @@ export interface MetaAdsModuleNav {
 }
 
 export const META_ADS_MODULE_SEQUENCE: MetaAdsModuleNav[] = [
-  { id: 'dashboard', href: '/meta-ads', label: 'Campaign OS', icon: Layers },
-  { id: 'audience-studio', href: '/meta-ads/audience-studio', label: '1. Audience Intelligence', icon: Target },
-  { id: 'creative-studio', href: '/meta-ads/creative-studio', label: '2. Creative Intelligence', icon: Palette },
-  { id: 'review', href: '/meta-ads/review/draft-strategy', label: '3. Strategy Review', icon: Sparkles },
-  { id: 'create', href: '/meta-ads/create', label: '4. Campaign Studio Builder', icon: Rocket },
-  { id: 'analytics', href: '/meta-ads', label: '5. Analytics & CRM ROI', icon: TrendingUp },
-  { id: 'prompt-studio', href: '/meta-ads/prompt-studio', label: '6. AI Strategy Library', icon: BookOpen },
+  { id: 'dashboard', href: '/meta-ads', label: 'Overview', icon: Layers },
+  { id: 'audience', href: '/meta-ads/audience-studio', label: 'Audience', icon: Target },
+  { id: 'creative', href: '/meta-ads/creative-studio', label: 'Creative', icon: Palette },
+  { id: 'analytics', href: '/meta-ads/analytics', label: 'Analytics', icon: TrendingUp },
+  { id: 'automation', href: '/meta-ads/decision-ledger', label: 'Automation', icon: Activity },
+  { id: 'copilot', href: '/meta-ads/copilot', label: 'AI Copilot', icon: Sparkles },
+  { id: 'settings', href: '/meta-ads/settings', label: 'Settings', icon: BookOpen },
 ]
 
 export interface MetaAdsHeaderProps {

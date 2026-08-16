@@ -155,60 +155,42 @@ export default function MetaAdsDashboardPage() {
         }
       />
 
-      {/* AI OS Modules Navigation Bar */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-9 gap-2 sm:gap-3">
-        <Link href="/meta-ads/copilot">
-          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-primary/10 border-primary/30 text-primary">
-            <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-            <span className="font-bold text-[11px]">AI Copilot</span>
-          </Button>
-        </Link>
-        <Link href="/meta-ads/decision-ledger">
-          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400">
-            <GitCommit className="w-4 h-4 text-purple-500" />
-            <span className="font-bold text-[11px]">Decision Ledger</span>
-          </Button>
-        </Link>
-        <Link href="/meta-ads/create">
-          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-muted/50 border-dashed">
-            <Rocket className="w-4 h-4 text-emerald-600" />
-            <span className="font-bold text-[11px]">AI Studio</span>
+      {/* Enterprise Workspace Navigation Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+        <Link href={campaigns && campaigns.length > 0 ? `/meta-ads/campaign/${campaigns[0].id}?tab=audience` : `/meta-ads/audience-studio`}>
+          <Button variant="outline" className="w-full h-auto py-2.5 flex items-center justify-center gap-2 hover:bg-accent/60 border-border/80">
+            <Target className="w-4 h-4 text-blue-600 shrink-0" />
+            <span className="font-bold text-xs">Audience</span>
           </Button>
         </Link>
         <Link href={campaigns && campaigns.length > 0 ? `/meta-ads/campaign/${campaigns[0].id}?tab=creative` : `/meta-ads/creative-studio`}>
-          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-muted/50 border-dashed">
-            <Palette className="w-4 h-4 text-purple-600" />
-            <span className="font-bold text-[11px]">Creative Studio</span>
+          <Button variant="outline" className="w-full h-auto py-2.5 flex items-center justify-center gap-2 hover:bg-accent/60 border-border/80">
+            <Palette className="w-4 h-4 text-purple-600 shrink-0" />
+            <span className="font-bold text-xs">Creative</span>
           </Button>
         </Link>
-        <Link href={campaigns && campaigns.length > 0 ? `/meta-ads/campaign/${campaigns[0].id}?tab=audience` : `/meta-ads/audience-studio`}>
-          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-muted/50 border-dashed">
-            <Target className="w-4 h-4 text-blue-600" />
-            <span className="font-bold text-[11px]">Audience Studio</span>
+        <Link href="/meta-ads/analytics">
+          <Button variant="outline" className="w-full h-auto py-2.5 flex items-center justify-center gap-2 hover:bg-accent/60 border-border/80">
+            <LineChart className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span className="font-bold text-xs">Analytics</span>
           </Button>
         </Link>
-        <Link href="/meta-ads/prompt-studio">
-          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-muted/50 border-dashed">
-            <Sparkles className="w-4 h-4 text-amber-500" />
-            <span className="font-bold text-[11px]">Prompt Studio</span>
+        <Link href="/meta-ads/decision-ledger">
+          <Button variant="outline" className="w-full h-auto py-2.5 flex items-center justify-center gap-2 hover:bg-accent/60 border-border/80">
+            <Activity className="w-4 h-4 text-amber-500 shrink-0" />
+            <span className="font-bold text-xs">Automation</span>
           </Button>
         </Link>
-        <Link href="/meta-ads/knowledge-base">
-          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-muted/50 border-dashed">
-            <BookOpen className="w-4 h-4 text-cyan-600" />
-            <span className="font-bold text-[11px]">Knowledge Base</span>
+        <Link href="/meta-ads/copilot">
+          <Button variant="outline" className="w-full h-auto py-2.5 flex items-center justify-center gap-2 hover:bg-primary/10 border-primary/40 text-primary">
+            <Sparkles className="w-4 h-4 text-primary animate-pulse shrink-0" />
+            <span className="font-bold text-xs">AI Copilot</span>
           </Button>
         </Link>
-        <Link href="/meta-ads/experiments">
-          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-muted/50 border-dashed">
-            <FlaskConical className="w-4 h-4 text-pink-600" />
-            <span className="font-bold text-[11px]">Experiment Lab</span>
-          </Button>
-        </Link>
-        <Link href="/meta-ads/settings/sync-health">
-          <Button variant="outline" className="w-full h-auto py-3 flex flex-col items-center justify-center gap-1 hover:bg-muted/50 border-dashed">
-            <Activity className="w-4 h-4 text-emerald-500" />
-            <span className="font-bold text-[11px]">Sync Health</span>
+        <Link href="/meta-ads/settings">
+          <Button variant="outline" className="w-full h-auto py-2.5 flex items-center justify-center gap-2 hover:bg-accent/60 border-border/80">
+            <Settings className="w-4 h-4 text-muted-foreground shrink-0" />
+            <span className="font-bold text-xs">Settings</span>
           </Button>
         </Link>
       </div>

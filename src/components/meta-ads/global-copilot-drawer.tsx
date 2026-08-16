@@ -94,14 +94,14 @@ export function GlobalCopilotDrawer() {
 
   return (
     <>
-      {/* Draggable Flexible Copilot Launcher Button */}
+      {/* Draggable Flexible Copilot Launcher Button - Mobile Only */}
       <div
         style={
           position
             ? { position: 'fixed', left: `${position.x}px`, top: `${position.y}px`, zIndex: 50 }
             : { position: 'fixed', bottom: '24px', right: '16px', zIndex: 50 }
         }
-        className="touch-none select-none"
+        className="touch-none select-none md:hidden"
       >
         <button
           onPointerDown={handlePointerDown}
