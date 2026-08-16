@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Building, Users, ChevronDown, Check, Sparkles } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
@@ -39,6 +39,33 @@ export function AgencyClientSwitcher({ onSelectClient }: AgencyClientSwitcherPro
 
   const [selectedClient, setSelectedClient] = useState<ClientAccountItem>(clients[0])
   const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen])
 
   const handleSelect = (client: ClientAccountItem) => {
     setSelectedClient(client)
@@ -47,7 +74,7 @@ export function AgencyClientSwitcher({ onSelectClient }: AgencyClientSwitcherPro
   }
 
   return (
-    <div className="relative inline-block text-xs">
+    <div ref={dropdownRef} className="relative inline-block text-xs">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 h-8 px-2.5 rounded-xl border bg-background hover:bg-muted/40 font-bold transition-all cursor-pointer shadow-2xs"
