@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Sparkles, Send, Loader2, Bot, ShieldCheck, Activity, Cpu, Play, CheckCircle2, RotateCcw, AlertTriangle } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { MetaAdsHeader } from "@/components/meta-ads/meta-ads-header"
 
 export default function EnterpriseCopilotWorkspace() {
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string; reasoningSteps?: string[]; toolResult?: any }>>([
@@ -51,16 +52,12 @@ export default function EnterpriseCopilotWorkspace() {
 
   return (
     <div className="w-full max-w-full space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-primary" /> Enterprise AI Copilot Workspace
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Multi-Agent Reasoning, Digital Twin Simulation & Governance Control Surface
-          </p>
-        </div>
-      </div>
+      <MetaAdsHeader
+        title="AI Copilot"
+        description="Multi-Agent Reasoning, Digital Twin Simulation & Governance Control Surface"
+        icon={Sparkles}
+        breadcrumbs={[{ label: "AI Copilot" }]}
+      />
 
       {/* Split Workspace Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

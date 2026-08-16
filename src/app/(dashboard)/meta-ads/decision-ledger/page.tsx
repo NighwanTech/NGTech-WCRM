@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { MetaAdsHeader } from "@/components/meta-ads/meta-ads-header"
 import { ShieldCheck, Database, GitCommit, Clock, ArrowRight, Activity, CheckCircle2, RotateCcw } from "lucide-react"
 
 export default function DecisionLedgerUiPage() {
@@ -30,19 +31,12 @@ export default function DecisionLedgerUiPage() {
 
   return (
     <div className="w-full max-w-full space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <GitCommit className="w-6 h-6 text-purple-500" /> Automation & Decision Ledger
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Decision Ledger, Approval Queue, Rollbacks, Risk Analysis & Immutable Audit Chain
-          </p>
-        </div>
-        <span className="px-3 py-1 text-xs font-mono font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full border border-purple-500/20">
-          Git-Style History Active
-        </span>
-      </div>
+      <MetaAdsHeader
+        title="Automation"
+        description="Decision Ledger, Approval Queue, Rollbacks, Risk Analysis & Immutable Audit Chain"
+        icon={GitCommit}
+        breadcrumbs={[{ label: "Automation" }]}
+      />
 
       {/* Decision Ledger Timeline */}
       <Card className="border bg-card shadow-sm">

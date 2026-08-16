@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { MetaAdsHeader } from "@/components/meta-ads/meta-ads-header"
 import { ShieldCheck, Activity, Cpu, Server, CheckCircle2, Clock, AlertTriangle, RefreshCw } from "lucide-react"
 
 export default function EnterpriseSyncHealthDashboard() {
@@ -27,23 +28,21 @@ export default function EnterpriseSyncHealthDashboard() {
 
   return (
     <div className="w-full max-w-full space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-primary" /> Enterprise Sync Health & Governance Dashboard
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Distributed Fan-Out Worker Telemetry, Quota Allocation, and Queue Metrics
-          </p>
-        </div>
-        <button
-          onClick={fetchTelemetry}
-          disabled={loading}
-          className="px-3 py-1.5 text-xs font-semibold rounded-lg border bg-card hover:bg-muted gap-1.5 flex items-center cursor-pointer"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh Telemetry
-        </button>
-      </div>
+      <MetaAdsHeader
+        title="Sync Health & Telemetry"
+        description="Distributed Fan-Out Worker Telemetry, Quota Allocation, and Queue Metrics"
+        icon={ShieldCheck}
+        breadcrumbs={[{ label: "Settings", href: "/meta-ads/settings" }, { label: "Sync Health" }]}
+        actions={
+          <button
+            onClick={fetchTelemetry}
+            disabled={loading}
+            className="px-3 py-1.5 text-xs font-semibold rounded-lg border bg-card hover:bg-muted gap-1.5 flex items-center cursor-pointer h-9"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh Telemetry
+          </button>
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="border bg-card shadow-sm">
