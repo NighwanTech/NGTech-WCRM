@@ -131,21 +131,21 @@ export function SecurityHealthDashboard() {
   return (
     <div className="space-y-6">
       {/* Top Banner: Score & Production Readiness */}
-      <Card className="border-emerald-500/30 bg-gradient-to-r from-emerald-950/20 via-background to-emerald-950/10 dark:from-emerald-950/30">
+      <Card className="border-emerald-500/40 bg-emerald-500/5 dark:bg-emerald-950/20 shadow-xs">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+              <div className="p-3 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                 <ShieldCheck className="w-10 h-10" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold tracking-tight">Security Health & Governance</h2>
-                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 px-3 py-1 text-xs">
+                  <h2 className="text-2xl font-bold tracking-tight text-foreground">Security Health & Governance</h2>
+                  <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-semibold border-emerald-500/40 px-3 py-1 text-xs">
                     {data.productionReadinessStatus}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-muted-foreground mt-1 font-medium">
                   Continuous Governance Platform & Real-Time Tenant Isolation Assurance
                 </p>
               </div>
@@ -153,14 +153,14 @@ export function SecurityHealthDashboard() {
 
             <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end flex-wrap">
               <div className="text-right mr-2">
-                <div className="text-3xl font-extrabold text-emerald-400">{data.overallScore} / 100</div>
-                <div className="text-xs text-muted-foreground">Overall Health Score</div>
+                <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">{data.overallScore} / 100</div>
+                <div className="text-xs font-semibold text-muted-foreground">Overall Health Score</div>
               </div>
-              <Button onClick={handleRunOnDemandScan} size="sm" variant="default" className="gap-2 bg-emerald-600 hover:bg-emerald-500" disabled={scanning}>
+              <Button onClick={handleRunOnDemandScan} size="sm" variant="default" className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold" disabled={scanning}>
                 <Play className={`w-4 h-4 ${scanning ? 'animate-spin' : ''}`} />
                 Run Security Audit
               </Button>
-              <Button onClick={handleDownloadReport} size="sm" variant="outline" className="gap-2" disabled={downloading}>
+              <Button onClick={handleDownloadReport} size="sm" variant="outline" className="gap-2 font-semibold" disabled={downloading}>
                 <Download className="w-4 h-4" />
                 Export Report
               </Button>
@@ -170,12 +170,16 @@ export function SecurityHealthDashboard() {
       </Card>
 
       {/* CI/CD Security Gate Alert Banner */}
-      <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 flex items-center justify-between">
+      <div className="p-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 dark:bg-emerald-950/40 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-3">
-          <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40">CI/CD Security Gate: ACTIVE</Badge>
-          <span className="text-xs text-muted-foreground">Every build automatically validates `withZeroTrustGuard`, RLS coverage, and zero secret leaks.</span>
+          <Badge className="bg-emerald-600 text-white font-bold px-2.5 py-1 text-xs shadow-xs">
+            CI/CD Security Gate: ACTIVE
+          </Badge>
+          <span className="text-xs font-medium text-foreground">
+            Every build automatically validates <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-[11px] text-emerald-700 dark:text-emerald-300">withZeroTrustGuard</code>, RLS coverage, and zero secret leaks.
+          </span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-emerald-400">
+        <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-400">
           <CheckCircle2 className="w-4 h-4" /> All Gate Checks Passed
         </div>
       </div>

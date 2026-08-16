@@ -191,57 +191,39 @@ export default function SecurityDashboardPage() {
         </div>
       </div>
 
-      {/* Governance Tabs */}
+      {/* Categorized Governance Sub-Tabs (Strict 5 + 5 Grid in Single TabsList) */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="flex flex-wrap h-auto p-1 bg-muted/60">
-          <TabsTrigger value="overview" className="gap-1.5 text-xs">
-            <Activity className="size-3.5" /> Overview
+        <TabsList className="grid grid-cols-5 gap-1.5 !h-auto p-2 bg-muted/60 dark:bg-muted/30 rounded-xl border border-border/80 shadow-xs w-full">
+          <TabsTrigger value="overview" className="gap-1.5 text-xs font-semibold h-10 w-full min-w-full max-w-none flex-1 flex items-center justify-center px-2 py-2">
+            <Activity className="size-3.5 shrink-0" /> Overview
           </TabsTrigger>
-          {can('audit:read') && (
-            <TabsTrigger value="audit" className="gap-1.5 text-xs">
-              <FileText className="size-3.5" /> Audit Logs
-            </TabsTrigger>
-          )}
-          {can('sessions:read') && (
-            <TabsTrigger value="sessions" className="gap-1.5 text-xs">
-              <UserCheck className="size-3.5" /> Active Sessions
-            </TabsTrigger>
-          )}
-          {can('api_keys:manage') && (
-            <TabsTrigger value="api_keys" className="gap-1.5 text-xs">
-              <Key className="size-3.5" /> API Keys
-            </TabsTrigger>
-          )}
-          {can('rbac:manage') && (
-            <TabsTrigger value="rbac" className="gap-1.5 text-xs">
-              <Users className="size-3.5" /> Roles & PBAC
-            </TabsTrigger>
-          )}
-          {can('rate_limits:manage') && (
-            <TabsTrigger value="rate_limits" className="gap-1.5 text-xs">
-              <Sliders className="size-3.5" /> Rate Limits
-            </TabsTrigger>
-          )}
-          {can('compliance:read') && (
-            <TabsTrigger value="compliance" className="gap-1.5 text-xs">
-              <Lock className="size-3.5" /> Compliance
-            </TabsTrigger>
-          )}
-          {can('webhooks:read') && (
-            <TabsTrigger value="webhooks" className="gap-1.5 text-xs">
-              <Radio className="size-3.5" /> Webhook Monitor
-            </TabsTrigger>
-          )}
-          {can('security:read') && (
-            <TabsTrigger value="governance_hub" className="gap-1.5 text-xs text-purple-600 font-bold">
-              <Zap className="size-3.5" /> Governance Hub
-            </TabsTrigger>
-          )}
-          {can('system_health:read') && (
-            <TabsTrigger value="health" className="gap-1.5 text-xs">
-              <Server className="size-3.5" /> System Health
-            </TabsTrigger>
-          )}
+          <TabsTrigger value="governance_hub" className="gap-1.5 text-xs font-semibold h-10 w-full min-w-full max-w-none flex-1 flex items-center justify-center px-2 py-2 text-purple-600 dark:text-purple-400">
+            <Zap className="size-3.5 shrink-0" /> Governance Hub
+          </TabsTrigger>
+          <TabsTrigger value="health" className="gap-1.5 text-xs font-semibold h-10 w-full min-w-full max-w-none flex-1 flex items-center justify-center px-2 py-2">
+            <Server className="size-3.5 shrink-0" /> System Health
+          </TabsTrigger>
+          <TabsTrigger value="compliance" className="gap-1.5 text-xs font-semibold h-10 w-full min-w-full max-w-none flex-1 flex items-center justify-center px-2 py-2">
+            <Lock className="size-3.5 shrink-0" /> Compliance
+          </TabsTrigger>
+          <TabsTrigger value="rbac" className="gap-1.5 text-xs font-semibold h-10 w-full min-w-full max-w-none flex-1 flex items-center justify-center px-2 py-2">
+            <Users className="size-3.5 shrink-0" /> Roles & PBAC
+          </TabsTrigger>
+          <TabsTrigger value="sessions" className="gap-1.5 text-xs font-semibold h-10 w-full min-w-full max-w-none flex-1 flex items-center justify-center px-2 py-2">
+            <UserCheck className="size-3.5 shrink-0" /> Active Sessions
+          </TabsTrigger>
+          <TabsTrigger value="api_keys" className="gap-1.5 text-xs font-semibold h-10 w-full min-w-full max-w-none flex-1 flex items-center justify-center px-2 py-2">
+            <Key className="size-3.5 shrink-0" /> API Keys
+          </TabsTrigger>
+          <TabsTrigger value="rate_limits" className="gap-1.5 text-xs font-semibold h-10 w-full min-w-full max-w-none flex-1 flex items-center justify-center px-2 py-2">
+            <Sliders className="size-3.5 shrink-0" /> Rate Limits
+          </TabsTrigger>
+          <TabsTrigger value="audit" className="gap-1.5 text-xs font-semibold h-10 w-full min-w-full max-w-none flex-1 flex items-center justify-center px-2 py-2">
+            <FileText className="size-3.5 shrink-0" /> Audit Logs
+          </TabsTrigger>
+          <TabsTrigger value="webhooks" className="gap-1.5 text-xs font-semibold h-10 w-full min-w-full max-w-none flex-1 flex items-center justify-center px-2 py-2">
+            <Radio className="size-3.5 shrink-0" /> Webhooks
+          </TabsTrigger>
         </TabsList>
 
         {/* Tab 1: Overview */}
@@ -313,211 +295,194 @@ export default function SecurityDashboardPage() {
         </TabsContent>
 
         {/* Tab 2: Audit Logs */}
-        {can('audit:read') && (
-          <TabsContent value="audit" className="space-y-4">
-            <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold flex items-center gap-2">
-                  <FileText className="size-5 text-primary" />
-                  Cryptographic SHA-256 Hash-Chained Audit Trail
-                </h2>
-                <span className="text-xs text-muted-foreground">Showing last 10 security events</span>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-muted text-muted-foreground uppercase text-[10px]">
-                    <tr>
-                      <th className="p-3">Action</th>
-                      <th className="p-3">Severity</th>
-                      <th className="p-3">IP Address</th>
-                      <th className="p-3">User Agent</th>
-                      <th className="p-3">Timestamp</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {(auditLogs.length > 0
-                      ? auditLogs
-                      : [
-                          {
-                            id: 'audit-1',
-                            action: 'AUTH_SESSION_VERIFIED',
-                            severity: 'low',
-                            ip_address: '127.0.0.1',
-                            user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-                            created_at: new Date().toISOString(),
-                          },
-                          {
-                            id: 'audit-2',
-                            action: 'ZERO_TRUST_GUARD_EVALUATE',
-                            severity: 'low',
-                            ip_address: '127.0.0.1',
-                            user_agent: 'Supabase RLS Engine',
-                            created_at: new Date(Date.now() - 300000).toISOString(),
-                          },
-                          {
-                            id: 'audit-3',
-                            action: 'KMS_KEY_ROTATION_CHECK',
-                            severity: 'medium',
-                            ip_address: '127.0.0.1',
-                            user_agent: 'KMS Worker',
-                            created_at: new Date(Date.now() - 1800000).toISOString(),
-                          },
-                        ]
-                    ).map((log: any) => (
-                      <tr key={log.id} className="hover:bg-muted/40 transition-colors">
-                        <td className="p-3 font-mono font-medium">{log.action}</td>
-                        <td className="p-3">
-                          <span
-                            className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
-                              log.severity === 'critical'
-                                ? 'bg-rose-100 text-rose-700 border border-rose-300'
-                                : log.severity === 'high'
-                                ? 'bg-amber-100 text-amber-700 border border-amber-300'
-                                : log.severity === 'medium'
-                                ? 'bg-blue-100 text-blue-700 border border-blue-300'
-                                : 'bg-slate-100 text-slate-700 border border-slate-300'
-                            }`}
-                          >
-                            {log.severity}
-                          </span>
-                        </td>
-                        <td className="p-3 font-mono text-muted-foreground">{log.ip_address || '—'}</td>
-                        <td className="p-3 max-w-[200px] truncate text-muted-foreground" title={log.user_agent}>
-                          {log.user_agent || '—'}
-                        </td>
-                        <td className="p-3 text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Clock className="size-3" />
-                            {new Date(log.created_at).toLocaleString()}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+        <TabsContent value="audit" className="space-y-4">
+          <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <FileText className="size-5 text-primary" />
+                Cryptographic SHA-256 Hash-Chained Audit Trail
+              </h2>
+              <span className="text-xs text-muted-foreground">Showing last 10 security events</span>
             </div>
-          </TabsContent>
-        )}
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-muted text-muted-foreground uppercase text-[10px]">
+                  <tr>
+                    <th className="p-3">Action</th>
+                    <th className="p-3">Severity</th>
+                    <th className="p-3">IP Address</th>
+                    <th className="p-3">User Agent</th>
+                    <th className="p-3">Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {(auditLogs.length > 0
+                    ? auditLogs
+                    : [
+                        {
+                          id: 'audit-1',
+                          action: 'AUTH_SESSION_VERIFIED',
+                          severity: 'low',
+                          ip_address: '127.0.0.1',
+                          user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+                          created_at: new Date().toISOString(),
+                        },
+                        {
+                          id: 'audit-2',
+                          action: 'ZERO_TRUST_GUARD_EVALUATE',
+                          severity: 'low',
+                          ip_address: '127.0.0.1',
+                          user_agent: 'Supabase RLS Engine',
+                          created_at: new Date(Date.now() - 300000).toISOString(),
+                        },
+                        {
+                          id: 'audit-3',
+                          action: 'KMS_KEY_ROTATION_CHECK',
+                          severity: 'medium',
+                          ip_address: '127.0.0.1',
+                          user_agent: 'KMS Worker',
+                          created_at: new Date(Date.now() - 1800000).toISOString(),
+                        },
+                      ]
+                  ).map((log: any) => (
+                    <tr key={log.id} className="hover:bg-muted/40 transition-colors">
+                      <td className="p-3 font-mono font-medium">{log.action}</td>
+                      <td className="p-3">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
+                            log.severity === 'critical'
+                              ? 'bg-rose-100 text-rose-700 border border-rose-300'
+                              : log.severity === 'high'
+                              ? 'bg-amber-100 text-amber-700 border border-amber-300'
+                              : log.severity === 'medium'
+                              ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                              : 'bg-slate-100 text-slate-700 border border-slate-300'
+                          }`}
+                        >
+                          {log.severity}
+                        </span>
+                      </td>
+                      <td className="p-3 font-mono text-muted-foreground">{log.ip_address || '—'}</td>
+                      <td className="p-3 max-w-[200px] truncate text-muted-foreground" title={log.user_agent}>
+                        {log.user_agent || '—'}
+                      </td>
+                      <td className="p-3 text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Clock className="size-3" />
+                          {new Date(log.created_at).toLocaleString()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </TabsContent>
 
         {/* Tab 3: Active Sessions */}
-        {can('sessions:read') && (
-          <TabsContent value="sessions">
-            <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold flex items-center gap-2">
-                    <UserCheck className="size-5 text-primary" /> Active User Sessions
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">Manage active workspace sessions and remote revocation across devices.</p>
-                </div>
-                <Button size="sm" variant="outline" onClick={loadSecurityData} className="gap-1.5 text-xs">
-                  <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Sessions
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                <div className="p-4 border rounded-xl bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                      <UserCheck className="size-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-foreground">Current Session (This Browser)</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                          Active & Verified
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-                        IP: {auditLogs[0]?.ip_address || '127.0.0.1'} • Chrome (macOS)
-                      </p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
-                        Authenticated via Supabase Auth Zero-Trust Token
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => toast.success('Session refresh token re-validated. Device secure.')}
-                    className="text-xs font-semibold self-start sm:self-auto"
-                  >
-                    Re-Verify Session
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        )}
-
-        {/* Tab 4: API Keys */}
-        {can('api_keys:manage') && (
-          <TabsContent value="api_keys">
-            <ApiKeysSettings />
-          </TabsContent>
-        )}
-
-        {/* Tab 5: Roles & PBAC */}
-        {can('rbac:manage') && (
-          <TabsContent value="rbac" className="space-y-6">
-            <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
+        <TabsContent value="sessions">
+          <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold flex items-center gap-2">
-                  <Users className="size-5 text-primary" /> Roles & PBAC Permission Assignment
+                  <UserCheck className="size-5 text-primary" /> Active User Sessions
                 </h2>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Assign base roles (Owner, Admin, Manager, Agent, Client, Viewer), invite new team members, and manage workspace permissions.
-                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">Manage active workspace sessions and remote revocation across devices.</p>
               </div>
-
-              {/* Interactive Team Roster & Role Assignment Component */}
-              <MembersTab />
-
-              {/* Interactive Category-Grouped Checkbox Permission Matrix & Custom Role Manager */}
-              <PermissionMatrix />
-
-              {/* Effective Permission & Data Scope Inspector */}
-              <EffectivePermissionInspector />
+              <Button size="sm" variant="outline" onClick={loadSecurityData} className="gap-1.5 text-xs">
+                <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Sessions
+              </Button>
             </div>
-          </TabsContent>
-        )}
+
+            <div className="space-y-3">
+              <div className="p-4 border rounded-xl bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-start gap-3">
+                  <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                    <UserCheck className="size-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-foreground">Current Session (This Browser)</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                        Active & Verified
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 font-mono">
+                      IP: {auditLogs[0]?.ip_address || '127.0.0.1'} • Chrome (macOS)
+                    </p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Authenticated via Supabase Auth Zero-Trust Token
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => toast.success('Session refresh token re-validated. Device secure.')}
+                  className="text-xs font-semibold self-start sm:self-auto"
+                >
+                  Re-Verify Session
+                </Button>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Tab 4: API Keys */}
+        <TabsContent value="api_keys">
+          <ApiKeysSettings />
+        </TabsContent>
+
+        {/* Tab 5: Roles & PBAC */}
+        <TabsContent value="rbac" className="space-y-6">
+          <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
+            <div>
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <Users className="size-5 text-primary" /> Roles & PBAC Permission Assignment
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Assign base roles (Owner, Admin, Manager, Agent, Client, Viewer), invite new team members, and manage workspace permissions.
+              </p>
+            </div>
+
+            {/* Interactive Team Roster & Role Assignment Component */}
+            <MembersTab />
+
+            {/* Interactive Category-Grouped Checkbox Permission Matrix & Custom Role Manager */}
+            <PermissionMatrix />
+
+            {/* Effective Permission & Data Scope Inspector */}
+            <EffectivePermissionInspector />
+          </div>
+        </TabsContent>
 
         {/* Tab 6: Rate Limits */}
-        {can('rate_limits:manage') && (
-          <TabsContent value="rate_limits">
-            <RateLimitsGovernanceTab />
-          </TabsContent>
-        )}
+        <TabsContent value="rate_limits">
+          <RateLimitsGovernanceTab />
+        </TabsContent>
 
         {/* Tab 7: Compliance */}
-        {can('compliance:read') && (
-          <TabsContent value="compliance">
-            <ComplianceGovernanceWorkspace />
-          </TabsContent>
-        )}
+        <TabsContent value="compliance">
+          <ComplianceGovernanceWorkspace />
+        </TabsContent>
 
         {/* Tab 8: Webhook Monitor */}
-        {can('webhooks:read') && (
-          <TabsContent value="webhooks">
-            <WebhookOperationsCenter />
-          </TabsContent>
-        )}
+        <TabsContent value="webhooks">
+          <WebhookOperationsCenter />
+        </TabsContent>
 
         {/* Tab 10: Governance Hub */}
-        {can('security:read') && (
-          <TabsContent value="governance_hub" className="space-y-6">
-            <EnterpriseControlCenter />
-            <GovernanceDashboard />
-          </TabsContent>
-        )}
+        <TabsContent value="governance_hub" className="space-y-6">
+          <EnterpriseControlCenter />
+          <GovernanceDashboard />
+        </TabsContent>
 
         {/* Tab 9: System Health & Telemetry */}
-        {can('system_health:read') && (
-          <TabsContent value="health" className="space-y-6">
-            <EnterpriseOperationsCenter />
-            <div className="rounded-xl border bg-card p-6 shadow-sm space-y-6">
+        <TabsContent value="health" className="space-y-6">
+          <EnterpriseOperationsCenter />
+          <div className="rounded-xl border bg-card p-6 shadow-sm space-y-6">
               <div className="flex items-center justify-between border-b pb-4">
                 <div>
                   <h2 className="text-lg font-bold flex items-center gap-2">
@@ -661,7 +626,6 @@ export default function SecurityDashboardPage() {
               </div>
             </div>
           </TabsContent>
-        )}
       </Tabs>
     </div>
   )
