@@ -13,10 +13,15 @@ import {
   LayoutTemplate,
   ImageOff,
   CornerDownLeft,
+  Lock,
+  Info,
+  ShoppingCart,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ReplyQuote } from "./reply-quote";
 import { MessageReactions } from "./message-reactions";
+import { renderWhatsAppMarkdown } from "./whatsapp-markdown";
+import { ImageViewer } from "@/components/ui/image-viewer";
 
 interface MessageBubbleProps {
   message: Message;
@@ -120,23 +125,25 @@ function MessageContent({ message }: { message: Message }) {
   switch (message.content_type) {
     case "text":
       return (
-        <p className="whitespace-pre-wrap break-words text-sm">
-          {message.content_text}
-        </p>
+        <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+          {renderWhatsAppMarkdown(message.content_text)}
+        </div>
       );
 
     case "image":
       return (
         <div>
           {message.media_url ? (
-            <MediaImage url={message.media_url} alt="Shared image" />
+            <ImageViewer src={message.media_url} alt="Shared image" className="inline-block">
+              <MediaImage url={message.media_url} alt="Shared image" />
+            </ImageViewer>
           ) : (
             <MediaUnavailable label="Image" />
           )}
           {message.content_text && (
-            <p className="mt-1 whitespace-pre-wrap break-words text-sm">
-              {message.content_text}
-            </p>
+            <div className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed">
+              {renderWhatsAppMarkdown(message.content_text)}
+            </div>
           )}
         </div>
       );
@@ -154,9 +161,9 @@ function MessageContent({ message }: { message: Message }) {
             <MediaUnavailable label="Video" />
           )}
           {message.content_text && (
-            <p className="mt-1 whitespace-pre-wrap break-words text-sm">
-              {message.content_text}
-            </p>
+            <div className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed">
+              {renderWhatsAppMarkdown(message.content_text)}
+            </div>
           )}
         </div>
       );
@@ -198,9 +205,9 @@ function MessageContent({ message }: { message: Message }) {
             Template
           </span>
           {message.content_text && (
-            <p className="mt-1 whitespace-pre-wrap break-words text-sm">
-              {message.content_text}
-            </p>
+            <div className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed">
+              {renderWhatsAppMarkdown(message.content_text)}
+            </div>
           )}
         </div>
       );
@@ -232,6 +239,41 @@ function MessageContent({ message }: { message: Message }) {
       );
     }
 
+    case "order": {
+      let orderPayload: any = null;
+      try {
+        orderPayload = JSON.parse(message.content_text || "{}");
+      } catch (e) { }
+
+      const itemCount = orderPayload?.product_items?.length || 0;
+      let total = 0;
+      let currency = 'USD';
+      if (orderPayload?.product_items) {
+        orderPayload.product_items.forEach((item: any) => {
+          total += parseFloat(item.item_price) * parseInt(item.quantity);
+          currency = item.currency || currency;
+        });
+      }
+
+      return (
+        <div className="flex flex-col gap-2 rounded-lg bg-background p-3 shadow-sm border border-border min-w-[220px]">
+          <div className="flex items-center gap-2 font-medium text-foreground pb-2 border-b border-border/50">
+            <ShoppingCart className="h-4 w-4 text-emerald-500" />
+            Shopping Cart Received
+          </div>
+          <div className="text-sm flex justify-between items-center">
+            <span className="text-muted-foreground">{itemCount} item(s)</span>
+            <span className="font-semibold text-foreground">
+              {new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(total)}
+            </span>
+          </div>
+          <p className="whitespace-pre-wrap break-words text-xs text-muted-foreground pt-1 italic">
+            {orderPayload?.text || 'No additional notes'}
+          </p>
+        </div>
+      );
+    }
+
     default:
       return (
         <p className="whitespace-pre-wrap break-words text-sm">
@@ -248,6 +290,19 @@ export function MessageBubble({
   currentUserId,
   onToggleReaction,
 }: MessageBubbleProps) {
+  if (message.content_type === 'system_event') {
+    return (
+      <div className="flex w-full justify-center my-4">
+        <div className="bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 px-4 py-1.5 rounded-full flex items-center gap-2 shadow-sm max-w-md">
+          <Info className="h-3.5 w-3.5 text-zinc-400" />
+          <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-300">
+            {message.content_text}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   const isAgent = message.sender_type === "agent" || message.sender_type === "bot";
   const time = format(new Date(message.created_at), "HH:mm");
 
@@ -263,11 +318,19 @@ export function MessageBubble({
       <div
         className={cn(
           "relative rounded-2xl px-3 py-2",
-          isAgent
-            ? "rounded-br-md bg-primary text-primary-foreground"
-            : "rounded-bl-md bg-muted text-foreground",
+          message.is_internal
+            ? "rounded-br-md bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100 border border-amber-300 dark:border-amber-700/50"
+            : isAgent
+              ? "rounded-br-md bg-primary text-primary-foreground"
+              : "rounded-bl-md bg-muted text-foreground",
         )}
       >
+        {message.is_internal && (
+          <div className="mb-1 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-500">
+            <Lock className="h-3 w-3" />
+            Internal Note
+          </div>
+        )}
         {reply && (
           <ReplyQuote
             authorLabel={reply.authorLabel}
@@ -289,7 +352,9 @@ export function MessageBubble({
               // timestamp must read against that (not the neutral
               // foreground) — otherwise it goes low-contrast in light
               // mode. Inbound bubbles use the muted surface.
-              isAgent ? "text-primary-foreground/70" : "text-muted-foreground",
+              message.is_internal 
+                ? "text-amber-700/70 dark:text-amber-500/70"
+                : isAgent ? "text-primary-foreground/70" : "text-muted-foreground",
             )}
           >
             {time}
