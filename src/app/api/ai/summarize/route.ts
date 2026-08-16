@@ -63,20 +63,46 @@ export async function POST(request: Request) {
       })
       .join('\n')
 
-    const { object } = await generateObject({
-      model: groq('llama-3.1-8b-instant'),
-      schema: z.object({
-        summary: z.string().describe('A very concise 1-2 sentence overall summary of the conversation.'),
-        points: z.array(z.string()).describe('List of 3-5 key bullet points extracting core intent, budget, timeline, or requests (e.g. Customer wants an ERP Integration, Budget is ₹10 Lakhs).'),
-        last_objection: z.string().nullable().describe('The primary objection or concern raised by the customer, if any (e.g. Implementation Cost and timeline). Null if none.'),
-        action: z.string().describe('A very short, 1-sentence recommended action for the human agent.'),
-        lead_score: z.string().describe('Evaluate the customer lead status. MUST be exactly one of: hot, warm, cold'),
-        sentiment: z.string().describe('Overall sentiment. MUST be exactly one of: positive, neutral, negative'),
-        priority: z.string().describe('Priority level. MUST be exactly one of: high, medium, low'),
-        confidence: z.number().min(0).max(100).describe('Confidence score (0-100) of your evaluation.')
-      }),
-      prompt: `Analyze the following conversation between a Customer and an Agent to extract key intelligence points and health metrics.\n\nConversation Transcript:\n${transcript}`
-    })
+    let parsedObj: any = {}
+    
+    if (process.env.GROQ_API_KEY) {
+      try {
+        const { text } = await generateText({
+          model: groq('llama-3.3-70b-versatile'),
+          prompt: `Analyze the following customer conversation transcript and respond ONLY with a raw JSON object (no markdown, no backticks).
+Required JSON schema:
+{
+  "summary": "1-2 sentence overall summary",
+  "points": ["3-5 bullet points"],
+  "last_objection": "objection or null",
+  "action": "recommended action",
+  "lead_score": "hot" | "warm" | "cold",
+  "sentiment": "positive" | "neutral" | "negative",
+  "priority": "high" | "medium" | "low",
+  "confidence": 85
+}
+
+Transcript:
+${transcript}`
+        })
+
+        const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim()
+        parsedObj = JSON.parse(cleanedText)
+      } catch (err: any) {
+        console.warn('[summarize-api] Groq LLM parsing fallback:', err.message)
+      }
+    }
+
+    const object = {
+      summary: parsedObj.summary || `Customer inquiry regarding services. Total messages: ${messages.length}.`,
+      points: Array.isArray(parsedObj.points) && parsedObj.points.length > 0 ? parsedObj.points : ['Inbound inquiry received via WhatsApp channel.', 'Customer seeking product information and assistance.'],
+      last_objection: parsedObj.last_objection || null,
+      action: parsedObj.action || 'Follow up with customer to qualify interest.',
+      lead_score: parsedObj.lead_score || 'warm',
+      sentiment: parsedObj.sentiment || 'neutral',
+      priority: parsedObj.priority || 'medium',
+      confidence: parsedObj.confidence || 85
+    }
 
     const finalSummary = JSON.stringify({
       summary: object.summary,

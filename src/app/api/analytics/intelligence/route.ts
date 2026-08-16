@@ -123,21 +123,21 @@ export async function GET() {
         if (messages && messages.length > 5) {
           const messageTexts = messages.map(m => m.content_text).filter(Boolean).join('\n- ')
           
-          const faqDiscoveryResult = await generateObject({
+          const { text } = await generateText({
             model: groq('llama-3.3-70b-versatile'),
-            schema: z.object({
-              faqs: z.array(z.object({
-                question: z.string().describe('Common customer question'),
-                suggestedAnswer: z.string().describe('Suggested accurate answer draft'),
-                frequency: z.number().describe('Estimated frequency or relevance count'),
-              })),
-            }),
-            prompt: `Below is a list of recent customer messages. Analyze them to discover the top 5 most frequently asked questions or recurring topics that can be added to a business Knowledge Base.
+            prompt: `Below is a list of recent customer messages. Analyze them to discover top 5 FAQs. Return ONLY a raw JSON object:
+{
+  "faqs": [
+    { "question": "...", "suggestedAnswer": "...", "frequency": 5 }
+  ]
+}
 Messages:
 - ${messageTexts}`,
           })
 
-          const newFaqs = faqDiscoveryResult.object.faqs
+          const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim()
+          const parsed = JSON.parse(cleanedText)
+          const newFaqs = parsed.faqs
           if (newFaqs && newFaqs.length > 0) {
             // Write newly discovered FAQs to ai_insights table so they're cached
             const inserts = newFaqs.map(f => ({

@@ -28,14 +28,11 @@ The objective of this campaign is: ${objective}.
 Use the following CRM historical ROI feedback from the Knowledge Base to guide your tone. 
 Knowledge Base: ${kbContext}`
 
-      const { object, usage } = await generateObject({
+      const { text, usage } = await generateText({
         model: aiModel,
-        system: systemPrompt,
-        prompt: `Generate a high-converting primary text ad copy for Meta Ads based on this prompt: "${prompt}"`,
-        schema: z.object({
-          copy: z.string().describe("The full ad copy text including emojis, hooks, and call to action.")
-        })
+        prompt: `${systemPrompt}\n\nGenerate a high-converting primary text ad copy for Meta Ads based on this prompt: "${prompt}". Return ONLY the copy text directly.`
       })
+      const object = { copy: text.trim() }
       
       // Cost Logging
       const usageData = usage as any
