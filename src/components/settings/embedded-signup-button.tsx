@@ -42,7 +42,7 @@ export function EmbeddedSignupButton({ onSuccess }: EmbeddedSignupButtonProps) {
           appId: process.env.NEXT_PUBLIC_META_APP_ID || '843808418636023',
           autoLogAppEvents: true,
           xfbml: true,
-          version: 'v19.0',
+          version: 'v20.0',
         })
         setIsSdkLoaded(true)
       }

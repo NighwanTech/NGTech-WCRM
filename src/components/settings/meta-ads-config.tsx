@@ -150,7 +150,7 @@ export function MetaAdsConfig() {
   const handleFacebookOAuthLogin = () => {
     const appId = process.env.NEXT_PUBLIC_META_APP_ID || "843808418636023"
     const redirectUri = encodeURIComponent(`${window.location.origin}/api/meta/auth/callback`)
-    const scope = encodeURIComponent("ads_management,ads_read,business_management,pages_show_list,pages_read_engagement,leads_retrieval")
+    const scope = encodeURIComponent("ads_management,ads_read,business_management,pages_show_list,pages_read_engagement,pages_manage_metadata")
     
     // auth_type=rerequest forces Meta to prompt and allow switching permissions/accounts
     const fbAuthUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code&auth_type=rerequest`
