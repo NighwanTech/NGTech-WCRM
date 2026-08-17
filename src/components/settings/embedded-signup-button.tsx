@@ -59,7 +59,7 @@ export function EmbeddedSignupButton({ onSuccess }: EmbeddedSignupButtonProps) {
 
   const handleConnect = () => {
     const appId = process.env.NEXT_PUBLIC_META_APP_ID || '843808418636023'
-    const configId = process.env.NEXT_PUBLIC_META_CONFIG_ID || '2064566014414258'
+    const configId = process.env.NEXT_PUBLIC_META_CONFIG_ID || '1613215703095146'
 
     if (!appId) {
       toast.error('Meta App ID is missing in environment variables (.env.local)')
