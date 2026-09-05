@@ -65,10 +65,38 @@ export async function POST(request: Request) {
 
     let parsedObj: any = {}
     
-    if (process.env.GROQ_API_KEY) {
+    // Fetch account AI settings for custom key
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('account_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    let apiKey = process.env.GROQ_API_KEY
+    if (profile?.account_id) {
+      const { data: aiSettings } = await supabase
+        .from('ai_assistant_settings')
+        .select('custom_api_key_encrypted, groq_api_key_encrypted')
+        .eq('account_id', profile.account_id)
+        .maybeSingle()
+
+      const encKey = aiSettings?.groq_api_key_encrypted || aiSettings?.custom_api_key_encrypted
+      if (encKey) {
+        const { decrypt } = await import('@/lib/whatsapp/encryption')
+        try {
+          apiKey = decrypt(encKey)
+        } catch (e) {
+          console.warn('[ai/summarize] Decryption failed, falling back to env key', e)
+        }
+      }
+    }
+
+    if (apiKey) {
       try {
+        const { AIProviderService } = await import('@/lib/services/ai/provider.service')
+        const model = AIProviderService.getModel('groq', 'openai/gpt-oss-120b', { apiKey })
         const { text } = await generateText({
-          model: groq('llama-3.3-70b-versatile'),
+          model: model as any,
           prompt: `Analyze the following customer conversation transcript and respond ONLY with a raw JSON object (no markdown, no backticks).
 Required JSON schema:
 {

@@ -68,7 +68,32 @@ export async function POST(request: Request) {
     
     prompt += `Recent Conversation Transcript:\n${transcript}\n\nAgent Draft Reply:`
 
-    const apiKey = process.env.GROQ_API_KEY
+    // Fetch account AI settings for custom key
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('account_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    let apiKey = process.env.GROQ_API_KEY
+    if (profile?.account_id) {
+      const { data: aiSettings } = await supabase
+        .from('ai_assistant_settings')
+        .select('custom_api_key_encrypted, groq_api_key_encrypted')
+        .eq('account_id', profile.account_id)
+        .maybeSingle()
+
+      const encKey = aiSettings?.groq_api_key_encrypted || aiSettings?.custom_api_key_encrypted
+      if (encKey) {
+        const { decrypt } = await import('@/lib/whatsapp/encryption')
+        try {
+          apiKey = decrypt(encKey)
+        } catch (e) {
+          console.warn('[ai/draft] Decryption failed, falling back to env key', e)
+        }
+      }
+    }
+
     if (!apiKey) {
       return NextResponse.json(
         { error: 'Groq API key is not configured' },
@@ -76,8 +101,11 @@ export async function POST(request: Request) {
       )
     }
 
+    const { AIProviderService } = await import('@/lib/services/ai/provider.service')
+    const model = AIProviderService.getModel('groq', 'openai/gpt-oss-120b', { apiKey })
+
     const { text: draft } = await generateText({
-      model: groq('llama-3.3-70b-versatile'),
+      model: model as any,
       prompt,
     })
 

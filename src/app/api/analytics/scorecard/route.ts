@@ -253,7 +253,7 @@ Stats: Score ${Math.round(compositeScore)}/100, Leads Talked To: ${numLeads}, De
 Provide a very short, professional 1-2 sentence evaluation summarizing their performance, strengths, or areas for improvement. Do not use filler text. Speak directly about the agent in the third person.`
         
         const { text } = await generateText({
-          model: groq('llama-3.3-70b-versatile'),
+          model: groq('openai/gpt-oss-120b'),
           prompt,
           maxOutputTokens: 60,
         })

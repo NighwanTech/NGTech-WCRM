@@ -124,7 +124,7 @@ export async function GET() {
           const messageTexts = messages.map(m => m.content_text).filter(Boolean).join('\n- ')
           
           const { text } = await generateText({
-            model: groq('llama-3.3-70b-versatile'),
+            model: groq('openai/gpt-oss-120b'),
             prompt: `Below is a list of recent customer messages. Analyze them to discover top 5 FAQs. Return ONLY a raw JSON object:
 {
   "faqs": [

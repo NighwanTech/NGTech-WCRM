@@ -107,7 +107,7 @@ Instructions:
 5. Do not use filler or robotic phrasing like "As an AI". Speak directly as the Manager. Speak about the employee in the third person (e.g., "Sandeep is struggling with...").`
 
     const { text } = await generateText({
-      model: groq('llama-3.3-70b-versatile'),
+      model: groq('openai/gpt-oss-120b'),
       prompt,
       maxOutputTokens: 500,
       temperature: 0.7
