@@ -24,12 +24,17 @@ export function GeneralSettingsCard({ config, onChange }: Props) {
   async function handleTestKey() {
     try {
       setTestingKey(true);
+      const effectiveModel = config.model === 'custom-model' && config.custom_model_name
+        ? config.custom_model_name
+        : config.model;
+
       const res = await fetch('/api/ai-assistant/keys/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           provider: config.provider,
-          model: config.model,
+          model: effectiveModel,
+          custom_model_name: config.custom_model_name,
           apiKey: config.custom_api_key,
           baseUrl: config.custom_api_base_url,
         }),

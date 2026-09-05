@@ -23,11 +23,11 @@ export class AIProviderService {
     const lowerModel = targetModel.toLowerCase();
 
     if (provider === 'gemini') {
-      if (!targetModel) {
+      if (!targetModel || lowerModel === 'custom-model') {
         targetModel = 'gemini-3.6-flash';
       }
     } else if (provider === 'groq') {
-      if (!targetModel || lowerModel.includes('llama')) {
+      if (!targetModel || lowerModel === 'custom-model' || lowerModel.includes('llama')) {
         targetModel = 'openai/gpt-oss-120b';
       }
     }

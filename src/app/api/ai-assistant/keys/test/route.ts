@@ -21,7 +21,11 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    let { provider, model, apiKey, baseUrl } = body;
+    let { provider, model, custom_model_name, apiKey, baseUrl } = body;
+
+    if (model === 'custom-model' && custom_model_name) {
+      model = custom_model_name.trim();
+    }
 
     if (!provider) {
       return NextResponse.json({ error: 'Provider is required' }, { status: 400 });
