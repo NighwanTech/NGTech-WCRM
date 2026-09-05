@@ -456,6 +456,14 @@ export default function InboxPage() {
     [deepLinkConvId, activeConversation?.id]
   );
 
+  const handleAppendConversations = useCallback((more: Conversation[]) => {
+    setConversations((prev) => {
+      const existingIds = new Set(prev.map((c) => c.id));
+      const fresh = more.filter((c) => !existingIds.has(c.id));
+      return [...prev, ...fresh];
+    });
+  }, []);
+
   const handleSelectConversation = useCallback(
     (conv: Conversation) => {
       // Re-clicking the already-active conversation would clear the
@@ -591,6 +599,7 @@ export default function InboxPage() {
             onSelect={handleSelectConversation}
             conversations={conversations}
             onConversationsLoaded={handleConversationsLoaded}
+            onAppendConversations={handleAppendConversations}
             resyncToken={resyncToken}
           />
         }

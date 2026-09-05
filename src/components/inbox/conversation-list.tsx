@@ -23,6 +23,7 @@ interface ConversationListProps {
   onSelect: (conversation: Conversation) => void;
   conversations: Conversation[];
   onConversationsLoaded: (conversations: Conversation[]) => void;
+  onAppendConversations?: (conversations: Conversation[]) => void;
   /**
    * Increment to force the fetch effect below to refire. The parent
    * bumps this on realtime reconnect / tab visibility → visible so the
@@ -51,33 +52,34 @@ const FILTER_OPTIONS: { label: string; value: InboxFilter }[] = [
   { label: "Closed", value: "closed" },
 ];
 
+const PAGE_SIZE = 50;
+
 export function ConversationList({
   activeConversationId,
   onSelect,
   conversations,
   onConversationsLoaded,
+  onAppendConversations,
   resyncToken = 0,
 }: ConversationListProps) {
   const { account, user, isAgent } = useAuth();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<InboxFilter>("all");
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [isSearchingServer, setIsSearchingServer] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  // Keep the latest callback in a ref so the fetch effect below can
-  // have a stable, empty-dep identity. Previously the fetch useCallback
-  // depended on `onConversationsLoaded`, which depends on the parent's
-  // `deepLinkConvId` — so every URL change (including one the parent
-  // triggered via router.replace after a click) caused a fresh
-  // conversations fetch. That extra refetch was the trigger for the
-  // deep-link auto-select running a second time and wiping the active
-  // thread's messages.
-  // Mutation lives in an effect (not render) per React 19's refs rule;
-  // the fetch runs once on mount so it's fine to read the slightly
-  // older value — the very next render updates the ref for any
-  // subsequent async completion.
   const onConversationsLoadedRef = useRef(onConversationsLoaded);
   useEffect(() => {
     onConversationsLoadedRef.current = onConversationsLoaded;
+  });
+
+  const onAppendConversationsRef = useRef(onAppendConversations);
+  useEffect(() => {
+    onAppendConversationsRef.current = onAppendConversations;
   });
 
   useEffect(() => {
@@ -85,10 +87,13 @@ export function ConversationList({
     let cancelled = false;
 
     (async () => {
+      setLoading(true);
+      setPage(0);
       const { data, error } = await supabase
         .from("conversations")
         .select("*, contact:contacts(*), conversation_metrics(message_count_agent)")
-        .order("last_message_at", { ascending: false });
+        .order("last_message_at", { ascending: false })
+        .range(0, PAGE_SIZE - 1);
 
       if (cancelled) return;
 
@@ -105,6 +110,7 @@ export function ConversationList({
       }
 
       onConversationsLoadedRef.current(data ?? []);
+      setHasMore((data?.length ?? 0) === PAGE_SIZE);
       setLoading(false);
     })();
 
@@ -112,6 +118,108 @@ export function ConversationList({
       cancelled = true;
     };
   }, [resyncToken]);
+
+  const loadMore = useCallback(async () => {
+    if (loading || loadingMore || !hasMore || search.trim()) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    const from = nextPage * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("conversations")
+        .select("*, contact:contacts(*), conversation_metrics(message_count_agent)")
+        .order("last_message_at", { ascending: false })
+        .range(from, to);
+
+      if (error) {
+        console.error("Failed to load more conversations:", error);
+      } else if (data) {
+        if (data.length < PAGE_SIZE) {
+          setHasMore(false);
+        }
+        setPage(nextPage);
+        if (onAppendConversationsRef.current) {
+          onAppendConversationsRef.current(data);
+        } else {
+          onConversationsLoadedRef.current([...conversations, ...data]);
+        }
+      }
+    } catch (err) {
+      console.error("Error loading more conversations:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loading, loadingMore, hasMore, search, page, conversations]);
+
+  // Trigger loadMore automatically when scrolling near the bottom
+  useEffect(() => {
+    if (!hasMore || loadingMore || loading || search.trim()) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { rootMargin: "250px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, loading, search, loadMore]);
+
+  // Deep search fallback: search Supabase across all contacts when user types a query
+  useEffect(() => {
+    const query = search.trim();
+    if (!query) return;
+
+    const timer = setTimeout(async () => {
+      setIsSearchingServer(true);
+      try {
+        const supabase = createClient();
+        const term = `%${query}%`;
+        const { data: matchedContacts } = await supabase
+          .from("contacts")
+          .select("id")
+          .or(`name.ilike.${term},phone.ilike.${term}`)
+          .limit(50);
+
+        const matchedContactIds = (matchedContacts ?? []).map((c) => c.id);
+
+        let convQuery = supabase
+          .from("conversations")
+          .select("*, contact:contacts(*), conversation_metrics(message_count_agent)")
+          .order("last_message_at", { ascending: false })
+          .limit(50);
+
+        if (matchedContactIds.length > 0) {
+          convQuery = convQuery.or(
+            `last_message_text.ilike.${term},contact_id.in.(${matchedContactIds.join(",")})`
+          );
+        } else {
+          convQuery = convQuery.ilike("last_message_text", term);
+        }
+
+        const { data: searchConvs } = await convQuery;
+        if (searchConvs && searchConvs.length > 0) {
+          if (onAppendConversationsRef.current) {
+            onAppendConversationsRef.current(searchConvs);
+          }
+        }
+      } catch (err) {
+        console.warn("[search] server search error:", err);
+      } finally {
+        setIsSearchingServer(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const [departments, setDepartments] = useState<{id: string, name: string}[]>([]);
   const [selectedDept, setSelectedDept] = useState<string>("all");
@@ -313,6 +421,31 @@ export function ConversationList({
                 maskingEnabled={account?.mask_agent_phones ?? false}
               />
             ))}
+
+            {/* Infinite scroll sentinel & status indicators */}
+            {!search.trim() && (
+              <>
+                <div ref={sentinelRef} className="h-4 w-full" />
+                {loadingMore && (
+                  <div className="flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground">
+                    <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    <span>Loading older conversations…</span>
+                  </div>
+                )}
+                {!hasMore && conversations.length >= PAGE_SIZE && (
+                  <p className="py-3 text-center text-[11px] text-muted-foreground/60">
+                    All {conversations.length} conversations loaded
+                  </p>
+                )}
+              </>
+            )}
+
+            {search.trim() && isSearchingServer && (
+              <div className="flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground">
+                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <span>Searching all contacts…</span>
+              </div>
+            )}
           </div>
         )}
       </ScrollArea>

@@ -532,6 +532,7 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
             type: payload.audience.type,
             tagIds: payload.audience.tagIds,
             customField: payload.audience.customField,
+            includeContactIds: payload.audience.includeContactIds,
             excludeTagIds: payload.audience.excludeTagIds,
             excludeContactIds: payload.audience.excludeContactIds,
           },

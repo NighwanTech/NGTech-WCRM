@@ -268,7 +268,7 @@ export default function SuperAdminPricingPage() {
                           button_text: plan.button_text || 'Start 7-Day Free Trial',
                           button_url: plan.button_url || `/free-trial?plan=${plan.slug}`,
                           team_size: teamDisplay,
-                          max_users: plan.max_users || 3,
+                          max_users: parseInt(String(plan.max_users || 3).replace(/\D/g, '')) || 3,
                           extra_seat_price: plan.extra_seat_price || 999,
                           max_contacts: String(plan.max_contacts || '10,000'),
                           max_conversations: String(plan.max_conversations || '5,000'),
@@ -280,11 +280,16 @@ export default function SuperAdminPricingPage() {
                           greeting_cache_price: plan.greeting_cache_price || 999,
                           meta_setup_price: plan.meta_setup_price || 4999,
                           meta_ads_price: plan.meta_ads_price || 1999,
-                          features_input: (plan.features_list || [
-                            'Official Meta WhatsApp Cloud API',
-                            'Multi-Agent Shared Inbox',
-                            'BYOK AI Auto-Responder'
-                          ]).join('\n')
+                          features_input: (Array.isArray(plan.features_list) && plan.features_list.length > 0
+                            ? plan.features_list
+                            : (Array.isArray(plan.features) && plan.features.length > 0
+                              ? plan.features
+                              : [
+                                  'Official Meta WhatsApp Cloud API',
+                                  'Multi-Agent Shared Inbox',
+                                  'BYOK AI Auto-Responder'
+                                ])
+                          ).join('\n')
                         });
                         setShowAddPlanModal(true);
                       }}
@@ -526,10 +531,11 @@ export default function SuperAdminPricingPage() {
                 <Textarea rows={5} value={planForm.features_input} onChange={e => setPlanForm({ ...planForm, features_input: e.target.value })} />
               </div>
 
-              <div className="pt-4 flex items-center justify-end gap-3">
+              {/* Sticky Footer */}
+              <div className="sticky bottom-0 -mx-6 -mb-6 sm:-mx-8 sm:-mb-8 p-4 px-6 sm:px-8 bg-card/95 backdrop-blur border-t border-border flex items-center justify-end gap-3 z-20">
                 <Button type="button" variant="outline" onClick={() => setShowAddPlanModal(false)}>Cancel</Button>
-                <Button type="submit" disabled={loading} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold">
-                  {loading ? 'Saving...' : 'Save Pricing Plan'}
+                <Button type="submit" disabled={loading} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 shadow-lg">
+                  {loading ? 'Saving Plan...' : 'Save Pricing Plan'}
                 </Button>
               </div>
             </form>

@@ -246,6 +246,67 @@ export const FALLBACK_PRICING_FAQS: PricingFaq[] = [
   }
 ];
 
+export function normalizePricingPlan(dbPlan: any): PricingPlan {
+  const pMonthly = Number(dbPlan.price_monthly ?? dbPlan.monthly_price ?? 0);
+  const pYearly = Number(dbPlan.price_yearly ?? dbPlan.annual_price ?? 0);
+  const isFree = dbPlan.is_free ?? (dbPlan.slug === 'free' || (pMonthly === 0 && pYearly === 0 && dbPlan.slug !== 'enterprise'));
+  const isEnterprise = dbPlan.is_enterprise ?? (dbPlan.slug === 'enterprise' || (dbPlan.name && String(dbPlan.name).toLowerCase().includes('enterprise')));
+
+  let features: string[] = [];
+  if (Array.isArray(dbPlan.features_list) && dbPlan.features_list.length > 0) {
+    features = dbPlan.features_list;
+  } else if (Array.isArray(dbPlan.features) && dbPlan.features.length > 0) {
+    features = dbPlan.features;
+  } else if (typeof dbPlan.features === 'string') {
+    try {
+      const parsed = JSON.parse(dbPlan.features);
+      if (Array.isArray(parsed)) features = parsed;
+    } catch {
+      features = [dbPlan.features];
+    }
+  }
+
+  return {
+    id: String(dbPlan.id || `plan_${dbPlan.slug || Date.now()}`),
+    name: dbPlan.name || 'Custom Plan',
+    slug: dbPlan.slug || 'custom',
+    short_description: dbPlan.short_description || dbPlan.description || '',
+    description: dbPlan.description || dbPlan.short_description || '',
+    price_monthly: pMonthly,
+    price_yearly: pYearly,
+    monthly_price: pMonthly,
+    annual_price: pYearly,
+    original_price_monthly: dbPlan.original_price_monthly || (pMonthly > 0 ? Math.round(pMonthly * 1.25) : 0),
+    original_price_yearly: dbPlan.original_price_yearly || (pYearly > 0 ? Math.round(pYearly * 1.25) : 0),
+    discount_percent: dbPlan.discount_percent ?? 20,
+    currency: dbPlan.currency || '₹',
+    popular_badge: dbPlan.popular_badge || (dbPlan.slug === 'growth' || dbPlan.slug === 'pro' ? 'MOST POPULAR 🔥' : undefined),
+    recommended_badge: dbPlan.recommended_badge || (dbPlan.slug === 'enterprise' ? 'ENTERPRISE SLA 99.9%' : undefined),
+    button_text: dbPlan.button_text || (isEnterprise ? 'Schedule Enterprise Demo' : 'Start 7-Day Free Trial'),
+    button_url: dbPlan.button_url || (isEnterprise ? '/book-demo?plan=enterprise' : `/free-trial?plan=${dbPlan.slug || 'starter'}`),
+    suitable_for: dbPlan.suitable_for || (isEnterprise ? 'Large Enterprises' : dbPlan.slug === 'pro' || dbPlan.slug === 'growth' ? 'Growing Businesses' : 'Small Teams'),
+    team_size: dbPlan.team_size || (dbPlan.max_users ? `${dbPlan.max_users} Seats` : '3 Seats'),
+    max_contacts: dbPlan.max_contacts ? (typeof dbPlan.max_contacts === 'number' ? (dbPlan.max_contacts === -1 ? 'Unlimited' : `${dbPlan.max_contacts.toLocaleString('en-IN')} Contacts`) : String(dbPlan.max_contacts)) : '10,000 Contacts',
+    max_conversations: dbPlan.max_conversations || (dbPlan.max_messages_pm ? (dbPlan.max_messages_pm === -1 ? 'Unlimited' : `${dbPlan.max_messages_pm.toLocaleString('en-IN')} / mo`) : '5,000 / mo'),
+    max_users: dbPlan.max_users ? String(dbPlan.max_users) : '3 Team Seats',
+    max_ai_requests: dbPlan.max_ai_requests || 'Unlimited BYOK Tokens',
+    max_broadcasts: dbPlan.max_broadcasts || '50,000 Messages / mo',
+    api_access: dbPlan.api_access ?? (!isFree && dbPlan.slug !== 'starter'),
+    support_type: dbPlan.support_type || (isEnterprise ? '24/7 Dedicated Support' : 'Standard Email & Chat'),
+    trial_days: dbPlan.trial_days || 7,
+    is_free: isFree,
+    is_enterprise: isEnterprise,
+    is_active: dbPlan.is_active !== undefined ? dbPlan.is_active : true,
+    sort_order: Number(dbPlan.sort_order || 1),
+    features_list: features.length > 0 ? features : [
+      'Official Meta WhatsApp Cloud API',
+      'Multi-Agent Shared Inbox',
+      'BYOK AI Auto-Responder',
+      'Live Telemetry & Reports'
+    ]
+  };
+}
+
 export async function getPricingPlansFromDB(): Promise<PricingPlan[]> {
   try {
     const supabase = await createClient();
@@ -256,12 +317,12 @@ export async function getPricingPlansFromDB(): Promise<PricingPlan[]> {
       .order('sort_order', { ascending: true });
 
     if (!error && dbPlans && dbPlans.length > 0) {
-      return dbPlans as PricingPlan[];
+      return dbPlans.map(normalizePricingPlan);
     }
   } catch (err) {
     console.warn('Failed to fetch pricing plans from DB, using fallbacks', err);
   }
-  return FALLBACK_PRICING_PLANS;
+  return FALLBACK_PRICING_PLANS.map(normalizePricingPlan);
 }
 
 export async function getPricingFaqsFromDB(): Promise<PricingFaq[]> {

@@ -81,7 +81,7 @@ export function GeneralSettingsCard({ config, onChange }: Props) {
                 if (v === 'openai') onChange('model', 'gpt-4o');
                 else if (v === 'gemini') onChange('model', 'gemini-2.5-flash');
                 else if (v === 'claude') onChange('model', 'claude-3-5-sonnet-latest');
-                else if (v === 'groq') onChange('model', 'llama-3.3-70b-versatile');
+                else if (v === 'groq') onChange('model', 'openai/gpt-oss-120b');
                 else if (v === 'deepseek') onChange('model', 'deepseek-chat');
                 else if (v === 'custom') onChange('model', 'llama3');
               }}
@@ -93,7 +93,7 @@ export function GeneralSettingsCard({ config, onChange }: Props) {
                 <SelectItem value="openai">OpenAI (ChatGPT)</SelectItem>
                 <SelectItem value="gemini">Google Gemini</SelectItem>
                 <SelectItem value="claude">Anthropic Claude</SelectItem>
-                <SelectItem value="groq">Groq (Ultra-Fast Llama)</SelectItem>
+                <SelectItem value="groq">Groq (Ultra-Fast Llama & OSS)</SelectItem>
                 <SelectItem value="deepseek">DeepSeek AI</SelectItem>
                 <SelectItem value="custom">Custom Endpoint / Ollama</SelectItem>
               </SelectContent>
@@ -141,10 +141,10 @@ export function GeneralSettingsCard({ config, onChange }: Props) {
                 )}
                 {provider === 'groq' && (
                   <>
-                    <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile (Meta SOTA)</SelectItem>
-                    <SelectItem value="deepseek-r1-distill-llama-70b">DeepSeek R1 Distill 70B (Fast Reasoning)</SelectItem>
-                    <SelectItem value="llama-3.1-8b-instant">Llama 3.1 8B Instant (Ultra Fast)</SelectItem>
-                    <SelectItem value="mixtral-8x7b-32768">Mixtral 8x7B</SelectItem>
+                    <SelectItem value="openai/gpt-oss-120b">GPT OSS 120B (Groq SOTA Flagship)</SelectItem>
+                    <SelectItem value="qwen/qwen3.8-27b">Qwen 3.8 27B (Groq Ultra-Fast)</SelectItem>
+                    <SelectItem value="openai/gpt-oss-20b">GPT OSS 20B (Groq Lightweight)</SelectItem>
+                    <SelectItem value="groq/compound">Groq Compound</SelectItem>
                     <SelectItem value="custom-model">Custom Model Identifier...</SelectItem>
                   </>
                 )}

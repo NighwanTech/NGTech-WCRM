@@ -82,6 +82,19 @@ export async function POST(request: Request) {
           abortSignal: controller.signal,
         });
         text = res.text;
+      } else if (provider === 'groq' && (errMsg.includes('does not exist') || errMsg.includes('access to it') || errMsg.includes('model_not_found'))) {
+        console.log('[AI keys test] Groq model not found on account. Retrying with openai/gpt-oss-120b...');
+        aiModel = AIProviderService.getModel(provider, 'openai/gpt-oss-120b', {
+          apiKey: apiKey?.trim(),
+          baseUrl: baseUrl?.trim(),
+        });
+        const res = await generateText({
+          model: aiModel as any,
+          prompt: 'Hello! Reply with "OK" if connection is working.',
+          maxOutputTokens: 100,
+          abortSignal: controller.signal,
+        });
+        text = res.text;
       } else {
         throw err;
       }

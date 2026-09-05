@@ -22,6 +22,17 @@ export async function GET() {
     }
 
     const docs = await AIStorageService.listDocuments(profile.account_id);
+
+    // Auto-index any uploaded docs in background if chunks are missing
+    try {
+      const { AIEmbeddingService } = await import('@/lib/services/ai/embedding.service');
+      AIEmbeddingService.autoIndexMissingDocuments(profile.account_id).catch(e => 
+        console.warn('Background auto-index error:', e)
+      );
+    } catch (e) {
+      console.warn('Auto-index module load error:', e);
+    }
+
     return NextResponse.json({ documents: docs });
   } catch (error: any) {
     console.error('Error in documents GET:', error);

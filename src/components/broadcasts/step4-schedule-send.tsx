@@ -225,7 +225,11 @@ export function Step4ScheduleSend({
         ? `Tags (${audience.tagIds?.length ?? 0} selected)`
         : audience.type === 'csv'
           ? 'CSV Upload'
-          : 'Custom';
+          : audience.type === 'specific_contacts'
+            ? `Specific Contacts (${audience.includeContactIds?.length ?? 0} selected)`
+            : audience.type === 'custom_field'
+              ? 'Custom Field'
+              : 'Custom';
 
   return (
     <div className="space-y-6">

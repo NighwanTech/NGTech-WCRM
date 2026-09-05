@@ -39,24 +39,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function PricingPage() {
-  let plans = await getPricingPlansFromDB();
-  
-  // Override Starter plan price to 5000 INR per user request
-  plans = plans.map(plan => {
-    if (plan.slug === 'starter' || plan.name.toLowerCase().includes('starter')) {
-      return {
-        ...plan,
-        price_monthly: 5000,
-        price_yearly: 5000,
-        monthly_price: 5000,
-        annual_price: 5000,
-        original_price_monthly: 6500,
-        original_price_yearly: 6500,
-      };
-    }
-    return plan;
-  });
-
+  const plans = await getPricingPlansFromDB();
   const faqs = await getPricingFaqsFromDB();
 
   const supabase = await createClient();

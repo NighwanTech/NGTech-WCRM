@@ -93,6 +93,55 @@ export class AIStorageService {
       .eq('account_id', accountId);
 
     if (error) throw new Error('Failed to delete document metadata');
+
+    // Also clean up any associated chunks
+    try {
+      await supabase
+        .from('ai_knowledge_chunks')
+        .delete()
+        .eq('document_id', documentId)
+        .eq('account_id', accountId);
+    } catch (chunkErr) {
+      console.warn('[AIStorageService] Cleaned up doc chunks:', chunkErr);
+    }
+
     return true;
   }
+
+  /**
+   * Downloads and extracts text content of a document stored in Supabase storage.
+   */
+  static async getDocumentContent(filePath: string): Promise<string> {
+    const supabase = await createClient();
+    try {
+      const { data, error } = await supabase.storage
+        .from('knowledge-documents')
+        .download(filePath);
+
+      if (error || !data) {
+        console.warn(`[AIStorageService] Failed to download document from storage: ${filePath}`, error);
+        return '';
+      }
+
+      const buffer = Buffer.from(await data.arrayBuffer());
+      const ext = filePath.split('.').pop()?.toLowerCase();
+
+      if (ext === 'pdf') {
+        try {
+          const pdfParse = require('pdf-parse');
+          const pdfData = await pdfParse(buffer);
+          return pdfData.text || '';
+        } catch (pdfErr) {
+          console.warn('[AIStorageService] PDF parsing failed:', pdfErr);
+          return '';
+        }
+      }
+
+      return buffer.toString('utf-8');
+    } catch (err) {
+      console.error(`[AIStorageService] Error reading document content for ${filePath}:`, err);
+      return '';
+    }
+  }
 }
+

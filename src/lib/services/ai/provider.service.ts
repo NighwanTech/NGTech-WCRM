@@ -27,10 +27,8 @@ export class AIProviderService {
         targetModel = 'gemini-3.6-flash';
       }
     } else if (provider === 'groq') {
-      if (lowerModel.includes('llama-3.1-8b-instant')) {
-        targetModel = 'llama-3.3-70b-versatile';
-      } else if (!targetModel) {
-        targetModel = 'llama-3.3-70b-versatile';
+      if (!targetModel || lowerModel.includes('llama')) {
+        targetModel = 'openai/gpt-oss-120b';
       }
     }
 
@@ -38,7 +36,7 @@ export class AIProviderService {
       const apiKey = customKey || process.env.GROQ_API_KEY;
       if (!apiKey) throw new Error('Groq API Key is missing');
       const groqProvider = createGroq({ apiKey });
-      return groqProvider(targetModel || 'llama-3.3-70b-versatile');
+      return groqProvider(targetModel || 'openai/gpt-oss-120b');
     }
 
     if (provider === 'gemini') {

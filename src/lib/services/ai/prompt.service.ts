@@ -132,26 +132,18 @@ export class AIPromptService {
         });
       }
     }
-    // Fetch and inject RAG Context from documents and websites
-    // Token Optimization: Clamp each RAG chunk to 300 chars max for token savings
-    if (query && accountId) {
+    // Fetch and inject RAG Context from uploaded documents, markdown files, and websites
+    if (accountId) {
       try {
-        const ragContext = await AIEmbeddingService.searchKnowledgeBase(accountId, query, 3);
+        const ragContext = await AIEmbeddingService.searchKnowledgeBase(accountId, query || '', 15);
         if (ragContext && ragContext.length > 0) {
-          // Filter by minimum similarity score (0.72) if available
-          const relevantChunks = ragContext.filter((chunk: any) => 
-            chunk.similarity === undefined || chunk.similarity >= 0.72
-          );
-          if (relevantChunks.length > 0) {
-            finalPrompt += `\n\n[Relevant Document Extracts]`;
-            relevantChunks.forEach((chunk: any, idx: number) => {
-              // Clamp each chunk to 300 characters to save tokens
-              const clampedContent = chunk.content?.length > 300 
-                ? chunk.content.substring(0, 300) + '...' 
-                : chunk.content;
-              finalPrompt += `\n- Extract ${idx + 1} (Source: ${chunk.source_type}): ${clampedContent}`;
-            });
-          }
+          finalPrompt += `\n\n[Uploaded Knowledge Documents & Markdown Reference Files]`;
+          ragContext.forEach((chunk: any, idx: number) => {
+            const clampedContent = chunk.content?.length > 2500 
+              ? chunk.content.substring(0, 2500) + '...' 
+              : chunk.content;
+            finalPrompt += `\n\n--- Document Extract ${idx + 1} (${chunk.source_type || 'Document'}) ---\n${clampedContent}`;
+          });
         }
       } catch (err) {
         console.error('RAG context fetch failed:', err);
